@@ -12,7 +12,7 @@ class RewardsScreen extends StatelessWidget {
     final List<Map<String, dynamic>> coupons = [
       {'store': 'Amazon Perks', 'code': 'AMZN25', 'desc': 'Get 25% cashback on purchases.', 'expiry': 'Expires Aug 31'},
       {'store': 'Starbucks Cafe', 'code': 'COFFEEFREE', 'desc': 'Buy 1 Get 1 Free Espresso drink.', 'expiry': 'Expires Aug 25'},
-      {'store': 'Uber Rides', 'code': 'UBERRIDE10', 'desc': '\$10 discount on next 3 rides.', 'expiry': 'Expires Sep 10'},
+      {'store': 'Uber Rides', 'code': 'UBERRIDE10', 'desc': '₹50 discount on next 3 rides.', 'expiry': 'Expires Sep 10'},
     ];
 
     void _copyCode(String code) {
@@ -56,7 +56,7 @@ class RewardsScreen extends StatelessWidget {
                   ),
                   SizedBox(height: AppSpacing.s8),
                   Text(
-                    '\$245.80',
+                    '₹2,450',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 32.0,
@@ -78,7 +78,7 @@ class RewardsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          'Invite Friends, Get \$15',
+                          'Invite Friends, Get ₹150',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
@@ -87,7 +87,7 @@ class RewardsScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Receive \$15 cashback reward after their first bank transfer.',
+                          'Receive ₹150 cashback reward after their first bank transfer.',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 12,
@@ -200,9 +200,9 @@ class RewardsScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s12),
             ...[
-              {'title': 'Referral Bonus', 'date': 'Aug 01, 2026', 'amount': '+\$15.00'},
-              {'title': 'Starbucks Cashback perk', 'date': 'Jul 24, 2026', 'amount': '+\$2.40'},
-              {'title': 'Amazon Prime signup promo', 'date': 'Jul 10, 2026', 'amount': '+\$10.00'},
+              {'title': 'Referral Bonus', 'date': 'Aug 01, 2026', 'amount': '+₹150.00'},
+              {'title': 'Starbucks Cashback perk', 'date': 'Jul 24, 2026', 'amount': '+₹24.00'},
+              {'title': 'Amazon Prime signup promo', 'date': 'Jul 10, 2026', 'amount': '+₹100.00'},
             ].map((rew) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),

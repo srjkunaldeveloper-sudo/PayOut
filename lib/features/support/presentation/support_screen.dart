@@ -12,201 +12,212 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  bool _isSubmitting = false;
+
   final List<Map<String, String>> _faqs = [
     {
-      'q': 'How long does a bank transfer take?',
-      'a': 'Standard bank transfers typically settle within 1-2 business days. Real-time transfers are credited instantly.'
+      'q': 'How do I complete my KYC verification?',
+      'a': 'Go to Profile -> KYC Status, and upload your Aadhaar and PAN documents. Verification takes up to 24 hours.'
     },
     {
-      'q': 'Are there any fees for loading my wallet?',
-      'a': 'No. Payout does not charge any processing fees for loading cash balances from linked checking accounts.'
+      'q': 'My transaction failed but money was deducted.',
+      'a': 'UPI refunds are processed automatically by banking networks within 3 to 5 business days to your bank account.'
     },
     {
-      'q': 'How do I upgrade my KYC limit?',
-      'a': 'Go to your Profile page, click on KYC Status, and upload a valid government-issued ID card.'
+      'q': 'How do I sweep my store balance to my bank?',
+      'a': 'Merchant sweeps are initiated instantly by clicking the "Instant Sweep to Bank" button on the Business Console page.'
     },
   ];
 
-  void _showTicketSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Raise a Support Ticket',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Describe your issue and our operations team will reach out within 24 hours.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              const TextField(
-                decoration: InputDecoration(
-                  labelText: 'Subject',
-                  hintText: 'e.g. Transaction failure',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              const TextField(
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Enter details about your issue...',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Submit Ticket',
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Support ticket submitted successfully.'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
+  void _submitTicket() {
+    if (_subjectController.text.isEmpty) return;
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Support Ticket raised successfully! Code: TC-8092'),
+            backgroundColor: AppColors.success,
           ),
         );
-      },
-    );
+        _subjectController.clear();
+        _descController.clear();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _subjectController.dispose();
+    _descController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Help & Support'),
+      appBar: const CustomAppBar(title: 'Customer Support'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.s24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Instant Contact Options
             const Text(
-              'Get in touch',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+              'Direct Helpdesk',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.phone_in_talk_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'Call Support Hotline',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text('1-800-PAY-OUT (Mon-Fri)'),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.mail_outline_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'Email Customer Helpdesk',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text('support@payout.app'),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'Chat on WhatsApp',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text('Available 24/7 for urgent help'),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Frequently Asked Questions',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                Expanded(
+                  child: AppCard(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Opening WhatsApp Support chat...')),
+                      );
+                    },
+                    child: Column(
+                      children: const [
+                        Icon(Icons.chat_bubble_outline_rounded, color: Colors.green, size: 28),
+                        SizedBox(height: 8),
+                        Text('WhatsApp', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
+                    ),
                   ),
                 ),
-                TextButton(
-                  onPressed: _showTicketSheet,
-                  child: const Text(
-                    'Raise Ticket',
-                    style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+                const SizedBox(width: AppSpacing.s12),
+                Expanded(
+                  child: AppCard(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Dialing Support hotline: 1800-PAYOUT...')),
+                      );
+                    },
+                    child: Column(
+                      children: const [
+                        Icon(Icons.phone_in_talk_rounded, color: AppColors.primary, size: 28),
+                        SizedBox(height: 8),
+                        Text('Call Toll-Free', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.s32),
+            // FAQs Expandable accordion list
+            const Text(
+              'Frequently Asked Questions',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: AppSpacing.s12),
-            ..._faqs.map((faq) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                child: AppCard(
-                  child: ExpansionTile(
-                    title: Text(
-                      faq['q']!,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14.0,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    tilePadding: EdgeInsets.zero,
-                    childrenPadding: const EdgeInsets.only(top: 8.0),
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    children: [
-                      Text(
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: ExpansionPanelList.radio(
+                elevation: 0,
+                children: _faqs.map((faq) {
+                  return ExpansionPanelRadio(
+                    value: faq['q']!,
+                    headerBuilder: (context, isExpanded) {
+                      return ListTile(
+                        title: Text(
+                          faq['q']!,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      );
+                    },
+                    body: Padding(
+                      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                      child: Text(
                         faq['a']!,
                         style: const TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 13.0,
+                          fontSize: 12.0,
                           color: AppColors.textSecondary,
                           height: 1.4,
                         ),
                       ),
-                    ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s32),
+            // Raise Ticket Form
+            const Text(
+              'Raise Support Ticket',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: const EdgeInsets.all(AppSpacing.s20),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _subjectController,
+                    decoration: const InputDecoration(
+                      labelText: 'Subject Issue',
+                      prefixIcon: Icon(Icons.subject_rounded),
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                  const SizedBox(height: AppSpacing.s16),
+                  TextField(
+                    controller: _descController,
+                    decoration: const InputDecoration(
+                      labelText: 'Elaborate details',
+                      prefixIcon: Icon(Icons.edit_note_rounded),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppButton(
+                      text: 'Submit Ticket',
+                      isLoading: _isSubmitting,
+                      onPressed: _submitTicket,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s16),
+            // Track Complaint
+            AppCard(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No active complaints found.')),
+                );
+              },
+              child: Row(
+                children: const [
+                  Icon(Icons.assignment_turned_in_rounded, color: AppColors.primary),
+                  SizedBox(width: AppSpacing.s16),
+                  Expanded(
+                    child: Text(
+                      'Track Complaint Status',
+                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                ],
+              ),
+            ),
             const SizedBox(height: AppSpacing.s40),
           ],
         ),

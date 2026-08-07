@@ -24,42 +24,42 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double radius = borderRadius ?? AppRadii.card;
+    final Color cardColor = color ?? AppColors.surface;
 
-    final cardWidget = Container(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.s20),
+    return Container(
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
         borderRadius: BorderRadius.circular(radius),
-        border: border, // No default border
+        border: border,
         boxShadow: hasShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.015),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.01),
-                  blurRadius: 4,
+                  color: Colors.black.withOpacity(0.015),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ]
             : null,
       ),
-      child: child,
-    );
-
-    if (onTap != null) {
-      return Material(
-        color: Colors.transparent,
+      child: Material(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(radius),
+        type: MaterialType.card,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(radius),
-          child: cardWidget,
+          highlightColor: AppColors.primary.withOpacity(0.04),
+          splashColor: AppColors.primary.withOpacity(0.08),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(AppSpacing.s20),
+            child: child,
+          ),
         ),
-      );
-    }
-
-    return cardWidget;
+      ),
+    );
   }
 }

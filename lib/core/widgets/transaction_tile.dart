@@ -31,8 +31,10 @@ class TransactionTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadii.card),
+      highlightColor: AppColors.primary.withOpacity(0.04),
+      splashColor: AppColors.primary.withOpacity(0.08),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12, horizontal: AppSpacing.s8),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12, horizontal: AppSpacing.s12),
         child: Row(
           children: [
             CustomAvatar(
@@ -76,11 +78,11 @@ class TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${isCredit ? '+' : '-'}\$${amount.toStringAsFixed(2)}',
+                  '${isCredit ? '+' : '-'}₹${amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15.0,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                     color: isCredit ? AppColors.success : AppColors.textPrimary,
                   ),
                 ),

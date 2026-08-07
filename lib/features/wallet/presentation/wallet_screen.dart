@@ -59,7 +59,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: const InputDecoration(
-                  prefixText: '\$ ',
+                  prefixText: '₹ ',
                   hintText: '0.00',
                 ),
               ),
@@ -76,7 +76,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('\$${addedAmount!.toStringAsFixed(2)} added to your wallet.'),
+                          content: Text('₹${addedAmount!.toStringAsFixed(2)} added to your wallet.'),
                           backgroundColor: AppColors.success,
                         ),
                       );
@@ -136,7 +136,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: const InputDecoration(
-                  prefixText: '\$ ',
+                  prefixText: '₹ ',
                   hintText: '0.00',
                 ),
               ),
@@ -153,7 +153,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('\$${withdrawAmount!.toStringAsFixed(2)} transferred to bank account.'),
+                          content: Text('₹${withdrawAmount!.toStringAsFixed(2)} transferred to bank account.'),
                           backgroundColor: AppColors.success,
                         ),
                       );
@@ -207,7 +207,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   const SizedBox(height: AppSpacing.s8),
                   Text(
-                    '\$${_walletBalance.toStringAsFixed(2)}',
+                    '₹${_walletBalance.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 32.0,
@@ -288,7 +288,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           ),
                         ),
                         Text(
-                          '\$142.50 earned',
+                          '₹1,425 earned',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 12.0,

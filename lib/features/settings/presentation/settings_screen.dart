@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/settings/presentation/about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,9 +12,10 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _faceIdEnabled = true;
   bool _pushNotifications = true;
-  bool _emailReports = false;
+  bool _biometricLock = true;
+  bool _darkTheme = false;
+  String _selectedLanguage = 'English';
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +28,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Security & Access',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+              'General Settings',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.language_rounded, color: AppColors.primary),
+                    title: const Text('Language', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: DropdownButton<String>(
+                      value: _selectedLanguage,
+                      items: const [
+                        DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                        DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                        DropdownMenuItem(value: 'Spanish', child: Text('Español', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedLanguage = val;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Language set to $_selectedLanguage')),
+                          );
+                        }
+                      },
+                      underline: const SizedBox(),
+                    ),
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.palette_outlined, color: AppColors.primary),
+                    title: const Text('Dark Mode Theme', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    value: _darkTheme,
+                    onChanged: (val) {
+                      setState(() {
+                        _darkTheme = val;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Theme changes will apply on restart.')),
+                      );
+                    },
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(height: AppSpacing.s32),
+            const Text(
+              'Privacy & Security',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
@@ -40,32 +88,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   SwitchListTile(
-                    title: const Text(
-                      'Biometric Verification',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text(
-                      'Use FaceID or Fingerprint to unlock.',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 12),
-                    ),
-                    value: _faceIdEnabled,
-                    activeColor: AppColors.primary,
+                    secondary: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                    title: const Text('Push Notifications', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    value: _pushNotifications,
                     onChanged: (val) {
                       setState(() {
-                        _faceIdEnabled = val;
+                        _pushNotifications = val;
                       });
                     },
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
+                    title: const Text('Biometric Login / FaceID', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    value: _biometricLock,
+                    onChanged: (val) {
+                      setState(() {
+                        _biometricLock = val;
+                      });
+                    },
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                   const Divider(height: 1, color: AppColors.divider),
                   ListTile(
-                    title: const Text(
-                      'Change security MPIN',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                    leading: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
+                    title: const Text('Privacy Center', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Route to reset MPIN.')),
+                        const SnackBar(content: Text('Privacy settings are configured.')),
                       );
                     },
                   ),
@@ -74,66 +126,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.s32),
             const Text(
-              'Notifications',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    title: const Text(
-                      'Push Notifications',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text(
-                      'Receive alerts for transfers and deposits.',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 12),
-                    ),
-                    value: _pushNotifications,
-                    activeColor: AppColors.primary,
-                    onChanged: (val) {
-                      setState(() {
-                        _pushNotifications = val;
-                      });
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  SwitchListTile(
-                    title: const Text(
-                      'Monthly Statements',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    subtitle: const Text(
-                      'Receive transaction history via email.',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 12),
-                    ),
-                    value: _emailReports,
-                    activeColor: AppColors.primary,
-                    onChanged: (val) {
-                      setState(() {
-                        _emailReports = val;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'General Settings',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+              'App Information',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
@@ -141,24 +135,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   ListTile(
-                    title: const Text(
-                      'Base Currency',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    trailing: const Text(
-                      'USD (\$)',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
-                    ),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    title: const Text(
-                      'About Payout App',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                    onTap: () {},
+                    leading: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+                    title: const Text('About Payout', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AboutScreen()),
+                      );
+                    },
                   ),
                 ],
               ),

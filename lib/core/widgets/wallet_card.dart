@@ -76,7 +76,7 @@ class _WalletCardState extends State<WalletCard> {
           ),
           const SizedBox(height: AppSpacing.s8),
           Text(
-            _isHidden ? '••••••' : '\$${widget.balance.toStringAsFixed(2)}',
+            _isHidden ? '••••••' : '₹${widget.balance.toStringAsFixed(0)}', // Muted clean Rupee integer
             style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 34.0,
@@ -105,7 +105,7 @@ class _WalletCardState extends State<WalletCard> {
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(20.0), // Rounded pill M3 buttons
                     ),
                   ),
                 ),
@@ -132,7 +132,7 @@ class _WalletCardState extends State<WalletCard> {
                     backgroundColor: Colors.white.withOpacity(0.15),
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(20.0), // Rounded pill M3 buttons
                     ),
                   ),
                 ),

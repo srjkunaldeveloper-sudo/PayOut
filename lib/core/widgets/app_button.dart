@@ -61,7 +61,7 @@ class AppButton extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         color: getBgColor(),
-        borderRadius: BorderRadius.circular(AppRadii.button),
+        borderRadius: BorderRadius.circular(AppRadii.button), // design system pill shape
         border: getBorder(),
       ),
       child: Material(
@@ -69,14 +69,22 @@ class AppButton extends StatelessWidget {
         child: InkWell(
           onTap: isEnabled ? onPressed : null,
           borderRadius: BorderRadius.circular(AppRadii.button),
+          highlightColor: type == AppButtonType.primary
+              ? Colors.white.withOpacity(0.06)
+              : AppColors.primary.withOpacity(0.04),
+          splashColor: type == AppButtonType.primary
+              ? Colors.white.withOpacity(0.12)
+              : AppColors.primary.withOpacity(0.08),
           child: Center(
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.0,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        type == AppButtonType.primary ? Colors.white : AppColors.primary,
+                      ),
                     ),
                   )
                 : Row(

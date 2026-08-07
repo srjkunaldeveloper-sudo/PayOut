@@ -110,7 +110,6 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.divider, width: 1.0),
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary),
@@ -181,7 +180,6 @@ class HomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(16.0),
-                            border: Border.all(color: AppColors.divider, width: 1.0),
                           ),
                           child: Icon(act['icon'] as IconData, color: AppColors.primary, size: 22),
                         ),
@@ -349,7 +347,7 @@ class HomeScreen extends StatelessWidget {
                                 style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
                               ),
                               Text(
-                                'Get \$15 for every friend you invite.',
+                                'Get ₹150 for every friend you invite.',
                                 style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 11),
                               ),
                             ],
@@ -403,7 +401,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: FeatureCard(
                       title: 'Check Loans',
-                      description: 'Get credit limits up to \$25,000 instantly.',
+                      description: 'Get credit limits up to ₹10 Lakhs instantly.',
                       icon: Icons.monetization_on_rounded,
                       bgColor: AppColors.surface,
                       onTap: () {
@@ -418,7 +416,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: FeatureCard(
                       title: 'Buy Gold',
-                      description: 'Start saving in 24K digital gold from \$1.',
+                      description: 'Start saving in 24K digital gold from ₹10.',
                       icon: Icons.workspace_premium_rounded,
                       iconColor: Colors.amber,
                       bgColor: AppColors.surface,
@@ -445,11 +443,11 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              TransactionTile(
+               TransactionTile(
                 title: 'Starbucks Coffee',
                 subtitle: 'Food & Dining',
                 date: 'Aug 07, 2026',
-                amount: 12.45,
+                amount: 380.00,
                 isCredit: false,
               ),
               const Divider(color: AppColors.divider),
@@ -457,7 +455,7 @@ class HomeScreen extends StatelessWidget {
                 title: 'Bank Account Deposit',
                 subtitle: 'Wallet Load',
                 date: 'Aug 07, 2026',
-                amount: 500.00,
+                amount: 1500.00,
                 isCredit: true,
               ),
               const SizedBox(height: AppSpacing.s40),

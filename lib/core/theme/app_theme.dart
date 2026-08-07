@@ -3,21 +3,23 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const Color background = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFF8FAFC);
-  static const Color primary = Color(0xFF2563EB);
-  static const Color primaryLight = Color(0xFFDBEAFE);
-  static const Color success = Color(0xFF16A34A);
+  static const Color surfaceVariant = Color(0xFFF1F5F9);
+  static const Color primary = Color(0xFF2563EB); // Official Payout brand blue
+  static const Color primaryLight = Color(0xFFEFF6FF); // Muted premium blue containers
+  static const Color success = Color(0xFF10B981); // Emerald Green
   static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFDC2626);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color divider = Color(0xFFE5E7EB);
+  static const Color error = Color(0xFFEF4444);
+  static const Color textPrimary = Color(0xFF0F172A); // Slate 900
+  static const Color textSecondary = Color(0xFF475569); // Slate 600
+  static const Color textTertiary = Color(0xFF94A3B8); // Slate 400
+  static const Color divider = Color(0xFFE2E8F0); // Slate 200
 }
 
 class AppRadii {
-  static const double cardHero = 24.0;
-  static const double card = 16.0;
+  static const double cardHero = 28.0;
+  static const double card = 20.0;
   static const double cardSmall = 12.0;
-  static const double button = 14.0;
+  static const double button = 100.0; // Capsule pill shape
   static const double bottomSheet = 28.0;
 }
 
@@ -31,6 +33,7 @@ class AppSpacing {
   static const double s16 = 16.0;
   static const double s20 = 20.0;
   static const double s24 = 24.0;
+  static const double s28 = 28.0;
   static const double s32 = 32.0;
   static const double s40 = 40.0;
   static const double s48 = 48.0;
@@ -51,10 +54,9 @@ class AppTheme {
         onSecondary: AppColors.textPrimary,
         error: AppColors.error,
         onError: AppColors.background,
-        background: AppColors.background,
-        onBackground: AppColors.textPrimary,
-        surface: AppColors.surface,
+        surface: AppColors.background,
         onSurface: AppColors.textPrimary,
+        surfaceContainerLow: AppColors.surface,
         outline: AppColors.divider,
       ),
       fontFamily: 'Inter',
@@ -79,14 +81,14 @@ class AppTheme {
         displayMedium: TextStyle(
           fontFamily: 'Inter',
           fontSize: 24.0,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           height: 1.3,
         ),
         displaySmall: TextStyle(
           fontFamily: 'Inter',
           fontSize: 20.0,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           height: 1.35,
         ),
@@ -140,19 +142,19 @@ class AppTheme {
           vertical: AppSpacing.s16,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.button),
-          borderSide: const BorderSide(color: AppColors.divider, width: 1.0),
+          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.button),
-          borderSide: const BorderSide(color: AppColors.divider, width: 1.0),
+          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.button),
+          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.button),
+          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
           borderSide: const BorderSide(color: AppColors.error, width: 1.0),
         ),
         labelStyle: const TextStyle(

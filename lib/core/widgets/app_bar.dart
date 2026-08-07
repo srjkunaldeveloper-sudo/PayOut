@@ -20,34 +20,24 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(
         title,
-        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              fontSize: 20.0,
-            ),
+        style: const TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w600,
+          fontSize: 20.0,
+          color: AppColors.textPrimary,
+        ),
       ),
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: AppColors.background,
       centerTitle: false,
       leading: showLeading && Navigator.of(context).canPop()
-          ? Padding(
-              padding: const EdgeInsets.only(left: AppSpacing.s12, top: 4, bottom: 4),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(color: AppColors.divider, width: 1.0),
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 16,
-                    color: AppColors.textPrimary,
-                  ),
-                  onPressed: onLeadingPressed ?? () => Navigator.of(context).pop(),
-                  padding: EdgeInsets.zero,
-                ),
+          ? IconButton(
+              icon: const Icon(
+                Icons.arrow_back_rounded, // M3 Round Arrow
+                color: AppColors.textPrimary,
               ),
+              onPressed: onLeadingPressed ?? () => Navigator.of(context).pop(),
             )
           : null,
       actions: actions != null

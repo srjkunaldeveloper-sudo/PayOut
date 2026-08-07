@@ -22,15 +22,14 @@ class CustomSearchBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.button),
-        border: Border.all(color: AppColors.divider, width: 1.0),
+        borderRadius: BorderRadius.circular(AppRadii.button), // design system pill shape
       ),
       child: TextField(
         controller: controller,
         onChanged: onChanged,
         onTap: onTap,
         readOnly: readOnly,
-        style: TextStyle(
+        style: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 14.0,
           color: AppColors.textPrimary,
@@ -60,8 +59,8 @@ class CustomSearchBar extends StatelessWidget {
           focusedBorder: InputBorder.none,
           errorBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.s12,
-            horizontal: AppSpacing.s16,
+            vertical: 14.0,
+            horizontal: AppSpacing.s20,
           ),
         ),
       ),

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
 import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/features/auth/presentation/login_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/kyc_status/presentation/kyc_status_screen.dart';
 import 'package:payout/features/my_qr/presentation/my_qr_screen.dart';
-import 'package:payout/features/splash/presentation/splash_screen.dart';
+import 'package:payout/features/rewards/presentation/rewards_screen.dart';
+import 'package:payout/features/settings/presentation/settings_screen.dart';
+import 'package:payout/features/support/presentation/support_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,42 +19,93 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  double _dailyLimit = 5000.0;
+  double _paymentLimit = 50000.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Account Settings', showLeading: false),
+      appBar: CustomAppBar(
+        title: 'My Profile',
+        showLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_2_rounded, color: AppColors.textPrimary),
+            tooltip: 'My QR Code',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyQRScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s16),
         child: Column(
           children: [
-            // Profile Card
+            // 1. Profile Header Hero
             Center(
               child: Column(
                 children: [
-                  const CustomAvatar(
-                    name: 'Alex Morgan',
-                    size: 80,
-                    backgroundColor: AppColors.primaryLight,
-                    textColor: AppColors.primary,
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      const CustomAvatar(
+                        name: 'Alex Morgan',
+                        size: 88,
+                        backgroundColor: AppColors.primaryLight,
+                        textColor: AppColors.primary,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MyQRScreen()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.s6),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.qr_code_2_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.s16),
-                  const Text(
-                    'Alex Morgan',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Alex Morgan',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.verified_rounded,
+                        color: AppColors.success,
+                        size: 18,
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 4),
                   const Text(
-                    'alex.morgan@payout.app',
+                    '+91 98765 43210 • alex.morgan@payout.in',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 13.0,
+                      fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -60,48 +113,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
-            // Subpages links
+
+            // 2. Account Status Details
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'My Payment QR',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
+                    leading: const Icon(Icons.verified_user_rounded, color: AppColors.success),
+                    title: const Text('KYC Verification', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Text(
+                      'VERIFIED',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                      ),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MyQRScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.account_balance_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'Linked Bank Accounts',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const BankAccountsScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.verified_user_rounded, color: AppColors.primary),
-                    title: const Text(
-                      'Identity KYC Status',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -109,76 +138,175 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                   ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  ListTile(
+                    leading: const Icon(Icons.account_balance_rounded, color: AppColors.primary),
+                    title: const Text('Linked Bank Accounts', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BankAccountsScreen()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s32),
-            // Limit controller card
+            const SizedBox(height: AppSpacing.s24),
+
+            // 3. Saved Payment Methods
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Saved Cards',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s12),
             AppCard(
-              padding: const EdgeInsets.all(AppSpacing.s20),
+              padding: EdgeInsets.zero,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.credit_card_rounded, color: AppColors.primary),
+                    title: const Text('HDFC Regalia Credit Card', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('•••• •••• •••• 9821', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.more_vert_rounded),
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  ListTile(
+                    leading: const Icon(Icons.credit_card_outlined, color: AppColors.textSecondary),
+                    title: const Text('ICICI Coral Debit Card', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('•••• •••• •••• 1029', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.more_vert_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 4. App Shortcuts & Settings Group
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Preferences & Help',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.stars_rounded, color: Colors.orange),
+                    title: const Text('My Rewards & Cashback', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RewardsScreen()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  ListTile(
+                    leading: const Icon(Icons.settings_rounded, color: AppColors.textSecondary),
+                    title: const Text('App Settings', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  ListTile(
+                    leading: const Icon(Icons.support_agent_rounded, color: Colors.blueGrey),
+                    title: const Text('Help & Support', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SupportScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 5. Daily limit slider cap
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Daily Payment Limit',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Daily Transfer Limit',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        'Limit Cap',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
                       ),
                       Text(
-                        '\$${_dailyLimit.toInt()}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontSize: 14,
-                        ),
+                        '₹${_paymentLimit.toStringAsFixed(0)}',
+                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.s8),
                   Slider(
-                    value: _dailyLimit,
-                    min: 1000.0,
-                    max: 10000.0,
+                    value: _paymentLimit,
+                    min: 10000.0,
+                    max: 100000.0,
                     divisions: 9,
                     activeColor: AppColors.primary,
                     inactiveColor: AppColors.primaryLight,
                     onChanged: (val) {
                       setState(() {
-                        _dailyLimit = val;
+                        _paymentLimit = val;
                       });
                     },
-                  ),
-                  const Text(
-                    'Limits prevent unauthorised large transfers out of your wallet.',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
-            // Log out CTA
+
+            // 6. Logout
             SizedBox(
               width: double.infinity,
-              child: AppButton(
-                text: 'Sign Out',
-                type: AppButtonType.outline,
+              child: OutlinedButton(
                 onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const SplashScreen()),
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
                     (route) => false,
                   );
                 },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.error),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)), // unified capsule pill button
+                ),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.error,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.s40),
