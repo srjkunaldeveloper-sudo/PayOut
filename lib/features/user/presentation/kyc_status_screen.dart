@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/user/repositories/user_repository.dart';
 
 class KYCStatusScreen extends StatefulWidget {
   const KYCStatusScreen({super.key});
@@ -11,9 +12,28 @@ class KYCStatusScreen extends StatefulWidget {
 }
 
 class _KYCStatusScreenState extends State<KYCStatusScreen> {
-  String _kycState = 'Verified'; // Verified, Pending, Rejected
+  final UserRepository _userRepository = MockUserRepository();
+
+  String _kycState = 'Verified';
   bool _isUploading = false;
   double _uploadProgress = 0.0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKYCStatus();
+  }
+
+  Future<void> _loadKYCStatus() async {
+    final kycData = await _userRepository.getKYC();
+    if (mounted) {
+      setState(() {
+        _kycState = kycData.status;
+        _isLoading = false;
+      });
+    }
+  }
 
   void _simulateDocUpload() {
     setState(() {
@@ -21,7 +41,6 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
       _uploadProgress = 0.0;
     });
 
-    // Simulating file upload progression progress bar
     Future.doWhile(() async {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return false;
@@ -31,8 +50,9 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
       if (_uploadProgress >= 1.0) {
         setState(() {
           _isUploading = false;
-          _kycState = 'Pending';
+          _kycState = 'PENDING';
         });
+        _userRepository.uploadDocument('PAN Card', 'ABCDE1234F');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Documents uploaded! Assessment status set to PENDING.'),
@@ -50,11 +70,11 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
     String label = 'VERIFIED';
     IconData icon = Icons.verified_rounded;
 
-    if (_kycState == 'Pending') {
+    if (_kycState.toUpperCase() == 'PENDING') {
       badgeColor = Colors.orange;
       label = 'UNDER REVIEW';
       icon = Icons.hourglass_top_rounded;
-    } else if (_kycState == 'Rejected') {
+    } else if (_kycState.toUpperCase() == 'REJECTED') {
       badgeColor = AppColors.error;
       label = 'REJECTED';
       icon = Icons.cancel_rounded;
@@ -87,6 +107,15 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'KYC Compliance'),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'KYC Compliance'),

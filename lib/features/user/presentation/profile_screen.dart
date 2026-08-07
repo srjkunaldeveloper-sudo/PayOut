@@ -4,11 +4,14 @@ import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
-import 'package:payout/features/kyc_status/presentation/kyc_status_screen.dart';
-import 'package:payout/features/qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
-import 'package:payout/features/settings/presentation/settings_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
+import 'package:payout/features/qr/presentation/my_qr_screen.dart';
+import 'package:payout/features/user/models/user_models.dart';
+import 'package:payout/features/user/repositories/user_repository.dart';
+import 'package:payout/features/user/dummy/dummy_user_data.dart';
+import 'package:payout/features/user/presentation/kyc_status_screen.dart';
+import 'package:payout/features/user/presentation/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,10 +21,114 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final UserRepository _userRepository = MockUserRepository();
+  
+  UserProfileModel? _profile;
+  KYCModel? _kyc;
+  bool _isLoading = true;
   double _paymentLimit = 50000.0;
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final profileData = await _userRepository.getProfile();
+    final kycData = await _userRepository.getKYC();
+    if (mounted) {
+      setState(() {
+        _profile = profileData;
+        _kyc = kycData;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showLogoutSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.textSecondary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s24),
+                const Text(
+                  'Confirm Logout',
+                  style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: AppSpacing.s12),
+                const Text(
+                  'Are you sure you want to log out of your Payout account?',
+                  style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.s24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButtonV2(
+                        text: 'Cancel',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.s16),
+                    Expanded(
+                      child: DangerButton(
+                        text: 'Logout',
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading && _profile == null) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'My Profile', showLeading: false),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+        ),
+      );
+    }
+
+    final user = _profile ?? DummyUserData.currentUser;
+    final kycVal = _kyc ?? DummyUserData.currentKYC;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
@@ -51,8 +158,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      const CustomAvatar(
-                        name: 'Alex Morgan',
+                      CustomAvatar(
+                        name: user.name,
                         size: 88,
                         backgroundColor: AppColors.primaryLight,
                         textColor: AppColors.primary,
@@ -82,17 +189,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: AppSpacing.s16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
-                        'Alex Morgan',
-                        style: TextStyle(
+                        user.name,
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
-                      SizedBox(width: 6),
-                      Icon(
+                      const SizedBox(width: 6),
+                      const Icon(
                         Icons.verified_rounded,
                         color: AppColors.success,
                         size: 18,
@@ -100,9 +207,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    '+91 98765 43210 • alex.morgan@payout.in',
-                    style: TextStyle(
+                  Text(
+                    '+91 ${user.phone} • ${user.email}',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -121,13 +228,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ListTile(
                     leading: const Icon(Icons.verified_user_rounded, color: AppColors.success),
                     title: const Text('KYC Verification', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Text(
-                      'VERIFIED',
+                    trailing: Text(
+                      kycVal.status,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.success,
+                        color: kycVal.status == 'VERIFIED' ? AppColors.success : Colors.orange,
                       ),
                     ),
                     onTap: () {
@@ -154,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: AppSpacing.s24),
 
-            // 3. Saved Payment Methods
+            // 3. Saved Cards
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -167,25 +274,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.credit_card_rounded, color: AppColors.primary),
-                    title: const Text('HDFC Regalia Credit Card', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('•••• •••• •••• 9821', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.more_vert_rounded),
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.credit_card_outlined, color: AppColors.textSecondary),
-                    title: const Text('ICICI Coral Debit Card', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('•••• •••• •••• 1029', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.more_vert_rounded),
-                  ),
+                  ...DummyUserData.savedCards.map((card) {
+                    return ListTile(
+                      leading: const Icon(Icons.credit_card_rounded, color: AppColors.primary),
+                      title: Text(card.cardHolderName, style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                      subtitle: Text(card.cardNumber, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      trailing: const Icon(Icons.more_vert_rounded),
+                    );
+                  }).toList(),
                 ],
               ),
             ),
             const SizedBox(height: AppSpacing.s24),
 
-            // 4. App Shortcuts & Settings Group
+            // 4. App Shortcuts & Preferences
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -284,13 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             DangerButton(
               text: 'Logout',
-              onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
+              onPressed: _showLogoutSheet,
             ),
             const SizedBox(height: AppSpacing.s40),
           ],

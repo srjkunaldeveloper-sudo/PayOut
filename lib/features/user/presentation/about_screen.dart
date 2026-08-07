@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/user/constants/user_constants.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -17,7 +18,6 @@ class AboutScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: AppSpacing.s24),
-              // Brand Logo & Version
               Center(
                 child: Column(
                   children: [
@@ -41,7 +41,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Version 1.0.0 (Build 42)',
+                      'Version ${UserConstants.appVersion} (Build ${UserConstants.buildNumber})',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
@@ -52,7 +52,6 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.s40),
-              // Legal items
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Column(
@@ -87,7 +86,7 @@ class AboutScreen extends StatelessWidget {
                         showLicensePage(
                           context: context,
                           applicationName: 'Payout',
-                          applicationVersion: '1.0.0',
+                          applicationVersion: UserConstants.appVersion,
                         );
                       },
                     ),

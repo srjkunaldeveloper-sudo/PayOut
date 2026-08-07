@@ -57,3 +57,10 @@ Coordinates operator catalogues, data plans compare matrix, and utility invoice 
 - **Validators:** `RechargeValidator` and `BillValidator` confirm mobile digits formatting and consumer number lengths.
 - **Repositories:** `RechargeRepository` and `BillRepository` resolve operators listings and fetch billing status.
 
+---
+
+## 👤 User Domain
+Stores preference configurations, identity compliance, and session controls:
+- **Validators:** `UserValidator` confirms Aadhaar and PAN check structures.
+- **Repository:** `UserRepository` manages user profiling data and document uploads.
+

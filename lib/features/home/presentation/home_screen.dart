@@ -12,7 +12,7 @@ import 'package:payout/features/insurance/presentation/insurance_screen.dart';
 import 'package:payout/features/loans/presentation/loans_screen.dart';
 import 'package:payout/features/investments/presentation/investments_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
-import 'package:payout/features/settings/presentation/settings_screen.dart';
+import 'package:payout/features/user/presentation/settings_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
 import 'package:payout/features/notifications/presentation/notifications_screen.dart';
 import 'package:payout/features/transactions/presentation/transaction_history_screen.dart';
@@ -20,7 +20,7 @@ import 'package:payout/features/qr/presentation/scan_qr_screen.dart';
 import 'package:payout/features/qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/global_search/presentation/global_search_screen.dart';
-import 'package:payout/features/profile/presentation/profile_screen.dart';
+import 'package:payout/features/user/presentation/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

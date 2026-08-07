@@ -1,0 +1,10 @@
+# Backend Handoff Instructions
+
+This file serves as a guide for backend team developers integrating remote REST APIs.
+
+---
+
+## 📂 Mapping Guides
+- **Authentication:** Connects OTP trigger verification endpoints.
+- **Payments:** Handles NPCI interfaces, bank account linkings, and UPI transactions.
+- **User Settings:** Interfaces preferences configuration changes (themes, languages).

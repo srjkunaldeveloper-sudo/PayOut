@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/features/settings/presentation/about_screen.dart';
+import 'package:payout/features/user/presentation/about_screen.dart';
+import 'package:payout/features/user/models/user_models.dart';
+import 'package:payout/features/user/repositories/user_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,13 +14,52 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final UserRepository _userRepository = MockUserRepository();
+
   bool _pushNotifications = true;
   bool _biometricLock = true;
   bool _darkTheme = false;
   String _selectedLanguage = 'English';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await _userRepository.getPreferences();
+    if (mounted) {
+      setState(() {
+        _selectedLanguage = prefs.language;
+        _biometricLock = prefs.biometricEnabled;
+        _darkTheme = prefs.theme == 'Dark Mode';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updatePreferences() async {
+    final updatedPrefs = PreferenceModel(
+      theme: _darkTheme ? 'Dark Mode' : 'Light Mode',
+      language: _selectedLanguage,
+      biometricEnabled: _biometricLock,
+    );
+    await _userRepository.updatePreferences(updatedPrefs);
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'App Settings'),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'App Settings'),
@@ -44,13 +85,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       items: const [
                         DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
                         DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
-                        DropdownMenuItem(value: 'Spanish', child: Text('Español', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
                       ],
                       onChanged: (val) {
                         if (val != null) {
                           setState(() {
                             _selectedLanguage = val;
                           });
+                          _updatePreferences();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Language set to $_selectedLanguage')),
                           );
@@ -68,6 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       setState(() {
                         _darkTheme = val;
                       });
+                      _updatePreferences();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Theme changes will apply on restart.')),
                       );
@@ -107,6 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       setState(() {
                         _biometricLock = val;
                       });
+                      _updatePreferences();
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),

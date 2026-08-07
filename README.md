@@ -1,17 +1,10 @@
-# payout
+# Payout Super App
 
-A new Flutter project.
+Premium fintech mobile application built using Flutter.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Please refer to the [Docs directory](file:///Users/macbook/StudioProjects/payout/docs/) for complete project details:
+- [Architecture Guide](file:///Users/macbook/StudioProjects/payout/docs/ARCHITECTURE.md)
+- [Folder Structure](file:///Users/macbook/StudioProjects/payout/docs/FOLDER_STRUCTURE.md)
+- [Design Tokens System](file:///Users/macbook/StudioProjects/payout/docs/DESIGN_SYSTEM.md)
+- [API Integration Guide](file:///Users/macbook/StudioProjects/payout/docs/API_INTEGRATION_GUIDE.md)
+- [Backend Handoff Instructions](file:///Users/macbook/StudioProjects/payout/docs/BACKEND_HANDOFF.md)

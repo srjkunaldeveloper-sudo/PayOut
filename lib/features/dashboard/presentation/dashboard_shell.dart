@@ -3,7 +3,7 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/features/home/presentation/home_screen.dart';
 import 'package:payout/features/payments/presentation/payments_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
-import 'package:payout/features/profile/presentation/profile_screen.dart';
+import 'package:payout/features/user/presentation/profile_screen.dart';
 
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
