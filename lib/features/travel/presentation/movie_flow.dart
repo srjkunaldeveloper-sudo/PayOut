@@ -12,9 +12,9 @@ class MovieListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> movies = [
-      {'title': 'Dune: Part Two', 'genre': 'Sci-Fi / Adventure', 'rating': '9.0 ★', 'price': 16.0},
-      {'title': 'Oppenheimer', 'genre': 'Biography / Drama', 'rating': '8.9 ★', 'price': 15.0},
-      {'title': 'Barbie', 'genre': 'Comedy / Fantasy', 'rating': '7.8 ★', 'price': 14.0},
+      {'title': 'Kalki 2898 AD', 'genre': 'Sci-Fi / Action / Epic', 'rating': '8.8 ★', 'price': 380.0},
+      {'title': 'Jawan', 'genre': 'Action / Thriller', 'rating': '8.2 ★', 'price': 250.0},
+      {'title': 'Animal', 'genre': 'Action / Drama', 'rating': '8.0 ★', 'price': 280.0},
     ];
 
     return Scaffold(
@@ -109,11 +109,11 @@ class SelectCinemaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> cinemas = [
       {
-        'name': 'AMC Empire 25',
+        'name': 'PVR Directors Cut',
         'shows': ['02:00 PM', '05:30 PM', '08:45 PM']
       },
       {
-        'name': 'Regal E-Walk',
+        'name': 'INOX Insignia',
         'shows': ['03:15 PM', '06:30 PM', '09:45 PM']
       },
     ];
@@ -431,7 +431,7 @@ class _MovieReviewScreenState extends State<MovieReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: 'Pay \$${widget.movieData['price']}',
+                  text: 'Pay ₹${widget.movieData['price']}',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookMovie,
                 ),

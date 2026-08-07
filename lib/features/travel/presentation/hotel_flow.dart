@@ -14,7 +14,7 @@ class HotelSearchScreen extends StatefulWidget {
 }
 
 class _HotelSearchScreenState extends State<HotelSearchScreen> {
-  final TextEditingController _cityController = TextEditingController(text: 'Miami, FL');
+  final TextEditingController _cityController = TextEditingController(text: 'Jaipur, RJ');
 
   @override
   Widget build(BuildContext context) {
@@ -110,9 +110,10 @@ class HotelListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> hotels = [
-      {'name': 'Ritz-Carlton Miami', 'rating': '4.8 ★', 'price': 250.0, 'loc': 'South Beach'},
-      {'name': 'Hyatt Regency Miami', 'rating': '4.4 ★', 'price': 160.0, 'loc': 'Downtown'},
-      {'name': 'Marriott Beach Resort', 'rating': '4.5 ★', 'price': 190.0, 'loc': 'Sunny Isles'},
+      {'name': 'Taj Rambagh Palace', 'rating': '4.9 ★', 'price': 18500.0, 'loc': 'Bhawani Singh Rd'},
+      {'name': 'ITC Rajputana', 'rating': '4.7 ★', 'price': 8500.0, 'loc': 'Gopalbari'},
+      {'name': 'Lemon Tree Premier', 'rating': '4.3 ★', 'price': 4200.0, 'loc': 'Bani Park'},
+      {'name': 'Treebo Trend Heritage', 'rating': '4.1 ★', 'price': 2200.0, 'loc': 'Sindhi Camp'},
     ];
 
     return Scaffold(
@@ -142,16 +143,21 @@ class HotelListScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        hotel['name'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.0,
+                      Expanded(
+                        child: Text(
+                          hotel['name'],
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: AppSpacing.s8),
                       Text(
-                        '\$${hotel['price']}/night',
+                        '₹${hotel['price']}/night',
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,
@@ -297,8 +303,8 @@ class RoomSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> rooms = [
-      {'name': 'Deluxe Room', 'desc': '1 King Bed • City View • Free Breakfast', 'price': hotelData['price']},
-      {'name': 'Premium Suite', 'desc': '1 King Bed • Ocean View • Lounge Access', 'price': hotelData['price'] + 80.0},
+      {'name': 'Deluxe Heritage Room', 'desc': '1 King Bed • Courtyard View • Free Breakfast', 'price': hotelData['price']},
+      {'name': 'Luxury Royal Suite', 'desc': '1 Royal Bed • Palace View • Lounge Access', 'price': hotelData['price'] + 3500.0},
     ];
 
     return Scaffold(
@@ -338,7 +344,7 @@ class RoomSelectionScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${room['price']}',
+                        '₹${room['price']}',
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,
@@ -479,8 +485,8 @@ class _HotelReviewScreenState extends State<HotelReviewScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Rate (\$${widget.roomData['price']} x 2)', style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
-                        Text('\$$totalPrice', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text('Rate (₹${widget.roomData['price']} x 2)', style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
+                        Text('₹$totalPrice', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ],
@@ -490,7 +496,7 @@ class _HotelReviewScreenState extends State<HotelReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: 'Pay \$$totalPrice',
+                  text: 'Pay ₹$totalPrice',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookHotel,
                 ),

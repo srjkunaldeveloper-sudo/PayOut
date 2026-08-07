@@ -3,97 +3,21 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/loans/presentation/financial_success_screen.dart';
 
-class InvestmentsScreen extends StatefulWidget {
+// 1. INVESTMENTS LANDING / CATEGORIES PAGE
+class InvestmentsScreen extends StatelessWidget {
   const InvestmentsScreen({super.key});
 
   @override
-  State<InvestmentsScreen> createState() => _InvestmentsScreenState();
-}
-
-class _InvestmentsScreenState extends State<InvestmentsScreen> {
-  final List<Map<String, dynamic>> _portfolio = [
-    {'name': 'Growth Mutual Fund', 'type': 'Mutual Funds', 'value': '\$4,250.00', 'return': '+14.5%', 'up': true},
-    {'name': 'Tesla Inc (TSLA)', 'type': 'US Stocks', 'value': '\$1,850.50', 'return': '+8.2%', 'up': true},
-    {'name': '24K Digital Gold', 'type': 'Commodities', 'value': '\$950.00', 'return': '-1.4%', 'up': false},
-  ];
-
-  void _showPurchaseSheet(String assetName, String assetType) {
-    double? investAmount;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Buy $assetName',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              Text(
-                'Invest in $assetType instantly from your wallet balance.',
-                style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              TextField(
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                onChanged: (val) {
-                  investAmount = double.tryParse(val);
-                },
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-                decoration: const InputDecoration(
-                  prefixText: '\$ ',
-                  hintText: '0.00',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Invest Now',
-                  onPressed: () {
-                    if (investAmount != null && investAmount! > 0) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Invested \$${investAmount!.toStringAsFixed(2)} in $assetName successfully.'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> categories = [
+      {'name': 'Mutual Funds', 'desc': 'Grow wealth by investing in equities, debt or hybrid indexes', 'icon': Icons.trending_up_rounded, 'color': AppColors.primary},
+      {'name': 'Monthly SIP', 'desc': 'Start systematic investment plans with just ₹100/mo', 'icon': Icons.calendar_month_rounded, 'color': AppColors.success},
+      {'name': 'Digital Gold', 'desc': 'Buy & sell 24K 99.9% pure digital gold at real-time rates', 'icon': Icons.workspace_premium_rounded, 'color': Colors.amber},
+      {'name': 'Fixed Deposit', 'desc': 'Get guaranteed high-returns up to 7.8% interest rates', 'icon': Icons.lock_rounded, 'color': Colors.orange},
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Investments'),
@@ -102,59 +26,38 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Portfolio summary banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.s24),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadii.card),
-                border: Border.all(color: AppColors.divider, width: 1.0),
-              ),
+            // Intro Banner
+            AppCard(
+              color: AppColors.primary,
+              borderRadius: AppRadii.cardHero,
+              padding: const EdgeInsets.all(AppSpacing.s20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Portfolio Value',
+                children: const [
+                  Text(
+                    'Invest in your future',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.s4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '\$7,050.50',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28.0),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          '+11.8%',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.0,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ),
-                    ],
+                  SizedBox(height: 4),
+                  Text(
+                    'Unlock inflation-beating returns. Start a SIP, buy pure digital gold, or lock in high-yield FDs.',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12.0,
+                      color: AppColors.primaryLight,
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
             const Text(
-              'My Portfolio',
+              'Investment Categories',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 16.0,
@@ -162,116 +65,326 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: AppSpacing.s12),
-            ..._portfolio.map((item) {
+            const SizedBox(height: AppSpacing.s16),
+            ...categories.map((cat) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                padding: const EdgeInsets.only(bottom: AppSpacing.s16),
                 child: AppCard(
-                  onTap: () => _showPurchaseSheet(item['name'], item['type']),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['name'],
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.0,
-                            ),
-                          ),
-                          Text(
-                            item['type'],
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12.0,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FundDetailsScreen(
+                          categoryName: cat['name'] as String,
+                        ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            item['value'],
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.0,
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.s12),
+                        decoration: BoxDecoration(
+                          color: (cat['color'] as Color).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(cat['icon'] as IconData, color: cat['color'] as Color, size: 24),
+                      ),
+                      const SizedBox(width: AppSpacing.s16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              cat['name'] as String,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
-                          ),
-                          Text(
-                            item['return'],
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.bold,
-                              color: item['up'] ? AppColors.success : AppColors.error,
+                            const SizedBox(height: 2),
+                            Text(
+                              cat['desc'] as String,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11.0,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
                 ),
               );
             }).toList(),
-            const SizedBox(height: AppSpacing.s24),
-            const Text(
-              'Explore Funds',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              onTap: () => _showPurchaseSheet('S&P 500 Index Fund', 'Index Funds'),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s10),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 2. FUND DETAILS SCREEN
+class FundDetailsScreen extends StatelessWidget {
+  final String categoryName;
+
+  const FundDetailsScreen({super.key, required this.categoryName});
+
+  @override
+  Widget build(BuildContext context) {
+    // Localized mutual funds & investment assets
+    final List<Map<String, dynamic>> funds = [
+      {'name': 'HDFC Index Nifty 50 Fund', 'returns': '24.5%', 'rating': '5 ★', 'minInv': 500.0, 'risk': 'High Risk'},
+      {'name': 'Parag Parikh Flexi Cap Fund', 'returns': '26.2%', 'rating': '5 ★', 'minInv': 1000.0, 'risk': 'High Risk'},
+      {'name': 'SBI Bluechip Direct Fund', 'returns': '21.0%', 'rating': '4 ★', 'minInv': 500.0, 'risk': 'Moderately High'},
+      {'name': 'ICICI Prudential Liquid Fund', 'returns': '7.2%', 'rating': '4 ★', 'minInv': 100.0, 'risk': 'Low Risk'},
+    ];
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: CustomAppBar(title: categoryName),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(AppSpacing.s24),
+        itemCount: funds.length,
+        itemBuilder: (context, index) {
+          final fund = funds[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+            child: AppCard(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InvestmentSummaryScreen(
+                      categoryName: categoryName,
+                      fundName: fund['name'] as String,
+                      minInv: fund['minInv'] as double,
+                      returns: fund['returns'] as String,
                     ),
-                    child: const Icon(Icons.analytics_rounded, color: AppColors.primary, size: 24),
                   ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'S&P 500 Index Fund',
-                          style: TextStyle(
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          fund['name'],
+                          style: const TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
                             fontSize: 14.0,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          'Invest in top 500 companies in the US.',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 11.0,
-                            color: AppColors.textSecondary,
-                          ),
+                      ),
+                      const SizedBox(width: AppSpacing.s8),
+                      Text(
+                        fund['returns'],
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.0,
+                          color: AppColors.success,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Min Investment: ₹${(fund['minInv'] as double).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12.0,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        '${fund['risk']} • ${fund['rating']}',
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12.0,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s40),
-          ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// 3. INVESTMENT SUMMARY SCREEN
+class InvestmentSummaryScreen extends StatefulWidget {
+  final String categoryName;
+  final String fundName;
+  final double minInv;
+  final String returns;
+
+  const InvestmentSummaryScreen({
+    super.key,
+    required this.categoryName,
+    required this.fundName,
+    required this.minInv,
+    required this.returns,
+  });
+
+  @override
+  State<InvestmentSummaryScreen> createState() => _InvestmentSummaryScreenState();
+}
+
+class _InvestmentSummaryScreenState extends State<InvestmentSummaryScreen> {
+  bool _isProcessing = false;
+  final TextEditingController _amountController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController.text = widget.minInv.toStringAsFixed(0);
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _payInvestment() {
+    final double amount = double.tryParse(_amountController.text) ?? widget.minInv;
+    setState(() {
+      _isProcessing = true;
+    });
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => FinancialSuccessScreen(
+              title: 'Investment Successful!',
+              subtitle: 'Your units will be allocated shortly.',
+              referenceLabel: 'Folio Number',
+              details: '${widget.categoryName} • ${widget.fundName} • 3Y Return: ${widget.returns}',
+              amount: amount,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(title: 'Verify Investment'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter Investment Amount',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              // Amount entry
+              TextField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  prefixText: '₹ ',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+              const Text(
+                'Asset Summary',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              AppCard(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.fundName,
+                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s8),
+                        Text(
+                          widget.returns,
+                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.success),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Asset Class', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text(widget.categoryName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Min SIP Requirement', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('₹${widget.minInv.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  text: 'Invest Now',
+                  isLoading: _isProcessing,
+                  onPressed: _isProcessing ? null : _payInvestment,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
