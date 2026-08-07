@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/payment_success_screen.dart';
 
 class ReviewPaymentScreen extends StatefulWidget {
@@ -62,7 +60,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
       appBar: const CustomAppBar(title: 'Review Payment'),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,7 +83,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                         CustomAvatar(
                           name: widget.recipientName,
                           size: 48,
-                          backgroundColor: AppColors.primaryLight,
+                          backgroundColor: AppColors.primaryContainer,
                           textColor: AppColors.primary,
                         ),
                         const SizedBox(width: AppSpacing.s16),
@@ -130,7 +128,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                           ),
                         ),
                         Text(
-                          '\$${widget.amount.toStringAsFixed(2)}',
+                          '₹${widget.amount.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 18.0,
@@ -185,7 +183,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary),
@@ -219,13 +217,10 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                 ),
               ),
               const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Pay \$${widget.amount.toStringAsFixed(2)}',
-                  isLoading: _isProcessing,
-                  onPressed: _isProcessing ? null : _processPayment,
-                ),
+              PrimaryButton(
+                text: 'Pay ₹${widget.amount.toStringAsFixed(2)}',
+                isLoading: _isProcessing,
+                onPressed: _isProcessing ? null : _processPayment,
               ),
               const SizedBox(height: AppSpacing.s16),
             ],

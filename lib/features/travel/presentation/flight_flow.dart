@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 
 // 1. FLIGHT SEARCH SCREEN
@@ -79,7 +78,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Search Flights',
                   onPressed: () {
                     Navigator.push(
@@ -290,7 +289,7 @@ class FlightDetailsScreen extends StatelessWidget {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Add Passenger Details',
                   onPressed: () {
                     Navigator.push(
@@ -372,7 +371,7 @@ class _FlightPassengerDetailsScreenState extends State<FlightPassengerDetailsScr
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Review Booking',
                   onPressed: () {
                     Navigator.push(
@@ -514,7 +513,7 @@ class _FlightReviewScreenState extends State<FlightReviewScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Pay ₹${widget.flightData['price']}',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookFlight,

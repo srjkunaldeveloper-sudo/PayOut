@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/core/widgets/avatar.dart';
-import 'package:payout/core/widgets/feature_card.dart';
-import 'package:payout/core/widgets/search_bar.dart';
-import 'package:payout/core/widgets/section_header.dart';
-import 'package:payout/core/widgets/transaction_tile.dart';
-import 'package:payout/core/widgets/wallet_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 
 // Service Screen Imports
 import 'package:payout/features/wallet/presentation/wallet_screen.dart';
@@ -26,6 +20,7 @@ import 'package:payout/features/scan_qr/presentation/scan_qr_screen.dart';
 import 'package:payout/features/my_qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/global_search/presentation/global_search_screen.dart';
+import 'package:payout/features/profile/presentation/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -58,7 +53,7 @@ class HomeScreen extends StatelessWidget {
     ];
 
     // Contacts
-    final List<String> recentContacts = ['John Doe', 'Emma Watson', 'Steve Rogers', 'Bruce Banner', 'Tony Stark'];
+    final List<String> recentContacts = ['Rahul Sharma', 'Aarav Gupta', 'Kunal Sharma', 'Pooja Patel', 'Amit Verma'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -73,53 +68,81 @@ class HomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryContainer,
+                          ),
+                          child: const CustomAvatar(
+                            name: 'Rahul Sharma',
+                            size: 48,
+                            backgroundColor: AppColors.primaryContainer,
+                            textColor: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Good Afternoon,',
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              'Rahul Sharma',
+                              style: AppTypography.titleLarge.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Stack(
+                    alignment: Alignment.topRight,
                     children: [
-                      const CustomAvatar(
-                        name: 'Alex Morgan',
-                        size: 40,
-                        backgroundColor: AppColors.primaryLight,
-                        textColor: AppColors.primary,
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.notifications_none_rounded, color: AppColors.primary),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                            );
+                          },
+                        ),
                       ),
-                      const SizedBox(width: AppSpacing.s12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Good afternoon,',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12.0,
-                              color: AppColors.textSecondary,
-                            ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
                           ),
-                          Text(
-                            'Alex Morgan',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),
@@ -140,6 +163,9 @@ class HomeScreen extends StatelessWidget {
               // 3. Wallet Balance Card
               WalletCard(
                 balance: 1250.75,
+                linkedBankName: 'HDFC Bank •••• 9821',
+                cashbackEarned: 1425.0,
+                lastUpdated: 'Updated just now',
                 onAddMoney: () {
                   Navigator.push(
                     context,
@@ -155,7 +181,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s24),
 
-              // 4. Quick Actions
+              // 4. Quick Actions (Google Pay / phonepe style circles)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: quickActions.map((act) {
@@ -175,13 +201,13 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
+                          width: 56,
+                          height: 56,
+                          decoration: const BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16.0),
+                            shape: BoxShape.circle,
                           ),
-                          child: Icon(act['icon'] as IconData, color: AppColors.primary, size: 22),
+                          child: Icon(act['icon'] as IconData, color: AppColors.primary, size: 24),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -212,12 +238,48 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s12),
               SizedBox(
-                height: 72,
+                height: 76,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: recentContacts.length,
+                  itemCount: recentContacts.length + 1,
                   itemBuilder: (context, index) {
-                    final name = recentContacts[index];
+                    if (index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.s16),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const GlobalSearchScreen()),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: AppColors.primary.withOpacity(0.15), width: 1.5),
+                                ),
+                                child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 20),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Add',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11.0,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    final name = recentContacts[index - 1];
                     return Padding(
                       padding: const EdgeInsets.only(right: AppSpacing.s16),
                       child: GestureDetector(
@@ -443,7 +505,7 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-               TransactionTile(
+              TransactionTile(
                 title: 'Starbucks Coffee',
                 subtitle: 'Food & Dining',
                 date: 'Aug 07, 2026',

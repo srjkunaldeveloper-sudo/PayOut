@@ -2,8 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 
 class BookingSuccessScreen extends StatelessWidget {
   final String serviceName;
@@ -230,7 +229,7 @@ class BookingSuccessScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Back to Home',
                   onPressed: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);

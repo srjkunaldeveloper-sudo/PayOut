@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/recharge/presentation/recharge_success_screen.dart';
 
 class ReviewRechargeScreen extends StatefulWidget {
   final String mobileNumber;
   final String operatorName;
-  final double amount;
-  final String planDesc;
+  final double planPrice;
+  final String planDescription;
 
   const ReviewRechargeScreen({
     super.key,
     required this.mobileNumber,
     required this.operatorName,
-    required this.amount,
-    required this.planDesc,
+    required this.planPrice,
+    required this.planDescription,
   });
 
   @override
@@ -42,7 +41,7 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
             pageBuilder: (context, animation, secondaryAnimation) => RechargeSuccessScreen(
               serviceName: 'Mobile Recharge - ${widget.operatorName}',
               consumerNumber: widget.mobileNumber,
-              amount: widget.amount,
+              amount: widget.planPrice,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
@@ -55,12 +54,16 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const double convenienceFee = 0.00;
+    const double couponDiscount = 10.00;
+    final double totalPayable = widget.planPrice + convenienceFee - couponDiscount;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Review Recharge'),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -82,8 +85,8 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.phone_iphone_rounded, color: AppColors.primary),
@@ -133,7 +136,7 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                         const SizedBox(width: AppSpacing.s24),
                         Expanded(
                           child: Text(
-                            widget.planDesc,
+                            widget.planDescription,
                             textAlign: TextAlign.right,
                             style: const TextStyle(
                               fontFamily: 'Inter',
@@ -150,7 +153,7 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Recharge Amount',
+                          'Plan Price',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13.0,
@@ -158,12 +161,85 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                           ),
                         ),
                         Text(
-                          '\$${widget.amount.toStringAsFixed(2)}',
+                          '₹${widget.planPrice.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'Convenience Fee',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13.0,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          '₹0.00',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'Coupon Discount',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13.0,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          '-₹10.00',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.s12),
+                      child: Divider(color: AppColors.divider),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Payable',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          '₹${totalPayable.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],
@@ -187,9 +263,9 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(10),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryContainer,
+                        shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary),
                     ),
@@ -222,13 +298,10 @@ class _ReviewRechargeScreenState extends State<ReviewRechargeScreen> {
                 ),
               ),
               const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Pay \$${widget.amount.toStringAsFixed(2)}',
-                  isLoading: _isProcessing,
-                  onPressed: _isProcessing ? null : _payRecharge,
-                ),
+              PrimaryButton(
+                text: 'Pay ₹${totalPayable.toStringAsFixed(2)}',
+                isLoading: _isProcessing,
+                onPressed: _isProcessing ? null : _payRecharge,
               ),
               const SizedBox(height: AppSpacing.s16),
             ],

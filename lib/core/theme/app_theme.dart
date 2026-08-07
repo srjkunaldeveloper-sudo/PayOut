@@ -1,44 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:payout/core/theme/app_colors.dart';
+import 'package:payout/core/theme/app_typography.dart';
+import 'package:payout/core/theme/app_spacing.dart';
+import 'package:payout/core/theme/app_radius.dart';
+import 'package:payout/core/theme/theme_extensions.dart';
 
-class AppColors {
-  static const Color background = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFFF8FAFC);
-  static const Color surfaceVariant = Color(0xFFF1F5F9);
-  static const Color primary = Color(0xFF2563EB); // Official Payout brand blue
-  static const Color primaryLight = Color(0xFFEFF6FF); // Muted premium blue containers
-  static const Color success = Color(0xFF10B981); // Emerald Green
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color textPrimary = Color(0xFF0F172A); // Slate 900
-  static const Color textSecondary = Color(0xFF475569); // Slate 600
-  static const Color textTertiary = Color(0xFF94A3B8); // Slate 400
-  static const Color divider = Color(0xFFE2E8F0); // Slate 200
-}
-
-class AppRadii {
-  static const double cardHero = 28.0;
-  static const double card = 20.0;
-  static const double cardSmall = 12.0;
-  static const double button = 100.0; // Capsule pill shape
-  static const double bottomSheet = 28.0;
-}
-
-class AppSpacing {
-  static const double s2 = 2.0;
-  static const double s4 = 4.0;
-  static const double s6 = 6.0;
-  static const double s8 = 8.0;
-  static const double s10 = 10.0;
-  static const double s12 = 12.0;
-  static const double s16 = 16.0;
-  static const double s20 = 20.0;
-  static const double s24 = 24.0;
-  static const double s28 = 28.0;
-  static const double s32 = 32.0;
-  static const double s40 = 40.0;
-  static const double s48 = 48.0;
-  static const double s64 = 64.0;
-}
+export 'package:payout/core/theme/app_colors.dart';
+export 'package:payout/core/theme/app_typography.dart';
+export 'package:payout/core/theme/app_spacing.dart';
+export 'package:payout/core/theme/app_radius.dart';
+export 'package:payout/core/theme/app_shadow.dart';
+export 'package:payout/core/theme/app_elevation.dart';
+export 'package:payout/core/theme/app_icons.dart';
+export 'package:payout/core/theme/app_animation.dart';
+export 'package:payout/core/theme/app_breakpoints.dart';
+export 'package:payout/core/theme/theme_extensions.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -48,9 +24,9 @@ class AppTheme {
         brightness: Brightness.light,
         primary: AppColors.primary,
         onPrimary: AppColors.background,
-        primaryContainer: AppColors.primaryLight,
+        primaryContainer: AppColors.primaryContainer,
         onPrimaryContainer: AppColors.primary,
-        secondary: AppColors.textSecondary,
+        secondary: AppColors.secondary,
         onSecondary: AppColors.textPrimary,
         error: AppColors.error,
         onError: AppColors.background,
@@ -66,60 +42,26 @@ class AppTheme {
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           side: BorderSide.none,
         ),
       ),
       textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 32.0,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-          height: 1.25,
-        ),
-        displayMedium: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 24.0,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          height: 1.3,
-        ),
-        displaySmall: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 20.0,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          height: 1.35,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 16.0,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textPrimary,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 14.0,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textSecondary,
-          height: 1.4,
-        ),
-        labelLarge: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 14.0,
-          fontWeight: FontWeight.w600,
-          color: AppColors.background,
-          height: 1.2,
-        ),
-        labelSmall: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 12.0,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textSecondary,
-          height: 1.3,
-        ),
+        displayLarge: AppTypography.displayLarge,
+        displayMedium: AppTypography.displayMedium,
+        displaySmall: AppTypography.displaySmall,
+        headlineLarge: AppTypography.headlineLarge,
+        headlineMedium: AppTypography.headlineMedium,
+        headlineSmall: AppTypography.headlineSmall,
+        titleLarge: AppTypography.titleLarge,
+        titleMedium: AppTypography.titleMedium,
+        titleSmall: AppTypography.titleSmall,
+        bodyLarge: AppTypography.bodyLarge,
+        bodyMedium: AppTypography.bodyMedium,
+        bodySmall: AppTypography.bodySmall,
+        labelLarge: AppTypography.labelLarge,
+        labelMedium: AppTypography.labelMedium,
+        labelSmall: AppTypography.labelSmall,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
@@ -142,19 +84,19 @@ class AppTheme {
           vertical: AppSpacing.s16,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.error, width: 1.0),
         ),
         labelStyle: const TextStyle(
@@ -172,11 +114,24 @@ class AppTheme {
         backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppRadii.bottomSheet),
+            top: Radius.circular(AppRadius.xxl),
           ),
         ),
         elevation: 4.0,
       ),
+      extensions: const [
+        PayoutThemeExtension(
+          amountLarge: AppTypography.amountLarge,
+          amountMedium: AppTypography.amountMedium,
+          amountSmall: AppTypography.amountSmall,
+          income: AppColors.income,
+          expense: AppColors.expense,
+          credit: AppColors.credit,
+          debit: AppColors.debit,
+          pending: AppColors.pending,
+          failed: AppColors.failed,
+        ),
+      ],
     );
   }
 }

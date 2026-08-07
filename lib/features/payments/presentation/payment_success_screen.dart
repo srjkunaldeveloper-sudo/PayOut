@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
+import 'package:payout/core/widgets/widgets.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final String recipientName;
@@ -31,10 +31,10 @@ class PaymentSuccessScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Receipt', showLeading: false),
+      appBar: const CustomAppBar(title: 'Payment Status', showLeading: false),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
           child: Column(
             children: [
               const Spacer(),
@@ -57,7 +57,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     const Text(
-                      'Transfer Successful!',
+                      'Payment Successful!',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 22.0,
@@ -67,7 +67,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     Text(
-                      'Funds have been sent to $recipientName.',
+                      'Sent to $recipientName',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14.0,
@@ -75,12 +75,12 @@ class PaymentSuccessScreen extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppSpacing.s32),
+                    const SizedBox(height: AppSpacing.s16),
                     Text(
-                      '\$${amount.toStringAsFixed(2)}',
+                      '₹${amount.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 36.0,
+                        fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                         letterSpacing: -0.5,
@@ -90,15 +90,9 @@ class PaymentSuccessScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              
               // Transaction Details Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.s20),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadii.card),
-                  border: Border.all(color: AppColors.divider, width: 1.0),
-                ),
+              AppCard(
                 child: Column(
                   children: [
                     Row(
@@ -167,18 +161,34 @@ class PaymentSuccessScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.s32),
-              // Done Button
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Done',
-                  onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                ),
-              ),
               const SizedBox(height: AppSpacing.s24),
+              
+              // Share and Done Button Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButtonV2(
+                      text: 'Share Receipt',
+                      iconLeft: Icons.share_rounded,
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Sharing payment receipt...')),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s16),
+                  Expanded(
+                    child: PrimaryButton(
+                      text: 'Done',
+                      onPressed: () {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s16),
             ],
           ),
         ),

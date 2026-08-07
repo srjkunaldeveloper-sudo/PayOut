@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 
 class ScanQRScreen extends StatefulWidget {
@@ -12,8 +10,27 @@ class ScanQRScreen extends StatefulWidget {
   State<ScanQRScreen> createState() => _ScanQRScreenState();
 }
 
-class _ScanQRScreenState extends State<ScanQRScreen> {
+class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderStateMixin {
   bool _isFlashOn = false;
+  late AnimationController _animationController;
+  late Animation<double> _scanAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _scanAnimation = Tween<double>(begin: 0.0, end: 240.0).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +40,11 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.s12, top: 4, bottom: 4),
+          padding: const EdgeInsets.all(AppSpacing.s8),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white24,
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: IconButton(
               icon: const Icon(
@@ -36,7 +53,6 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
                 color: Colors.white,
               ),
               onPressed: () => Navigator.of(context).pop(),
-              padding: EdgeInsets.zero,
             ),
           ),
         ),
@@ -49,166 +65,207 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: AppSpacing.s16, top: 4, bottom: 4),
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: IconButton(
-              icon: Icon(
-                _isFlashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-                size: 18,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isFlashOn = !_isFlashOn;
-                });
-              },
-            ),
-          ),
-        ],
       ),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Simulated camera viewport
+          // 1. Dark Simulated Viewport
           Positioned.fill(
             child: Container(
-              color: Colors.grey[900],
+              color: Colors.grey[950],
               child: const Center(
                 child: Icon(
                   Icons.camera_alt_rounded,
-                  color: Colors.white24,
+                  color: Colors.white10,
                   size: 80,
                 ),
               ),
             ),
           ),
-          // Viewport scanner focus bracket
+
+          // 2. Translucent guides overlay
           Center(
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white, width: 2.5),
-              ),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      height: 2.0,
-                      width: 200,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Merchant Card & Gallery Button Floating at Bottom
-          Positioned(
-            bottom: AppSpacing.s32,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Opening Gallery...')),
-                    );
-                  },
-                  icon: const Icon(Icons.image_rounded, color: Colors.white, size: 16),
-                  label: const Text(
-                    'Upload from Gallery',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      color: Colors.white,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.bold,
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppRadius.xxl),
+                        border: Border.all(color: Colors.white38, width: 2.0),
+                      ),
                     ),
-                  ),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.white12,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.s20),
-                // Merchant Details Card
-                AppCard(
-                  color: AppColors.background,
-                  borderRadius: AppRadii.cardHero,
-                  hasShadow: true,
-                  padding: const EdgeInsets.all(AppSpacing.s16),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const CustomAvatar(
-                            name: 'Starbucks Coffee',
-                            size: 40,
-                            backgroundColor: AppColors.primaryLight,
-                            textColor: AppColors.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.s12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Starbucks Coffee',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14.0,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Merchant ID: starbucks@payout',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 11.0,
-                                    color: AppColors.textSecondary,
-                                  ),
+                    // Animated laser scanning line
+                    AnimatedBuilder(
+                      animation: _scanAnimation,
+                      builder: (context, child) {
+                        return Positioned(
+                          top: 5 + _scanAnimation.value,
+                          child: Container(
+                            height: 2.0,
+                            width: 220,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.5),
+                                  blurRadius: 8.0,
+                                  spreadRadius: 2.0,
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: 'Continue to Pay',
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AmountEntryScreen(
-                                  recipientName: 'Starbucks Coffee',
-                                  recipientDetail: 'starbucks@payout',
-                                  recipientType: 'Merchant',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.s24),
+                const Text(
+                  'Align QR code inside the box to scan',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13.0,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
+
+          // 3. Floating action panels (Flash / Gallery / My QR)
+          Positioned(
+            top: 100,
+            right: AppSpacing.s24,
+            child: Column(
+              children: [
+                _buildFloatingButton(
+                  icon: _isFlashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                  onTap: () {
+                    setState(() {
+                      _isFlashOn = !_isFlashOn;
+                    });
+                  },
+                ),
+                const SizedBox(height: AppSpacing.s16),
+                _buildFloatingButton(
+                  icon: Icons.photo_library_rounded,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Opening Gallery...')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // 4. Merchant Bottom Sheet card
+          Positioned(
+            bottom: AppSpacing.s32,
+            left: AppSpacing.s24,
+            right: AppSpacing.s24,
+            child: AppCard(
+              color: Colors.white,
+              borderRadius: AppRadius.xxl,
+              padding: const EdgeInsets.all(AppSpacing.s20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      const CustomAvatar(
+                        name: 'Starbucks Coffee',
+                        size: 44,
+                        backgroundColor: AppColors.primaryContainer,
+                        textColor: AppColors.primary,
+                      ),
+                      const SizedBox(width: AppSpacing.s12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Starbucks Coffee',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15.0,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'UPI ID: starbucks@okhdfc',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11.0,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(AppRadius.xs),
+                        ),
+                        child: const Text(
+                          'Verified',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  PrimaryButton(
+                    text: 'Continue to Pay',
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AmountEntryScreen(
+                            recipientName: 'Starbucks Coffee',
+                            recipientDetail: 'starbucks@okhdfc',
+                            recipientType: 'Merchant',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingButton({required IconData icon, required VoidCallback onTap}) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.black45,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white24, width: 1.0),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white, size: 20),
+        onPressed: onTap,
       ),
     );
   }

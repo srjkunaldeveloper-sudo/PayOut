@@ -35,13 +35,10 @@ class RewardsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Cashback Summary Card
-            Container(
-              width: double.infinity,
+            AppCard(
+              color: AppColors.primary,
+              borderRadius: AppRadii.cardHero,
               padding: const EdgeInsets.all(AppSpacing.s24),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(AppRadii.card),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -128,7 +125,7 @@ class RewardsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(AppSpacing.s12),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
                         ),
                         child: const Icon(Icons.percent_rounded, color: AppColors.primary, size: 24),
                       ),
@@ -140,10 +137,9 @@ class RewardsScreen extends StatelessWidget {
                             Text(
                               coupon['store']!,
                               style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.0,
-                              ),
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.0),
                             ),
                             Text(
                               coupon['desc']!,
@@ -171,7 +167,7 @@ class RewardsScreen extends StatelessWidget {
                         onPressed: () => _copyCode(coupon['code']!),
                         style: TextButton.styleFrom(
                           backgroundColor: AppColors.primaryLight,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.button)),
                         ),
                         child: Text(
                           coupon['code']!,

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 
 // 1. MOVIE LIST SCREEN
@@ -292,7 +291,7 @@ class _MovieSeatLayoutScreenState extends State<MovieSeatLayoutScreen> {
               ),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Confirm Seat Selection',
                   onPressed: _selectedSeat != null
                       ? () {
@@ -430,7 +429,7 @@ class _MovieReviewScreenState extends State<MovieReviewScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Pay ₹${widget.movieData['price']}',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookMovie,

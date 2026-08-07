@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 
 // 1. SEARCH TRAIN SCREEN
@@ -62,7 +61,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Search Trains',
                   onPressed: () {
                     Navigator.push(
@@ -266,7 +265,7 @@ class _TrainSeatSelectionScreenState extends State<TrainSeatSelectionScreen> {
               ),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Confirm Berth',
                   onPressed: _selectedSeat != null
                       ? () {
@@ -353,7 +352,7 @@ class _TrainPassengerDetailsScreenState extends State<TrainPassengerDetailsScree
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Review Ticket',
                   onPressed: () {
                     Navigator.push(
@@ -498,7 +497,7 @@ class _TrainReviewScreenState extends State<TrainReviewScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Pay ₹${widget.trainData['price']}',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookTrain,

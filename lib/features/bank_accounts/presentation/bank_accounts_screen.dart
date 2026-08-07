@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 
 class BankAccountsScreen extends StatefulWidget {
@@ -14,8 +13,8 @@ class BankAccountsScreen extends StatefulWidget {
 
 class _BankAccountsScreenState extends State<BankAccountsScreen> {
   final List<Map<String, String>> _banks = [
-    {'name': 'Chase Bank', 'acc': 'Checking •••• 5849', 'icon': 'C'},
-    {'name': 'Bank of America', 'acc': 'Savings •••• 9201', 'icon': 'B'},
+    {'name': 'HDFC Bank', 'acc': 'Checking •••• 5849', 'icon': 'H', 'primary': 'true'},
+    {'name': 'ICICI Bank', 'acc': 'Savings •••• 9201', 'icon': 'I', 'primary': 'false'},
   ];
 
   void _showAddBankSheet() {
@@ -27,7 +26,7 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
       builder: (context) {
         return Padding(
@@ -51,54 +50,46 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                 style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppSpacing.s20),
-              TextField(
+              AppTextField(
+                labelText: 'Bank Name',
+                hintText: 'e.g. HDFC Bank',
                 onChanged: (val) => bankName = val,
-                decoration: const InputDecoration(
-                  labelText: 'Bank Name',
-                  hintText: 'e.g. Chase Bank',
-                ),
               ),
               const SizedBox(height: AppSpacing.s12),
-              TextField(
+              const AppTextField(
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Routing Number',
-                  hintText: '9 Digits',
-                ),
+                labelText: 'IFSC Code',
+                hintText: 'e.g. HDFC0000124',
               ),
               const SizedBox(height: AppSpacing.s12),
-              TextField(
+              AppTextField(
                 onChanged: (val) => accountNumber = val,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Account Number',
-                  hintText: '8-12 Digits',
-                ),
+                labelText: 'Account Number',
+                hintText: 'e.g. 50100241258',
               ),
               const SizedBox(height: AppSpacing.s24),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Link Account',
-                  onPressed: () {
-                    if (bankName != null && bankName!.isNotEmpty) {
-                      setState(() {
-                        _banks.add({
-                          'name': bankName!,
-                          'acc': 'Checking •••• ${accountNumber != null && accountNumber!.length > 4 ? accountNumber!.substring(accountNumber!.length - 4) : '9999'}',
-                          'icon': bankName![0].toUpperCase(),
-                        });
+              PrimaryButton(
+                text: 'Link Account',
+                onPressed: () {
+                  if (bankName != null && bankName!.isNotEmpty) {
+                    setState(() {
+                      _banks.add({
+                        'name': bankName!,
+                        'acc': 'Savings •••• ${accountNumber != null && accountNumber!.length > 4 ? accountNumber!.substring(accountNumber!.length - 4) : '9999'}',
+                        'icon': bankName![0].toUpperCase(),
+                        'primary': 'false',
                       });
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('$bankName account linked successfully.'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  },
-                ),
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$bankName account linked successfully.'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: AppSpacing.s24),
             ],
@@ -114,7 +105,7 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Bank Accounts'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -127,8 +118,9 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: AppSpacing.s12),
+            const SizedBox(height: AppSpacing.s16),
             ..._banks.map((bank) {
+              final isPrimary = bank['primary'] == 'true';
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                 child: AppCard(
@@ -147,10 +139,10 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                   child: Row(
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryContainer,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
@@ -160,7 +152,7 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
-                            fontSize: 16,
+                            fontSize: 18,
                           ),
                         ),
                       ),
@@ -169,14 +161,38 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              bank['name']!,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.0,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  bank['name']!,
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14.0,
+                                  ),
+                                ),
+                                if (isPrimary) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(AppRadius.xs),
+                                    ),
+                                    child: const Text(
+                                      'PRIMARY',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.success,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               bank['acc']!,
                               style: const TextStyle(
@@ -202,13 +218,10 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
               );
             }).toList(),
             const SizedBox(height: AppSpacing.s24),
-            SizedBox(
-              width: double.infinity,
-              child: AppButton(
-                text: 'Add New Bank Account',
-                type: AppButtonType.outline,
-                onPressed: _showAddBankSheet,
-              ),
+            OutlinedButtonV2(
+              text: 'Add New Bank Account',
+              iconLeft: Icons.add_rounded,
+              onPressed: _showAddBankSheet,
             ),
           ],
         ),

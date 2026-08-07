@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/review_payment_screen.dart';
 
 class AmountEntryScreen extends StatefulWidget {
@@ -150,7 +149,7 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                         const Padding(
                           padding: EdgeInsets.only(top: 4.0),
                           child: Text(
-                            '\$',
+                            '₹',
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 28.0,
@@ -248,7 +247,7 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                   const SizedBox(height: AppSpacing.s12),
                   SizedBox(
                     width: double.infinity,
-                    child: AppButton(
+                    child: PrimaryButton(
                       text: 'Continue',
                       onPressed: parsedAmount > 0.0
                           ? () {

@@ -449,7 +449,16 @@ class MerchantProfileScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
                       Text('Legal Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('Organic Organics Retailers Pvt Ltd', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Organic Organics Retailers Pvt Ltd',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.s12),

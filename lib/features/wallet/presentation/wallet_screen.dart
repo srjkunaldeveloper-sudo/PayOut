@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/core/widgets/transaction_tile.dart';
+import 'package:payout/core/widgets/widgets.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -28,7 +26,7 @@ class _WalletScreenState extends State<WalletScreen> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
+            top: AppSpacing.s16,
             left: AppSpacing.s24,
             right: AppSpacing.s24,
           ),
@@ -36,9 +34,23 @@ class _WalletScreenState extends State<WalletScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.all(Radius.circular(AppRadius.circle)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s16),
               Text(
                 'Add money to wallet',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
+                style: AppTypography.headlineSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: AppSpacing.s8),
               const Text(
@@ -66,7 +78,7 @@ class _WalletScreenState extends State<WalletScreen> {
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Add Funds',
                   onPressed: () {
                     if (addedAmount != null && addedAmount! > 0) {
@@ -105,7 +117,7 @@ class _WalletScreenState extends State<WalletScreen> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
+            top: AppSpacing.s16,
             left: AppSpacing.s24,
             right: AppSpacing.s24,
           ),
@@ -113,9 +125,23 @@ class _WalletScreenState extends State<WalletScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.all(Radius.circular(AppRadius.circle)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s16),
               Text(
                 'Withdraw money to bank',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
+                style: AppTypography.headlineSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: AppSpacing.s8),
               const Text(
@@ -143,7 +169,7 @@ class _WalletScreenState extends State<WalletScreen> {
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Withdraw Funds',
                   onPressed: () {
                     if (withdrawAmount != null && withdrawAmount! > 0 && withdrawAmount! <= _walletBalance) {
@@ -186,87 +212,13 @@ class _WalletScreenState extends State<WalletScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.s24),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(AppRadii.card),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Available Cash',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primaryLight,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s8),
-                  Text(
-                    '₹${_walletBalance.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 32.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.background,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton.icon(
-                          onPressed: _showAddMoneyBottomSheet,
-                          icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.primary),
-                          label: const Text(
-                            'Add Funds',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.0,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.background,
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.s12),
-                      Expanded(
-                        child: TextButton.icon(
-                          onPressed: _showWithdrawBottomSheet,
-                          icon: const Icon(Icons.arrow_downward_rounded, size: 18, color: AppColors.background),
-                          label: const Text(
-                            'Withdraw',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.0,
-                              color: AppColors.background,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.background.withOpacity(0.15),
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            WalletCard(
+              balance: _walletBalance,
+              linkedBankName: 'HDFC Bank •••• 9821',
+              cashbackEarned: 1425.0,
+              lastUpdated: 'Updated just now',
+              onAddMoney: _showAddMoneyBottomSheet,
+              onWithdraw: _showWithdrawBottomSheet,
             ),
             const SizedBox(height: AppSpacing.s32),
             Row(

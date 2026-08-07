@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: AppSpacing.s8),
               const Text(
-                'Premium FinTech Super App',
+                'SRJ Global Technologies',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14.0,

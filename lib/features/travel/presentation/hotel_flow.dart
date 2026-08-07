@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 
 // 1. SEARCH HOTELS SCREEN
@@ -79,7 +78,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Search Hotels',
                   onPressed: () {
                     Navigator.push(
@@ -272,7 +271,7 @@ class HotelDetailsScreen extends StatelessWidget {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Select Room',
                   onPressed: () {
                     Navigator.push(
@@ -495,7 +494,7 @@ class _HotelReviewScreenState extends State<HotelReviewScreen> {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
+                child: PrimaryButton(
                   text: 'Pay ₹$totalPrice',
                   isLoading: _isProcessing,
                   onPressed: _isProcessing ? null : _bookHotel,

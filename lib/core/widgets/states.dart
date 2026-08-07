@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_button.dart';
+import 'package:payout/core/widgets/widgets.dart';
 
 class EmptyState extends StatelessWidget {
   final String title;
@@ -27,27 +27,26 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Premium illustration / icon placeholder frame
             Container(
-              padding: const EdgeInsets.all(AppSpacing.s24),
+              padding: const EdgeInsets.all(AppSpacing.s32),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.divider, width: 1.0),
+                boxShadow: AppShadow.small,
               ),
               child: Icon(
                 icon,
-                size: 48,
-                color: AppColors.textSecondary,
+                size: 56,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: AppSpacing.s24),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 18.0,
-                fontWeight: FontWeight.w600,
+              style: AppTypography.headlineSmall.copyWith(
+                fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -55,9 +54,7 @@ class EmptyState extends StatelessWidget {
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
+              style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -65,7 +62,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: 200,
-                child: AppButton(
+                child: PrimaryButton(
                   text: buttonText!,
                   onPressed: onButtonPressed,
                 ),
@@ -127,8 +124,8 @@ class SuccessState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(AppSpacing.s24),
-              decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -141,9 +138,7 @@ class SuccessState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 22.0,
+              style: AppTypography.headlineLarge.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
@@ -152,16 +147,14 @@ class SuccessState extends StatelessWidget {
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
+              style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
             SizedBox(
               width: double.infinity,
-              child: AppButton(
+              child: PrimaryButton(
                 text: buttonText,
                 onPressed: onButtonPressed,
               ),
@@ -204,8 +197,8 @@ class SkeletonLoader extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.divider.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(borderRadius),
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
       ),
     );
   }
