@@ -140,7 +140,7 @@ class BookingSuccessScreen extends StatelessWidget {
                           style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
                         ),
                         Text(
-                          '\$${amount.toStringAsFixed(2)}',
+                          '₹${amount.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
