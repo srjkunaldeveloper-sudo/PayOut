@@ -2,143 +2,237 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/notifications/models/notification_models.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/features/notifications/services/notification_service.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> todayNotifications = [
-      {
-        'title': 'Payment Received',
-        'body': '₹1,500.00 credited from failed UPI rollback.',
-        'type': 'Payment',
-        'icon': Icons.check_circle_rounded,
-        'color': AppColors.success
-      },
-      {
-        'title': 'Login Detected',
-        'body': 'A new login was detected on macOS Safari at 04:30 PM.',
-        'type': 'Security',
-        'icon': Icons.security_rounded,
-        'color': Colors.indigo
-      },
-    ];
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
 
-    final List<Map<String, dynamic>> yesterdayNotifications = [
-      {
-        'title': 'Bill Due Reminder',
-        'body': 'Your Electricity bill of ₹84.60 is due by Aug 18.',
-        'type': 'Bill',
-        'icon': Icons.pending_actions_rounded,
-        'color': Colors.orange
-      },
-      {
-        'title': 'Mega Cashback Offer',
-        'body': 'Get up to ₹150 cashback on your next travel flight booking.',
-        'type': 'Offer',
-        'icon': Icons.local_offer_rounded,
-        'color': Colors.red
-      },
-    ];
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  final NotificationRepository _notificationRepository = MockNotificationRepository();
 
-    final List<Map<String, dynamic>> earlierNotifications = [
-      {
-        'title': 'KYC Verified',
-        'body': 'Congratulations! Your document verification is complete.',
-        'type': 'KYC',
-        'icon': Icons.verified_rounded,
-        'color': AppColors.primary
-      },
-    ];
+  List<NotificationModel> _notifications = [];
+  bool _isLoading = true;
+  String _selectedCategory = 'All';
 
-    Widget _buildNotificationList(List<Map<String, dynamic>> list) {
-      return Column(
-        children: list.map((notif) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-            child: AppCard(
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: (notif['color'] as Color).withOpacity(0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(notif['icon'] as IconData, color: notif['color'] as Color, size: 20),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          notif['title'] as String,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          notif['body'] as String,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      );
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final list = await _notificationRepository.getNotifications();
+    if (mounted) {
+      setState(() {
+        _notifications = list;
+        _isLoading = false;
+      });
     }
+  }
+
+  Future<void> _markAllAsRead() async {
+    await _notificationRepository.markAllRead();
+    _loadNotifications();
+  }
+
+  Future<void> _deleteNotification(String id) async {
+    await _notificationRepository.deleteNotification(id);
+    _loadNotifications();
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'payment':
+        return AppColors.success;
+      case 'security':
+        return Colors.indigo;
+      case 'offers':
+        return Colors.red;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'payment':
+        return Icons.check_circle_rounded;
+      case 'security':
+        return Icons.security_rounded;
+      case 'offers':
+        return Icons.local_offer_rounded;
+      default:
+        return Icons.notifications_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = NotificationService.filterByCategory(_notifications, _selectedCategory);
+    final categories = ['All', 'Payment', 'Security', 'Offers', 'Bills'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Alerts & Updates'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (todayNotifications.isNotEmpty) ...[
-              const Text(
-                'Today',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary),
+      appBar: CustomAppBar(
+        title: 'Alerts & Updates',
+        actions: [
+          if (_notifications.any((n) => !n.isRead))
+            TextButton(
+              onPressed: _markAllAsRead,
+              child: const Text(
+                'Mark all read',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
               ),
-              const SizedBox(height: AppSpacing.s12),
-              _buildNotificationList(todayNotifications),
-              const SizedBox(height: AppSpacing.s20),
-            ],
-            if (yesterdayNotifications.isNotEmpty) ...[
-              const Text(
-                'Yesterday',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary),
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Filter Chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
+            child: SizedBox(
+              height: 32,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  final isSelected = cat == _selectedCategory;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ChoiceChip(
+                      label: Text(
+                        cat,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surface,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            _selectedCategory = cat;
+                          });
+                        }
+                      },
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: AppSpacing.s12),
-              _buildNotificationList(yesterdayNotifications),
-              const SizedBox(height: AppSpacing.s20),
-            ],
-            if (earlierNotifications.isNotEmpty) ...[
-              const Text(
-                'Earlier',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              _buildNotificationList(earlierNotifications),
-            ],
-            const SizedBox(height: AppSpacing.s40),
-          ],
-        ),
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.divider),
+          
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+                  )
+                : filtered.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No alerts at the moment.',
+                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final notif = filtered[index];
+                          final catColor = _getCategoryColor(notif.category);
+                          final catIcon = _getCategoryIcon(notif.category);
+
+                          return Dismissible(
+                            key: Key(notif.id),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: (_) => _deleteNotification(notif.id),
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: AppSpacing.s24),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(AppRadius.lg),
+                              ),
+                              child: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                              child: AppCard(
+                                child: Row(
+                                  children: [
+                                    Stack(
+                                      alignment: Alignment.topRight,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(AppSpacing.s12),
+                                          decoration: BoxDecoration(
+                                            color: catColor.withOpacity(0.08),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(catIcon, color: catColor, size: 20),
+                                        ),
+                                        if (!notif.isRead)
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: const BoxDecoration(
+                                              color: AppColors.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: AppSpacing.s16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            notif.title,
+                                            style: const TextStyle(
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            notif.description,
+                                            style: const TextStyle(
+                                              fontFamily: 'Inter',
+                                              fontSize: 12,
+                                              color: AppColors.textSecondary,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
       ),
     );
   }

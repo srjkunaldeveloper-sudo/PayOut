@@ -15,7 +15,7 @@ import 'package:payout/features/rewards/presentation/rewards_screen.dart';
 import 'package:payout/features/settings/presentation/settings_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
 import 'package:payout/features/notifications/presentation/notifications_screen.dart';
-import 'package:payout/features/transaction_history/presentation/transaction_history_screen.dart';
+import 'package:payout/features/transactions/presentation/transaction_history_screen.dart';
 import 'package:payout/features/qr/presentation/scan_qr_screen.dart';
 import 'package:payout/features/qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';

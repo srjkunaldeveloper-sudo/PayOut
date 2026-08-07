@@ -43,3 +43,10 @@ The consolidated QR module under `lib/features/qr/` merges camera scanner overla
 - **Validators:** `QrValidator` parses and validates incoming deep-links and merchant UPI addresses.
 - **Repository:** `QrRepository` retrieves scanned merchant locations and configures personal scan credentials.
 
+---
+
+## 📊 Transactions & Notifications Domains
+Separates history feeds, filtering engines, and alert push systems:
+- **Validators:** `TransactionValidator` manages date range filters and statements search parameters.
+- **Repositories:** `TransactionRepository` and `NotificationRepository` handle bulk database queries, swipes to delete, and PDF receipt downloads.
+

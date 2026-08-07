@@ -3,6 +3,7 @@
 ## [1.0.1] - 2026-08-07
 
 ### Added
+- **Transactions & Notifications Production Readiness:** Upgraded transaction histories and alerts feeds to use structured models and mock repository contracts under `lib/features/transactions/` and `lib/features/notifications/`.
 - **QR Production Readiness:** Consolidated scan_qr and my_qr into a unified `qr` module layout. Linked scanner and personal display triggers to `MockQrRepository` and model serializers.
 - **Payments Production Readiness:** Upgraded the payments module directory structure into Domain-Driven Design (DDD) layers. Controlled via mock repository contracts.
 - **Dedicated Payment outcome screens:** Added `PaymentPendingScreen`, `PaymentFailedScreen`, and a detailed `ReceiptScreen` mapping transaction UTR codes.
