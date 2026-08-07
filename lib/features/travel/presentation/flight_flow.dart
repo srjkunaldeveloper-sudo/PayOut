@@ -3,6 +3,9 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
+import 'package:payout/features/travel/shared/models/travel_models.dart';
+import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
+import 'package:payout/features/travel/shared/services/travel_service.dart';
 
 // 1. FLIGHT SEARCH SCREEN
 class FlightSearchScreen extends StatefulWidget {
@@ -102,98 +105,118 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
 }
 
 // 2. FLIGHT RESULTS SCREEN
-class FlightResultsScreen extends StatelessWidget {
+class FlightResultsScreen extends StatefulWidget {
   final String from;
   final String to;
 
   const FlightResultsScreen({super.key, required this.from, required this.to});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> flights = [
-      {'airline': 'IndiGo', 'time': '08:30 AM - 10:45 AM', 'stops': 'Non-stop', 'price': 4200.0},
-      {'airline': 'Air India', 'time': '11:45 AM - 02:00 PM', 'stops': 'Non-stop', 'price': 4800.0},
-      {'airline': 'Akasa Air', 'time': '06:15 PM - 08:35 PM', 'stops': 'Non-stop', 'price': 3900.0},
-      {'airline': 'SpiceJet', 'time': '09:00 PM - 11:30 PM', 'stops': 'Non-stop', 'price': 4100.0},
-    ];
+  State<FlightResultsScreen> createState() => _FlightResultsScreenState();
+}
 
+class _FlightResultsScreenState extends State<FlightResultsScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  List<FlightModel> _flights = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFlights();
+  }
+
+  Future<void> _loadFlights() async {
+    final list = await _travelRepository.getFlights();
+    if (mounted) {
+      setState(() {
+        _flights = list;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: '$from to $to'),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: flights.length,
-        itemBuilder: (context, index) {
-          final flight = flights[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s16),
-            child: AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlightDetailsScreen(
-                      from: from,
-                      to: to,
-                      flightData: flight,
+      appBar: CustomAppBar(title: '${widget.from} to ${widget.to}'),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              itemCount: _flights.length,
+              itemBuilder: (context, index) {
+                final flight = _flights[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+                  child: AppCard(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FlightDetailsScreen(
+                            from: widget.from,
+                            to: widget.to,
+                            flight: flight,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              flight.airline,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                              ),
+                            ),
+                            Text(
+                              '₹${flight.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              flight.flightNumber,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13.0,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const Text(
+                              'Non-stop',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12.0,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        flight['airline'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.0,
-                        ),
-                      ),
-                      Text(
-                        '₹${flight['price']}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        flight['time'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13.0,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        flight['stops'],
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12.0,
-                          color: flight['stops'] == 'Non-stop' ? AppColors.success : AppColors.textSecondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
-          );
-        },
-      ),
     );
   }
 }
@@ -202,13 +225,13 @@ class FlightResultsScreen extends StatelessWidget {
 class FlightDetailsScreen extends StatelessWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> flightData;
+  final FlightModel flight;
 
   const FlightDetailsScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.flightData,
+    required this.flight,
   });
 
   @override
@@ -228,7 +251,7 @@ class FlightDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      flightData['airline'],
+                      flight.airline,
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.bold,
@@ -252,7 +275,7 @@ class FlightDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s12),
                     Text(
-                      'Timing: ${flightData['time']} (${flightData['stops']})',
+                      'Flight: ${flight.flightNumber} (Non-stop)',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13.0,
@@ -298,7 +321,7 @@ class FlightDetailsScreen extends StatelessWidget {
                         builder: (context) => FlightPassengerDetailsScreen(
                           from: from,
                           to: to,
-                          flightData: flightData,
+                          flight: flight,
                         ),
                       ),
                     );
@@ -317,13 +340,13 @@ class FlightDetailsScreen extends StatelessWidget {
 class FlightPassengerDetailsScreen extends StatefulWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> flightData;
+  final FlightModel flight;
 
   const FlightPassengerDetailsScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.flightData,
+    required this.flight,
   });
 
   @override
@@ -331,20 +354,25 @@ class FlightPassengerDetailsScreen extends StatefulWidget {
 }
 
 class _FlightPassengerDetailsScreenState extends State<FlightPassengerDetailsScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Alex Morgan');
+  final TextEditingController _nameController = TextEditingController(text: 'John Doe');
   final TextEditingController _ageController = TextEditingController(text: '28');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Passenger Info'),
+      appBar: const CustomAppBar(title: 'Passenger Details'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text(
+                'Enter Primary Passenger Information',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: AppSpacing.s16),
               AppCard(
                 padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
@@ -372,17 +400,16 @@ class _FlightPassengerDetailsScreenState extends State<FlightPassengerDetailsScr
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Review Booking',
+                  text: 'Select Seat',
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FlightReviewScreen(
+                        builder: (context) => FlightSeatSelectionScreen(
                           from: widget.from,
                           to: widget.to,
-                          flightData: widget.flightData,
+                          flight: widget.flight,
                           passengerName: _nameController.text,
-                          passengerAge: _ageController.text,
                         ),
                       ),
                     );
@@ -397,62 +424,203 @@ class _FlightPassengerDetailsScreenState extends State<FlightPassengerDetailsScr
   }
 }
 
-// 5. REVIEW SCREEN
-class FlightReviewScreen extends StatefulWidget {
+// 5. SEAT SELECTION SCREEN
+class FlightSeatSelectionScreen extends StatefulWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> flightData;
+  final FlightModel flight;
   final String passengerName;
-  final String passengerAge;
 
-  const FlightReviewScreen({
+  const FlightSeatSelectionScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.flightData,
+    required this.flight,
     required this.passengerName,
-    required this.passengerAge,
   });
 
   @override
-  State<FlightReviewScreen> createState() => _FlightReviewScreenState();
+  State<FlightSeatSelectionScreen> createState() => _FlightSeatSelectionScreenState();
 }
 
-class _FlightReviewScreenState extends State<FlightReviewScreen> {
-  bool _isProcessing = false;
+class _FlightSeatSelectionScreenState extends State<FlightSeatSelectionScreen> {
+  String? _selectedSeat;
 
-  void _bookFlight() {
-    setState(() {
-      _isProcessing = true;
-    });
+  Widget _buildSeatRow(String rowNum) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildSeat('${rowNum}A'),
+          _buildSeat('${rowNum}B'),
+          _buildSeat('${rowNum}C'),
+          const SizedBox(width: AppSpacing.s24),
+          _buildSeat('${rowNum}D'),
+          _buildSeat('${rowNum}E'),
+          _buildSeat('${rowNum}F'),
+        ],
+      ),
+    );
+  }
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+  Widget _buildSeat(String seatCode) {
+    final isSelected = _selectedSeat == seatCode;
+
+    return GestureDetector(
+      onTap: () {
         setState(() {
-          _isProcessing = false;
+          _selectedSeat = seatCode;
         });
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => BookingSuccessScreen(
-              serviceName: 'Flight Ticket - ${widget.flightData['airline']}',
-              details: '${widget.from} to ${widget.to} • ${widget.passengerName}',
-              amount: widget.flightData['price'],
-            ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(6.0),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.divider,
+            width: 1.5,
           ),
-        );
-      }
-    });
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          seatCode,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Review Booking'),
+      appBar: const CustomAppBar(title: 'Choose Seat'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: AppSpacing.s24),
+            const Text(
+              'A  B  C      D  E  F',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: AppSpacing.s12),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildSeatRow('1'),
+                    _buildSeatRow('2'),
+                    _buildSeatRow('3'),
+                    _buildSeatRow('4'),
+                    _buildSeatRow('5'),
+                    _buildSeatRow('6'),
+                    _buildSeatRow('7'),
+                    _buildSeatRow('8'),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              child: SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  text: _selectedSeat == null ? 'Select a Seat' : 'Continue with Seat $_selectedSeat',
+                  onPressed: _selectedSeat == null
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FlightFareSummaryScreen(
+                                from: widget.from,
+                                to: widget.to,
+                                flight: widget.flight,
+                                passengerName: widget.passengerName,
+                                seatCode: _selectedSeat!,
+                              ),
+                            ),
+                          );
+                        },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 6. FARE SUMMARY SCREEN
+class FlightFareSummaryScreen extends StatefulWidget {
+  final String from;
+  final String to;
+  final FlightModel flight;
+  final String passengerName;
+  final String seatCode;
+
+  const FlightFareSummaryScreen({
+    super.key,
+    required this.from,
+    required this.to,
+    required this.flight,
+    required this.passengerName,
+    required this.seatCode,
+  });
+
+  @override
+  State<FlightFareSummaryScreen> createState() => _FlightFareSummaryScreenState();
+}
+
+class _FlightFareSummaryScreenState extends State<FlightFareSummaryScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  bool _isBooking = false;
+
+  void _bookTicket() async {
+    setState(() {
+      _isBooking = true;
+    });
+
+    final totalCost = TravelService.calculateTotalCost(rate: widget.flight.price, quantity: 1);
+    final success = await _travelRepository.bookTicket('Flight', widget.flight.id, totalCost);
+
+    if (mounted) {
+      setState(() {
+        _isBooking = false;
+      });
+
+      if (success) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BookingSuccessScreen(
+              serviceName: 'Flight Booking: ${widget.flight.airline}',
+              details: '${widget.from} to ${widget.to} • Flight: ${widget.flight.flightNumber} • Seat: ${widget.seatCode}',
+              amount: totalCost,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalCost = TravelService.calculateTotalCost(rate: widget.flight.price, quantity: 1);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(title: 'Fare Breakup'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
@@ -460,7 +628,7 @@ class _FlightReviewScreenState extends State<FlightReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Review Flight',
+                'Verify Pricing Breakup',
                 style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: AppSpacing.s12),
@@ -471,40 +639,37 @@ class _FlightReviewScreenState extends State<FlightReviewScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.flightData['airline'],
+                          widget.flight.airline,
                           style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '₹${widget.flightData['price']}',
+                          '₹${totalCost.toStringAsFixed(0)}',
                           style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.s8),
+                    const SizedBox(height: AppSpacing.s12),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${widget.from} → ${widget.to}', style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
+                        const Text('Base Fare', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('₹${widget.flight.price.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              const Text(
-                'Passenger Details',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.person_outline_rounded, color: AppColors.primary),
-                    const SizedBox(width: AppSpacing.s12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: AppSpacing.s8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text('Taxes & Fees (18%)', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('Included', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(widget.passengerName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
-                        Text('Age: ${widget.passengerAge}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        const Text('Seat Selection Fee', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        const Text('Free', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -514,9 +679,9 @@ class _FlightReviewScreenState extends State<FlightReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Pay ₹${widget.flightData['price']}',
-                  isLoading: _isProcessing,
-                  onPressed: _isProcessing ? null : _bookFlight,
+                  text: 'Confirm & Book Ticket',
+                  isLoading: _isBooking,
+                  onPressed: _isBooking ? null : _bookTicket,
                 ),
               ),
             ],

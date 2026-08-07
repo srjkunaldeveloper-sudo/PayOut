@@ -78,3 +78,10 @@ Coordinates loan assessments, EMI calculators, insurance packages, and portfolio
 - **Validators:** `FinancialValidator` confirms PAN compliance and minimum transaction boundaries.
 - **Repository:** `FinancialRepository` manages portfolios status updates, policy checkouts, and loan applications.
 
+---
+
+## ✈️ Travel Enterprise Domain
+Coordinates flight bookings, train berths allocation, hotel reservations, and movie ticketing:
+- **Validators:** `TravelValidator` monitors ticket quantities and travel calendar entries.
+- **Repository:** `TravelRepository` handles schedule indices search and boarding pass printouts.
+

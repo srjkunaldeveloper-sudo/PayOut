@@ -3,8 +3,11 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
+import 'package:payout/features/travel/shared/models/travel_models.dart';
+import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
+import 'package:payout/features/travel/shared/services/travel_service.dart';
 
-// 1. SEARCH TRAIN SCREEN
+// 1. TRAIN SEARCH SCREEN
 class TrainSearchScreen extends StatefulWidget {
   const TrainSearchScreen({super.key});
 
@@ -14,7 +17,7 @@ class TrainSearchScreen extends StatefulWidget {
 
 class _TrainSearchScreenState extends State<TrainSearchScreen> {
   final TextEditingController _fromController = TextEditingController(text: 'Delhi (NDLS)');
-  final TextEditingController _toController = TextEditingController(text: 'Jaipur (JP)');
+  final TextEditingController _toController = TextEditingController(text: 'Mumbai (MMCT)');
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                     TextField(
                       controller: _fromController,
                       decoration: const InputDecoration(
-                        labelText: 'Origin Station',
+                        labelText: 'From Station',
                         prefixIcon: Icon(Icons.train_rounded),
                       ),
                     ),
@@ -42,18 +45,35 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                     TextField(
                       controller: _toController,
                       decoration: const InputDecoration(
-                        labelText: 'Destination Station',
+                        labelText: 'To Station',
                         prefixIcon: Icon(Icons.train_rounded),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s16),
-                    const TextField(
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: 'Date of Travel',
-                        hintText: 'Aug 26, 2026',
-                        prefixIcon: Icon(Icons.calendar_today_rounded),
-                      ),
+                    Row(
+                      children: const [
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              labelText: 'Date',
+                              hintText: 'Aug 25, 2026',
+                              prefixIcon: Icon(Icons.calendar_today_rounded),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.s16),
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              labelText: 'Quota',
+                              hintText: 'General',
+                              prefixIcon: Icon(Icons.person_rounded),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -67,7 +87,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TrainListScreen(
+                        builder: (context) => TrainResultsScreen(
                           from: _fromController.text,
                           to: _toController.text,
                         ),
@@ -84,204 +104,204 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
   }
 }
 
-// 2. TRAIN LIST SCREEN
-class TrainListScreen extends StatelessWidget {
+// 2. TRAIN RESULTS SCREEN
+class TrainResultsScreen extends StatefulWidget {
   final String from;
   final String to;
 
-  const TrainListScreen({super.key, required this.from, required this.to});
+  const TrainResultsScreen({super.key, required this.from, required this.to});
+
+  @override
+  State<TrainResultsScreen> createState() => _TrainResultsScreenState();
+}
+
+class _TrainResultsScreenState extends State<TrainResultsScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  List<TrainModel> _trains = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrains();
+  }
+
+  Future<void> _loadTrains() async {
+    final list = await _travelRepository.getTrains();
+    if (mounted) {
+      setState(() {
+        _trains = list;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> trains = [
-      {'name': 'Vande Bharat Express (20978)', 'time': '06:00 AM - 10:45 AM', 'duration': '4h 45m', 'price': 1250.0},
-      {'name': 'Rajdhani Express (12958)', 'time': '08:15 PM - 12:30 AM', 'duration': '4h 15m', 'price': 1100.0},
-      {'name': 'Shatabdi Express (12015)', 'time': '06:10 AM - 10:40 AM', 'duration': '4h 30m', 'price': 980.0},
-      {'name': 'Tejas Express (12585)', 'time': '03:40 PM - 07:55 PM', 'duration': '4h 15m', 'price': 1400.0},
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: '$from to $to'),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: trains.length,
-        itemBuilder: (context, index) {
-          final train = trains[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s16),
-            child: AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TrainSeatSelectionScreen(
-                      from: from,
-                      to: to,
-                      trainData: train,
+      appBar: CustomAppBar(title: '${widget.from} to ${widget.to}'),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              itemCount: _trains.length,
+              itemBuilder: (context, index) {
+                final train = _trains[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+                  child: AppCard(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrainDetailsScreen(
+                            from: widget.from,
+                            to: widget.to,
+                            train: train,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              train.trainName,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                              ),
+                            ),
+                            Text(
+                              '₹${train.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Train: ${train.trainNumber}',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13.0,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const Text(
+                              'Available',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12.0,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        train['name'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.0,
-                        ),
-                      ),
-                      Text(
-                        '₹${train['price']}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15.0,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        train['time'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12.0,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        train['duration'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12.0,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
-          );
-        },
-      ),
     );
   }
 }
 
-// 3. SEAT SELECTION SCREEN
-class TrainSeatSelectionScreen extends StatefulWidget {
+// 3. TRAIN DETAILS SCREEN
+class TrainDetailsScreen extends StatelessWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> trainData;
+  final TrainModel train;
 
-  const TrainSeatSelectionScreen({
+  const TrainDetailsScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.trainData,
+    required this.train,
   });
-
-  @override
-  State<TrainSeatSelectionScreen> createState() => _TrainSeatSelectionScreenState();
-}
-
-class _TrainSeatSelectionScreenState extends State<TrainSeatSelectionScreen> {
-  String? _selectedSeat;
-
-  Widget _buildSeat(String seatName) {
-    final isSelected = _selectedSeat == seatName;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSeat = seatName;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.all(AppSpacing.s4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.primaryLight.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          seatName,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 12.0,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : AppColors.primary,
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Select Berth / Seat'),
+      appBar: const CustomAppBar(title: 'Train Details'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Available Sleeper Berths',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s16),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 4,
+              AppCard(
+                padding: const EdgeInsets.all(AppSpacing.s20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSeat('LB-01'),
-                    _buildSeat('UB-02'),
-                    _buildSeat('LB-03'),
-                    _buildSeat('UB-04'),
-                    _buildSeat('LB-05'),
-                    _buildSeat('UB-06'),
-                    _buildSeat('LB-07'),
-                    _buildSeat('UB-08'),
-                    _buildSeat('LB-09'),
-                    _buildSeat('UB-10'),
-                    _buildSeat('LB-11'),
-                    _buildSeat('UB-12'),
+                    Text(
+                      train.trainName,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          from,
+                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+                        ),
+                        const Icon(Icons.arrow_forward_rounded, color: AppColors.textSecondary, size: 16),
+                        Text(
+                          to,
+                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Text(
+                      'Train Number: ${train.trainNumber}',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13.0,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Confirm Berth',
-                  onPressed: _selectedSeat != null
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TrainPassengerDetailsScreen(
-                                from: widget.from,
-                                to: widget.to,
-                                trainData: widget.trainData,
-                                selectedSeat: _selectedSeat!,
-                              ),
-                            ),
-                          );
-                        }
-                      : null,
+                  text: 'Add Passenger Details',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TrainPassengerDetailsScreen(
+                          from: from,
+                          to: to,
+                          train: train,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -296,15 +316,13 @@ class _TrainSeatSelectionScreenState extends State<TrainSeatSelectionScreen> {
 class TrainPassengerDetailsScreen extends StatefulWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> trainData;
-  final String selectedSeat;
+  final TrainModel train;
 
   const TrainPassengerDetailsScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.trainData,
-    required this.selectedSeat,
+    required this.train,
   });
 
   @override
@@ -312,20 +330,25 @@ class TrainPassengerDetailsScreen extends StatefulWidget {
 }
 
 class _TrainPassengerDetailsScreenState extends State<TrainPassengerDetailsScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Alex Morgan');
+  final TextEditingController _nameController = TextEditingController(text: 'John Doe');
   final TextEditingController _ageController = TextEditingController(text: '28');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Passenger Info'),
+      appBar: const CustomAppBar(title: 'Passenger Details'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text(
+                'Enter Primary Passenger Information',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: AppSpacing.s16),
               AppCard(
                 padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
@@ -353,18 +376,16 @@ class _TrainPassengerDetailsScreenState extends State<TrainPassengerDetailsScree
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Review Ticket',
+                  text: 'Select Berth',
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TrainReviewScreen(
+                        builder: (context) => TrainBerthSelectionScreen(
                           from: widget.from,
                           to: widget.to,
-                          trainData: widget.trainData,
+                          train: widget.train,
                           passengerName: _nameController.text,
-                          passengerAge: _ageController.text,
-                          selectedSeat: widget.selectedSeat,
                         ),
                       ),
                     );
@@ -379,64 +400,61 @@ class _TrainPassengerDetailsScreenState extends State<TrainPassengerDetailsScree
   }
 }
 
-// 5. REVIEW SCREEN
-class TrainReviewScreen extends StatefulWidget {
+// 5. BERTH SELECTION SCREEN
+class TrainBerthSelectionScreen extends StatefulWidget {
   final String from;
   final String to;
-  final Map<String, dynamic> trainData;
+  final TrainModel train;
   final String passengerName;
-  final String passengerAge;
-  final String selectedSeat;
 
-  const TrainReviewScreen({
+  const TrainBerthSelectionScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.trainData,
+    required this.train,
     required this.passengerName,
-    required this.passengerAge,
-    required this.selectedSeat,
   });
 
   @override
-  State<TrainReviewScreen> createState() => _TrainReviewScreenState();
+  State<TrainBerthSelectionScreen> createState() => _TrainBerthSelectionScreenState();
 }
 
-class _TrainReviewScreenState extends State<TrainReviewScreen> {
-  bool _isProcessing = false;
+class _TrainBerthSelectionScreenState extends State<TrainBerthSelectionScreen> {
+  String? _selectedBerth = 'Lower Berth';
 
-  void _bookTrain() {
-    setState(() {
-      _isProcessing = true;
-    });
+  Widget _buildBerthOption(String berth) {
+    final isSelected = _selectedBerth == berth;
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => BookingSuccessScreen(
-              serviceName: 'Train Booking - ${widget.trainData['name']}',
-              details: '${widget.from} to ${widget.to} • Berth ${widget.selectedSeat} • ${widget.passengerName}',
-              amount: widget.trainData['price'],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+      child: AppCard(
+        onTap: () {
+          setState(() {
+            _selectedBerth = berth;
+          });
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              berth,
+              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
             ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
-        );
-      }
-    });
+            Icon(
+              isSelected ? Icons.check_circle_rounded : Icons.radio_button_off_rounded,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Review Ticket'),
+      appBar: const CustomAppBar(title: 'Choose Berth'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
@@ -444,7 +462,112 @@ class _TrainReviewScreenState extends State<TrainReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Review Journey',
+                'Select Preferred Berth Type',
+                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: AppSpacing.s16),
+              _buildBerthOption('Lower Berth'),
+              _buildBerthOption('Middle Berth'),
+              _buildBerthOption('Upper Berth'),
+              _buildBerthOption('Side Lower'),
+              _buildBerthOption('Side Upper'),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  text: 'Continue with $_selectedBerth',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TrainFareSummaryScreen(
+                          from: widget.from,
+                          to: widget.to,
+                          train: widget.train,
+                          passengerName: widget.passengerName,
+                          berth: _selectedBerth!,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 6. FARE SUMMARY SCREEN
+class TrainFareSummaryScreen extends StatefulWidget {
+  final String from;
+  final String to;
+  final TrainModel train;
+  final String passengerName;
+  final String berth;
+
+  const TrainFareSummaryScreen({
+    super.key,
+    required this.from,
+    required this.to,
+    required this.train,
+    required this.passengerName,
+    required this.berth,
+  });
+
+  @override
+  State<TrainFareSummaryScreen> createState() => _TrainFareSummaryScreenState();
+}
+
+class _TrainFareSummaryScreenState extends State<TrainFareSummaryScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  bool _isBooking = false;
+
+  void _bookTicket() async {
+    setState(() {
+      _isBooking = true;
+    });
+
+    final totalCost = TravelService.calculateTotalCost(rate: widget.train.price, quantity: 1);
+    final success = await _travelRepository.bookTicket('Train', widget.train.id, totalCost);
+
+    if (mounted) {
+      setState(() {
+        _isBooking = false;
+      });
+
+      if (success) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BookingSuccessScreen(
+              serviceName: 'Train Ticket: ${widget.train.trainName}',
+              details: '${widget.from} to ${widget.to} • Train No: ${widget.train.trainNumber} • Preference: ${widget.berth}',
+              amount: totalCost,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalCost = TravelService.calculateTotalCost(rate: widget.train.price, quantity: 1);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(title: 'Fare Breakup'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Verify Pricing Breakup',
                 style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: AppSpacing.s12),
@@ -454,41 +577,35 @@ class _TrainReviewScreenState extends State<TrainReviewScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          widget.trainData['name'],
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            widget.train.trainName,
+                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: AppSpacing.s8),
                         Text(
-                          '₹${widget.trainData['price']}',
+                          '₹${totalCost.toStringAsFixed(0)}',
                           style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.s8),
+                    const SizedBox(height: AppSpacing.s12),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${widget.from} → ${widget.to}', style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
+                        const Text('Base Fare', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('₹${widget.train.price.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              const Text(
-                'Berth & Traveler',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                child: Row(
-                  children: [
-                    const Icon(Icons.train_outlined, color: AppColors.primary),
-                    const SizedBox(width: AppSpacing.s12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.passengerName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
-                        Text('Berth: ${widget.selectedSeat} • Age: ${widget.passengerAge}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                    const SizedBox(height: AppSpacing.s8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text('Catering Charges', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('Included', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -498,9 +615,9 @@ class _TrainReviewScreenState extends State<TrainReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Pay ₹${widget.trainData['price']}',
-                  isLoading: _isProcessing,
-                  onPressed: _isProcessing ? null : _bookTrain,
+                  text: 'Confirm & Book Ticket',
+                  isLoading: _isBooking,
+                  onPressed: _isBooking ? null : _bookTicket,
                 ),
               ),
             ],

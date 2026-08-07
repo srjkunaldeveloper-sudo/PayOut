@@ -3,311 +3,168 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
+import 'package:payout/features/travel/shared/models/travel_models.dart';
+import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
+import 'package:payout/features/travel/shared/services/travel_service.dart';
 
-// 1. MOVIE LIST SCREEN
-class MovieListScreen extends StatelessWidget {
-  const MovieListScreen({super.key});
+// 1. MOVIE SEARCH SCREEN
+class MovieSearchScreen extends StatefulWidget {
+  const MovieSearchScreen({super.key});
+
+  @override
+  State<MovieSearchScreen> createState() => _MovieSearchScreenState();
+}
+
+class _MovieSearchScreenState extends State<MovieSearchScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  List<MovieModel> _movies = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMovies();
+  }
+
+  Future<void> _loadMovies() async {
+    final list = await _travelRepository.getMovies();
+    if (mounted) {
+      setState(() {
+        _movies = list;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> movies = [
-      {'title': 'Kalki 2898 AD', 'genre': 'Sci-Fi / Action / Epic', 'rating': '8.8 ★', 'price': 380.0},
-      {'title': 'Jawan', 'genre': 'Action / Thriller', 'rating': '8.2 ★', 'price': 250.0},
-      {'title': 'Animal', 'genre': 'Action / Drama', 'rating': '8.0 ★', 'price': 280.0},
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Now Showing'),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: movies.length,
-        itemBuilder: (context, index) {
-          final movie = movies[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s16),
-            child: AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SelectCinemaScreen(
-                      movieData: movie,
-                    ),
-                  ),
-                );
-              },
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.movie_creation_rounded, color: AppColors.primary, size: 28),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
+      appBar: const CustomAppBar(title: 'Search Movies'),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              itemCount: _movies.length,
+              itemBuilder: (context, index) {
+                final movie = _movies[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+                  child: AppCard(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MovieDetailsScreen(
+                            movie: movie,
+                          ),
+                        ),
+                      );
+                    },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          movie['title'],
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15.0,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              movie.title,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                              ),
+                            ),
+                            Text(
+                              '₹${movie.pricePerSeat.toStringAsFixed(0)}/seat',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15.0,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.s12),
                         Text(
-                          movie['genre'],
+                          movie.genre,
                           style: const TextStyle(
                             fontFamily: 'Inter',
-                            fontSize: 12.0,
+                            fontSize: 13.0,
                             color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          movie['rating'],
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
 
-// 2. SELECT CINEMA SCREEN
-class SelectCinemaScreen extends StatelessWidget {
-  final Map<String, dynamic> movieData;
+// 2. MOVIE DETAILS SCREEN
+class MovieDetailsScreen extends StatelessWidget {
+  final MovieModel movie;
 
-  const SelectCinemaScreen({super.key, required this.movieData});
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> cinemas = [
-      {
-        'name': 'PVR Directors Cut',
-        'shows': ['02:00 PM', '05:30 PM', '08:45 PM']
-      },
-      {
-        'name': 'INOX Insignia',
-        'shows': ['03:15 PM', '06:30 PM', '09:45 PM']
-      },
-    ];
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: movieData['title']),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: cinemas.length,
-        itemBuilder: (context, index) {
-          final cinema = cinemas[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s20),
-            child: AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cinema['name'],
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.0,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Wrap(
-                    spacing: 8.0,
-                    children: (cinema['shows'] as List<String>).map((show) {
-                      return OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MovieSeatLayoutScreen(
-                                movieData: movieData,
-                                cinemaName: cinema['name'],
-                                showTime: show,
-                              ),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.divider),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: Text(
-                          show,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// 3. SEAT LAYOUT SCREEN
-class MovieSeatLayoutScreen extends StatefulWidget {
-  final Map<String, dynamic> movieData;
-  final String cinemaName;
-  final String showTime;
-
-  const MovieSeatLayoutScreen({
+  const MovieDetailsScreen({
     super.key,
-    required this.movieData,
-    required this.cinemaName,
-    required this.showTime,
+    required this.movie,
   });
 
   @override
-  State<MovieSeatLayoutScreen> createState() => _MovieSeatLayoutScreenState();
-}
-
-class _MovieSeatLayoutScreenState extends State<MovieSeatLayoutScreen> {
-  String? _selectedSeat;
-
-  Widget _buildSeat(String seatName) {
-    final isSelected = _selectedSeat == seatName;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSeat = seatName;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.all(AppSpacing.s4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.primaryLight.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(6.0),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          seatName,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 11.0,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : AppColors.primary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Choose Seats'),
+      appBar: const CustomAppBar(title: 'Movie Details'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Screen layout guide
-              Center(
-                child: Container(
-                  width: 200,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.s12),
-                  decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const Center(
-                child: Text(
-                  'SCREEN',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 10.0,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 6,
+              AppCard(
+                padding: const EdgeInsets.all(AppSpacing.s20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSeat('A-01'),
-                    _buildSeat('A-02'),
-                    _buildSeat('A-03'),
-                    _buildSeat('A-04'),
-                    _buildSeat('A-05'),
-                    _buildSeat('A-06'),
-                    _buildSeat('B-01'),
-                    _buildSeat('B-02'),
-                    _buildSeat('B-03'),
-                    _buildSeat('B-04'),
-                    _buildSeat('B-05'),
-                    _buildSeat('B-06'),
-                    _buildSeat('C-01'),
-                    _buildSeat('C-02'),
-                    _buildSeat('C-03'),
-                    _buildSeat('C-04'),
-                    _buildSeat('C-05'),
-                    _buildSeat('C-06'),
+                    Text(
+                      movie.title,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Text(
+                      movie.genre,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13.0,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Confirm Seat Selection',
-                  onPressed: _selectedSeat != null
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MovieReviewScreen(
-                                movieData: widget.movieData,
-                                cinemaName: widget.cinemaName,
-                                showTime: widget.showTime,
-                                selectedSeat: _selectedSeat!,
-                              ),
-                            ),
-                          );
-                        }
-                      : null,
+                  text: 'Select Seat',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MovieSeatSelectionScreen(
+                          movie: movie,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -318,60 +175,169 @@ class _MovieSeatLayoutScreenState extends State<MovieSeatLayoutScreen> {
   }
 }
 
-// 4. REVIEW SCREEN
-class MovieReviewScreen extends StatefulWidget {
-  final Map<String, dynamic> movieData;
-  final String cinemaName;
-  final String showTime;
-  final String selectedSeat;
+// 3. SEAT SELECTION SCREEN
+class MovieSeatSelectionScreen extends StatefulWidget {
+  final MovieModel movie;
 
-  const MovieReviewScreen({
+  const MovieSeatSelectionScreen({
     super.key,
-    required this.movieData,
-    required this.cinemaName,
-    required this.showTime,
-    required this.selectedSeat,
+    required this.movie,
   });
 
   @override
-  State<MovieReviewScreen> createState() => _MovieReviewScreenState();
+  State<MovieSeatSelectionScreen> createState() => _MovieSeatSelectionScreenState();
 }
 
-class _MovieReviewScreenState extends State<MovieReviewScreen> {
-  bool _isProcessing = false;
+class _MovieSeatSelectionScreenState extends State<MovieSeatSelectionScreen> {
+  String? _selectedSeat;
 
-  void _bookMovie() {
-    setState(() {
-      _isProcessing = true;
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+  Widget _buildSeat(String code) {
+    final isSelected = _selectedSeat == code;
+    return GestureDetector(
+      onTap: () {
         setState(() {
-          _isProcessing = false;
+          _selectedSeat = code;
         });
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => BookingSuccessScreen(
-              serviceName: 'Movie Ticket - ${widget.movieData['title']}',
-              details: '${widget.cinemaName} • Showtime ${widget.showTime} • Seat ${widget.selectedSeat}',
-              amount: widget.movieData['price'],
-            ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+      },
+      child: Container(
+        margin: const EdgeInsets.all(6.0),
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider, width: 1.5),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          code,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
           ),
-        );
-      }
-    });
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Review Booking'),
+      appBar: const CustomAppBar(title: 'Choose Seat'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildSeat('A1'),
+                          _buildSeat('A2'),
+                          _buildSeat('A3'),
+                          _buildSeat('A4'),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildSeat('B1'),
+                          _buildSeat('B2'),
+                          _buildSeat('B3'),
+                          _buildSeat('B4'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  text: _selectedSeat == null ? 'Select Seat' : 'Continue with $_selectedSeat',
+                  onPressed: _selectedSeat == null
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MovieFareSummaryScreen(
+                                movie: widget.movie,
+                                seatCode: _selectedSeat!,
+                              ),
+                            ),
+                          );
+                        },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 4. FARE SUMMARY SCREEN
+class MovieFareSummaryScreen extends StatefulWidget {
+  final MovieModel movie;
+  final String seatCode;
+
+  const MovieFareSummaryScreen({
+    super.key,
+    required this.movie,
+    required this.seatCode,
+  });
+
+  @override
+  State<MovieFareSummaryScreen> createState() => _MovieFareSummaryScreenState();
+}
+
+class _MovieFareSummaryScreenState extends State<MovieFareSummaryScreen> {
+  final TravelRepository _travelRepository = MockTravelRepository();
+  bool _isBooking = false;
+
+  void _bookTicket() async {
+    setState(() {
+      _isBooking = true;
+    });
+
+    final totalCost = TravelService.calculateTotalCost(rate: widget.movie.pricePerSeat, quantity: 1);
+    final success = await _travelRepository.bookTicket('Movie', widget.movie.id, totalCost);
+
+    if (mounted) {
+      setState(() {
+        _isBooking = false;
+      });
+
+      if (success) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BookingSuccessScreen(
+              serviceName: 'Movie Ticket: ${widget.movie.title}',
+              details: 'Seat: ${widget.seatCode} • Show Class: IMAX 3D',
+              amount: totalCost,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalCost = TravelService.calculateTotalCost(rate: widget.movie.pricePerSeat, quantity: 1);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const CustomAppBar(title: 'Fare Breakup'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
@@ -379,48 +345,37 @@ class _MovieReviewScreenState extends State<MovieReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Review Cinema Ticket',
+                'Verify Pricing Breakup',
                 style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: AppSpacing.s12),
               AppCard(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.movieData['title'],
-                      style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.movieData['genre'],
-                      style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.0),
-                      child: Divider(color: AppColors.divider),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Cinema', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
-                        Text(widget.cinemaName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Expanded(
+                          child: Text(
+                            widget.movie.title,
+                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s8),
+                        Text(
+                          '₹${totalCost.toStringAsFixed(0)}',
+                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.s8),
+                    const SizedBox(height: AppSpacing.s12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Showtime', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
-                        Text(widget.showTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Seat ID', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary)),
-                        Text(widget.selectedSeat, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        const Text('1 Ticket Seat Rate', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                        Text('₹${widget.movie.pricePerSeat.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -430,9 +385,9 @@ class _MovieReviewScreenState extends State<MovieReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Pay ₹${widget.movieData['price']}',
-                  isLoading: _isProcessing,
-                  onPressed: _isProcessing ? null : _bookMovie,
+                  text: 'Confirm & Book Movie Show',
+                  isLoading: _isBooking,
+                  onPressed: _isBooking ? null : _bookTicket,
                 ),
               ),
             ],

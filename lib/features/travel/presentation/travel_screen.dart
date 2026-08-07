@@ -18,7 +18,7 @@ class TravelScreen extends StatelessWidget {
       {'name': 'Trains', 'icon': Icons.train_rounded, 'color': Colors.indigo, 'screen': const TrainSearchScreen()},
       {'name': 'Buses', 'icon': Icons.directions_bus_filled_rounded, 'color': AppColors.success, 'screen': const BusSearchScreen()},
       {'name': 'Hotels', 'icon': Icons.hotel_rounded, 'color': Colors.orange, 'screen': const HotelSearchScreen()},
-      {'name': 'Movies', 'icon': Icons.movie_creation_rounded, 'color': Colors.red, 'screen': const MovieListScreen()},
+      {'name': 'Movies', 'icon': Icons.movie_creation_rounded, 'color': Colors.red, 'screen': const MovieSearchScreen()},
       {'name': 'Insurance', 'icon': Icons.shield_rounded, 'color': Colors.teal, 'screen': null},
     ];
 
