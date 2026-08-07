@@ -4,6 +4,7 @@ import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/search_bar.dart';
 import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 
 class GlobalSearchScreen extends StatefulWidget {
   const GlobalSearchScreen({super.key});
@@ -28,81 +29,6 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _payContact(String name) {
-    double? transferAmount;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Send to $name',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Enter transfer amount to credit their Payout balance instantly.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              TextField(
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                onChanged: (val) {
-                  transferAmount = double.tryParse(val);
-                },
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-                decoration: const InputDecoration(
-                  prefixText: '\$ ',
-                  hintText: '0.00',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Send Funds',
-                  onPressed: () {
-                    if (transferAmount != null && transferAmount! > 0) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('\$${transferAmount!.toStringAsFixed(2)} transferred to $name.'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -147,7 +73,18 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.s8),
                         child: ListTile(
-                          onTap: () => _payContact(contact['name']!),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AmountEntryScreen(
+                                  recipientName: contact['name']!,
+                                  recipientDetail: contact['sub']!,
+                                  recipientType: 'Contact',
+                                ),
+                              ),
+                            );
+                          },
                           leading: CustomAvatar(
                             name: contact['name']!,
                             size: 40,

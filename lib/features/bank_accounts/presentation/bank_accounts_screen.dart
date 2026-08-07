@@ -3,6 +3,7 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 
 class BankAccountsScreen extends StatefulWidget {
   const BankAccountsScreen({super.key});
@@ -131,6 +132,18 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                 child: AppCard(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AmountEntryScreen(
+                          recipientName: bank['name']!,
+                          recipientDetail: bank['acc']!,
+                          recipientType: 'Bank',
+                        ),
+                      ),
+                    );
+                  },
                   child: Row(
                     children: [
                       Container(

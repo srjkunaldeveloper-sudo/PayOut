@@ -26,8 +26,10 @@ class _WalletCardState extends State<WalletCard> {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      color: AppColors.surface,
-      padding: const EdgeInsets.all(AppSpacing.s20),
+      color: AppColors.primary,
+      borderRadius: AppRadii.cardHero,
+      padding: const EdgeInsets.all(AppSpacing.s24),
+      hasShadow: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -37,21 +39,21 @@ class _WalletCardState extends State<WalletCard> {
               Row(
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 6,
+                    height: 6,
                     decoration: const BoxDecoration(
-                      color: AppColors.primary,
+                      color: AppColors.primaryLight,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   const Text(
-                    'Wallet Balance',
+                    'Available Balance',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 14.0,
+                      fontSize: 13.0,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      color: AppColors.primaryLight,
                     ),
                   ),
                 ],
@@ -59,7 +61,7 @@ class _WalletCardState extends State<WalletCard> {
               IconButton(
                 icon: Icon(
                   _isHidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                  color: AppColors.textSecondary,
+                  color: AppColors.primaryLight.withOpacity(0.8),
                   size: 20,
                 ),
                 onPressed: () {
@@ -75,13 +77,15 @@ class _WalletCardState extends State<WalletCard> {
           const SizedBox(height: AppSpacing.s8),
           Text(
             _isHidden ? '••••••' : '\$${widget.balance.toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: _isHidden ? 2.0 : -0.5,
-                ),
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 34.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
           ),
-          const SizedBox(height: AppSpacing.s20),
+          const SizedBox(height: AppSpacing.s24),
           Row(
             children: [
               Expanded(
@@ -92,13 +96,13 @@ class _WalletCardState extends State<WalletCard> {
                     'Add Money',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       fontSize: 13.0,
                       color: AppColors.primary,
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    backgroundColor: AppColors.primaryLight,
+                    backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -110,26 +114,25 @@ class _WalletCardState extends State<WalletCard> {
               Expanded(
                 child: TextButton.icon(
                   onPressed: widget.onSendMoney ?? widget.onWithdraw,
-                  icon: Icon(
-                    widget.onSendMoney != null ? Icons.arrow_outward_rounded : Icons.arrow_downward_rounded,
+                  icon: const Icon(
+                    Icons.arrow_outward_rounded,
                     size: 18,
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                   label: Text(
                     widget.onSendMoney != null ? 'Send Money' : 'Withdraw',
                     style: const TextStyle(
                       fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       fontSize: 13.0,
-                      color: AppColors.textPrimary,
+                      color: Colors.white,
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    backgroundColor: AppColors.background,
+                    backgroundColor: Colors.white.withOpacity(0.15),
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
-                      side: const BorderSide(color: AppColors.divider, width: 1.0),
                     ),
                   ),
                 ),

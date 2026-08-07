@@ -14,7 +14,9 @@ class AppColors {
 }
 
 class AppRadii {
-  static const double card = 18.0;
+  static const double cardHero = 24.0;
+  static const double card = 16.0;
+  static const double cardSmall = 12.0;
   static const double button = 14.0;
   static const double bottomSheet = 28.0;
 }
@@ -63,7 +65,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.card),
-          side: const BorderSide(color: AppColors.divider, width: 1.0),
+          side: BorderSide.none,
         ),
       ),
       textTheme: const TextTheme(

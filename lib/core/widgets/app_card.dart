@@ -8,6 +8,7 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final Border? border;
   final bool hasShadow;
+  final double? borderRadius;
 
   const AppCard({
     super.key,
@@ -16,23 +17,31 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.color,
     this.border,
-    this.hasShadow = false,
+    this.hasShadow = true,
+    this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
+    final double radius = borderRadius ?? AppRadii.card;
+
     final cardWidget = Container(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.s16),
+      padding: padding ?? const EdgeInsets.all(AppSpacing.s20),
       decoration: BoxDecoration(
         color: color ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.card),
-        border: border ?? Border.all(color: AppColors.divider, width: 1.0),
+        borderRadius: BorderRadius.circular(radius),
+        border: border, // No default border
         boxShadow: hasShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withOpacity(0.015),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.01),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ]
             : null,
@@ -45,7 +54,7 @@ class AppCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderRadius: BorderRadius.circular(radius),
           child: cardWidget,
         ),
       );

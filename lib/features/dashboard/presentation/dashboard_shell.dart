@@ -39,50 +39,59 @@ class _DashboardShellState extends State<DashboardShell> {
             ),
           ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textSecondary,
-          selectedLabelStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w600,
-            fontSize: 12.0,
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            backgroundColor: AppColors.background,
+            indicatorColor: AppColors.primaryLight,
+            labelTextStyle: MaterialStateProperty.resolveWith((states) {
+              final isSelected = states.contains(MaterialState.selected);
+              return TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 12.0,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              );
+            }),
+            iconTheme: MaterialStateProperty.resolveWith((states) {
+              final isSelected = states.contains(MaterialState.selected);
+              return IconThemeData(
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                size: 24,
+              );
+            }),
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w500,
-            fontSize: 12.0,
+          child: NavigationBar(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            height: 64,
+            elevation: 0,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home_rounded),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.payment_outlined),
+                selectedIcon: Icon(Icons.payment_rounded),
+                label: 'Payments',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.star_outline_rounded),
+                selectedIcon: Icon(Icons.stars_rounded),
+                label: 'Rewards',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline_rounded),
+                selectedIcon: Icon(Icons.person_rounded),
+                label: 'Profile',
+              ),
+            ],
           ),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              activeIcon: Icon(Icons.home_rounded, color: AppColors.primary),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.payment_rounded),
-              activeIcon: Icon(Icons.payment_rounded, color: AppColors.primary),
-              label: 'Payments',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.stars_rounded),
-              activeIcon: Icon(Icons.stars_rounded, color: AppColors.primary),
-              label: 'Rewards',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              activeIcon: Icon(Icons.person_rounded, color: AppColors.primary),
-              label: 'Profile',
-            ),
-          ],
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
@@ -9,6 +10,19 @@ class MyQRScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const upiId = 'alexmorgan@payout';
+
+    void _copyUPI() {
+      Clipboard.setData(const ClipboardData(text: upiId));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('UPI ID "$upiId" copied to clipboard!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'My Payment QR'),
@@ -38,12 +52,32 @@ class MyQRScreen extends StatelessWidget {
                         fontSize: 18,
                       ),
                     ),
-                    const Text(
-                      'alex.morgan@payout',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                    // UPI ID with Copy button
+                    GestureDetector(
+                      onTap: _copyUPI,
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 4.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'UPI ID: $upiId',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Icon(Icons.copy_rounded, size: 12, color: AppColors.primary),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s32),
