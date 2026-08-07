@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:payout/core/config/app_config.dart';
 
 class AuthLogger {
   static void log(String message) {
-    if (kDebugMode) {
-      print('[AUTH_LOG] ${DateTime.now().toIso8601String()}: $message');
+    if (kDebugMode && AppConfig.enableLogs) {
+      final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
+      print('[AUTH_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

@@ -12,48 +12,50 @@ class PermissionScreen extends StatelessWidget {
     required String title,
     required String description,
   }) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      margin: const EdgeInsets.only(bottom: AppSpacing.s16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.s12),
-            decoration: const BoxDecoration(
-              color: AppColors.primaryContainer,
-              shape: BoxShape.circle,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+      child: AppCard(
+        padding: const EdgeInsets.all(AppSpacing.s16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.s12),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.primary,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.s16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.bodyLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+            const SizedBox(width: AppSpacing.s16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

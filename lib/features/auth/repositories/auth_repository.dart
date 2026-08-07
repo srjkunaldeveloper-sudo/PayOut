@@ -1,5 +1,7 @@
 import 'package:payout/features/auth/models/auth_models.dart';
 import 'package:payout/features/auth/services/auth_logger.dart';
+import 'package:payout/features/auth/constants/auth_constants.dart';
+import 'package:payout/core/config/app_config.dart';
 
 abstract class AuthRepository {
   Future<LoginResponse> login(LoginRequest request);
@@ -13,6 +15,13 @@ class MockAuthRepository implements AuthRepository {
   Future<LoginResponse> login(LoginRequest request) async {
     AuthLogger.logLoginAttempt(request.mobile);
     await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (AppConfig.isDemoMode) {
+      return const LoginResponse(
+        success: true,
+        sessionId: 'DEMO-SESS-123456',
+      );
+    }
 
     // Simulate blocked number simulation
     if (request.mobile == '9999999999') {
@@ -29,6 +38,22 @@ class MockAuthRepository implements AuthRepository {
   Future<OTPResponse> verifyOTP(OTPRequest request) async {
     AuthLogger.log('Verifying OTP code: ${request.code}');
     await Future.delayed(const Duration(milliseconds: 1000));
+
+    if (AppConfig.isDemoMode) {
+      if (request.code.length == AuthConstants.otpLength) {
+        const user = UserModel(
+          id: 'USR-DEMO',
+          name: 'Demo User',
+          phone: '+91 9876543210',
+        );
+        return const OTPResponse(
+          success: true,
+          accessToken: 'DEMO-TOKEN-ACCESS',
+          refreshToken: 'DEMO-TOKEN-REFRESH',
+          user: user,
+        );
+      }
+    }
 
     if (request.code == '123456') {
       const user = UserModel(

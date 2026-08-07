@@ -1,5 +1,6 @@
 enum AuthStatus {
   idle,
+  typing,
   loading,
   success,
   failure,
