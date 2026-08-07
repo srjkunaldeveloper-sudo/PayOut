@@ -50,3 +50,10 @@ Separates history feeds, filtering engines, and alert push systems:
 - **Validators:** `TransactionValidator` manages date range filters and statements search parameters.
 - **Repositories:** `TransactionRepository` and `NotificationRepository` handle bulk database queries, swipes to delete, and PDF receipt downloads.
 
+---
+
+## 📱 Recharge & Bills Domains
+Coordinates operator catalogues, data plans compare matrix, and utility invoice checks:
+- **Validators:** `RechargeValidator` and `BillValidator` confirm mobile digits formatting and consumer number lengths.
+- **Repositories:** `RechargeRepository` and `BillRepository` resolve operators listings and fetch billing status.
+

@@ -14,14 +14,13 @@ This document tracks the migration progress of the Payout application modules to
 | **QR Scan & Generator** | Completed | Completed | ✅ **Production Ready** |
 | **Transactions & Receipts** | Completed | Completed | ✅ **Production Ready** |
 | **Notifications & Alerts** | Completed | Completed | ✅ **Production Ready** |
+| **Recharge & Bills** | Completed | Completed | ✅ **Production Ready** |
 | **Travel** | Completed | Stubbed | ⚪️ Pending Refactor |
-| **Recharge & Bills** | Completed | Stubbed | ⚪️ Pending Refactor |
 | **Merchant Hub** | Completed | Stubbed | ⚪️ Pending Refactor |
 
-- **Overall Progress:** ≈ 80%
+- **Overall Progress:** ≈ 87%
 
 ---
 
 ## 📈 Next Milestones
-- Refactor Recharge & Bills operator catalogs.
 - Refactor Travel booking and transaction routing pipelines.

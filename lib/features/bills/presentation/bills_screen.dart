@@ -3,6 +3,9 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/bills/presentation/consumer_number_screen.dart';
+import 'package:payout/features/bills/models/bill_models.dart';
+import 'package:payout/features/bills/repositories/bill_repository.dart';
+import 'package:payout/features/bills/services/bill_service.dart';
 
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
@@ -12,6 +15,11 @@ class BillsScreen extends StatefulWidget {
 }
 
 class _BillsScreenState extends State<BillsScreen> {
+  final BillRepository _billRepository = MockBillRepository();
+
+  List<BillModel> _dueBills = [];
+  bool _isLoading = true;
+
   final List<Map<String, dynamic>> _categories = [
     {'name': 'Electricity', 'icon': Icons.lightbulb_rounded, 'color': AppColors.warning, 'status': 'Pending'},
     {'name': 'Water', 'icon': Icons.water_drop_rounded, 'color': AppColors.primary, 'status': 'No Due'},
@@ -21,18 +29,29 @@ class _BillsScreenState extends State<BillsScreen> {
     {'name': 'FASTag Pay', 'icon': Icons.tag_rounded, 'color': Colors.teal, 'status': 'Low balance'},
   ];
 
-  final List<Map<String, dynamic>> _dueBills = [
-    {'provider': 'Tata Power-Delhi', 'type': 'Electricity', 'due': 'Aug 15', 'amount': 1840.00, 'id': 'EL1098'},
-    {'provider': 'Delhi Jal Board', 'type': 'Water', 'due': 'Aug 20', 'amount': 420.00, 'id': 'WA9821'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  final List<Map<String, dynamic>> _savedBillers = [
-    {'provider': 'Tata Power-Delhi', 'type': 'Electricity', 'num': 'Cons. ID: 1024598124', 'icon': 'T'},
-    {'provider': 'Jio Fiber Broadband', 'type': 'Broadband', 'num': 'Acc No: 8241098421', 'icon': 'J'},
-  ];
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final list = await _billRepository.getDueBills();
+    if (mounted) {
+      setState(() {
+        _dueBills = list;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final double totalOutstanding = BillService.calculateTotalOutstanding(_dueBills);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Bills & Utilities'),
@@ -41,7 +60,7 @@ class _BillsScreenState extends State<BillsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Top Hero Card: Total Outstanding Due
+            // 1. Total Outstanding Card
             AppCard(
               color: AppColors.primary,
               borderRadius: AppRadius.xxl,
@@ -80,9 +99,9 @@ class _BillsScreenState extends State<BillsScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '₹2,260.00',
-                    style: TextStyle(
+                  Text(
+                    '₹${totalOutstanding.toStringAsFixed(2)}',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -92,17 +111,17 @@ class _BillsScreenState extends State<BillsScreen> {
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text(
-                        '2 Bills Pending',
-                        style: TextStyle(
+                        '${_dueBills.length} Bills Pending',
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,
                           color: AppColors.primaryContainer,
                         ),
                       ),
-                      Text(
-                        'Next Due: Aug 15',
+                      const Text(
+                        'Next Due: Aug 18',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,
@@ -118,7 +137,9 @@ class _BillsScreenState extends State<BillsScreen> {
             const SizedBox(height: AppSpacing.s24),
 
             // 2. Due Bills Section
-            if (_dueBills.isNotEmpty) ...[
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+            else if (_dueBills.isNotEmpty) ...[
               const Text(
                 'Due Bills',
                 style: TextStyle(
@@ -133,6 +154,16 @@ class _BillsScreenState extends State<BillsScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                   child: AppCard(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ConsumerNumberScreen(
+                            categoryName: bill.billerName.split(' ')[0],
+                          ),
+                        ),
+                      );
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -140,7 +171,7 @@ class _BillsScreenState extends State<BillsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              bill['provider'],
+                              bill.billerName,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.bold,
@@ -148,7 +179,7 @@ class _BillsScreenState extends State<BillsScreen> {
                               ),
                             ),
                             Text(
-                              'Due by ${bill['due']}',
+                              'Due by ${bill.dueDate}',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 11.0,
@@ -160,43 +191,16 @@ class _BillsScreenState extends State<BillsScreen> {
                         Row(
                           children: [
                             Text(
-                              '₹${bill['amount'].toStringAsFixed(2)}',
+                              '₹${bill.amount.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15.0,
-                                color: AppColors.error,
+                                fontSize: 16.0,
+                                color: AppColors.textPrimary,
                               ),
                             ),
-                            const SizedBox(width: AppSpacing.s12),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ConsumerNumberScreen(
-                                      categoryName: bill['type'],
-                                    ),
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: AppColors.primaryContainer,
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.circle),
-                                ),
-                              ),
-                              child: const Text(
-                                'Pay',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
+                            const SizedBox(width: AppSpacing.s16),
+                            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textSecondary),
                           ],
                         ),
                       ],
@@ -204,10 +208,10 @@ class _BillsScreenState extends State<BillsScreen> {
                   ),
                 );
               }).toList(),
-              const SizedBox(height: AppSpacing.s24),
             ],
+            const SizedBox(height: AppSpacing.s24),
 
-            // 3. Saved Billers Section
+            // 3. Saved Billers List
             const Text(
               'Saved Billers',
               style: TextStyle(
@@ -217,72 +221,68 @@ class _BillsScreenState extends State<BillsScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: AppSpacing.s12),
-            ..._savedBillers.map((biller) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                child: AppCard(
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          biller['icon']!,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                            fontSize: 16,
+            const SizedBox(height: AppSpacing.s16),
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                  child: AppCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'B',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.s16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  biller['provider']!,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
+                        const SizedBox(width: AppSpacing.s16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'BESCOM Electricity',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
-                                const SizedBox(width: 6),
-                                const Icon(Icons.verified_rounded, color: AppColors.success, size: 14),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${biller['type']} • ${biller['num']}',
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 2),
+                              Text(
+                                'Cons. ID: 542019382',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              );
-            }).toList(),
+              ],
+            ),
             const SizedBox(height: AppSpacing.s24),
 
-            // 4. Categories Grid Section
+            // 4. Utility Categories Grid
             const Text(
-              'All Bill Categories',
+              'Utility Categories',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 15.0,
@@ -297,9 +297,9 @@ class _BillsScreenState extends State<BillsScreen> {
               itemCount: _categories.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.9,
+                crossAxisSpacing: AppSpacing.s16,
+                mainAxisSpacing: AppSpacing.s16,
+                childAspectRatio: 0.85,
               ),
               itemBuilder: (context, index) {
                 final cat = _categories[index];
@@ -308,33 +308,31 @@ class _BillsScreenState extends State<BillsScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ConsumerNumberScreen(categoryName: cat['name']!),
+                        builder: (context) => ConsumerNumberScreen(categoryName: cat['name'] as String),
                       ),
                     );
                   },
+                  padding: const EdgeInsets.all(AppSpacing.s8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(cat['icon'] as IconData, color: cat['color'] as Color, size: 24),
-                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.s12),
+                        decoration: BoxDecoration(
+                          color: (cat['color'] as Color).withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(cat['icon'] as IconData, color: cat['color'] as Color, size: 24),
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
                       Text(
                         cat['name'] as String,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 11.0,
+                          fontSize: 10.0,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        cat['status'] as String,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 8.0,
-                          fontWeight: FontWeight.bold,
-                          color: cat['status'] == 'Pending' ? AppColors.error : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -342,7 +340,7 @@ class _BillsScreenState extends State<BillsScreen> {
                 );
               },
             ),
-            const SizedBox(height: AppSpacing.s32),
+            const SizedBox(height: AppSpacing.s40),
           ],
         ),
       ),
