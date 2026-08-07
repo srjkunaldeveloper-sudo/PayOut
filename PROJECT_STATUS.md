@@ -5,12 +5,12 @@ This document tracks the migration progress of the Payout application modules to
 ---
 
 ## 📊 Project Metadata
-- **Current Version:** v0.8.0
-- **UI Progress:** 97%
-- **Architecture:** 84%
-- **Backend Readiness:** 80%
-- **Production Readiness:** 70%
-- **Overall Progress:** ≈82%
+- **Current Version:** v0.9.0
+- **UI Progress:** 98%
+- **Architecture:** 88%
+- **Backend Readiness:** 85%
+- **Production Readiness:** 78%
+- **Overall Progress:** ≈90%
 
 ---
 
@@ -27,12 +27,12 @@ This document tracks the migration progress of the Payout application modules to
 | **Recharge** | ✅ Completed |
 | **Bills** | ✅ Completed |
 | **User** | ✅ Completed |
+| **Merchant** | ✅ Completed |
+| **Rewards** | ✅ Completed |
 
 ---
 
 ## 📈 Remaining Modules
-- Merchant
-- Rewards
 - Loans
 - Insurance
 - Investments

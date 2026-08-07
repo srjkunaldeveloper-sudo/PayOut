@@ -22,20 +22,26 @@ class SessionManager {
 
     if (_rememberLogin) {
       await SecureStorageService.saveToken(access);
+      await SecureStorageService.saveUserId(user.id);
+      await SecureStorageService.saveUserPhone(user.phone);
+      await SecureStorageService.saveLoginTimestamp(DateTime.now().toIso8601String());
     }
     AuthLogger.log('Session initialised for: ${user.name}');
   }
 
   Future<void> autoLogin() async {
     final savedToken = await SecureStorageService.readToken();
+    final savedId = await SecureStorageService.readUserId();
+    final savedPhone = await SecureStorageService.readUserPhone();
+    
     if (savedToken != null) {
       _accessToken = savedToken;
-      _currentUser = const UserModel(
-        id: 'USR-789',
+      _currentUser = UserModel(
+        id: savedId ?? 'USR-789',
         name: 'Rahul Sharma',
-        phone: '+91 9876543210',
+        phone: savedPhone ?? '+91 9876543210',
       );
-      AuthLogger.log('Auto login successful for Rahul Sharma');
+      AuthLogger.log('Auto login successful for: ${_currentUser?.name}');
     }
   }
 

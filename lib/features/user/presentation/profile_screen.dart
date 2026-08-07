@@ -12,6 +12,7 @@ import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/user/dummy/dummy_user_data.dart';
 import 'package:payout/features/user/presentation/kyc_status_screen.dart';
 import 'package:payout/features/user/presentation/settings_screen.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -95,7 +96,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: DangerButton(
                         text: 'Logout',
-                        onPressed: () {
+                        onPressed: () async {
+                          await SessionManager.instance.logout();
+                          if (!mounted) return;
                           Navigator.pop(context);
                           Navigator.pushAndRemoveUntil(
                             context,

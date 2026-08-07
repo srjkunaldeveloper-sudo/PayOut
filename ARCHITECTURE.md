@@ -64,3 +64,10 @@ Stores preference configurations, identity compliance, and session controls:
 - **Validators:** `UserValidator` confirms Aadhaar and PAN check structures.
 - **Repository:** `UserRepository` manages user profiling data and document uploads.
 
+---
+
+## 💼 Merchant & Rewards Domains
+Provides merchant invoice monitoring and loyalty offers management:
+- **Validators:** `MerchantValidator` and `RewardValidator` check business details and coupon codes.
+- **Repositories:** `MerchantRepository` and `RewardRepository` retrieve settlements and active scratch cards.
+

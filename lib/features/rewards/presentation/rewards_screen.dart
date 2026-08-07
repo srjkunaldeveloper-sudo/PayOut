@@ -3,25 +3,62 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/features/rewards/models/reward_models.dart';
+import 'package:payout/features/rewards/repositories/reward_repository.dart';
+import 'package:payout/features/rewards/services/reward_service.dart';
 
-class RewardsScreen extends StatelessWidget {
+class RewardsScreen extends StatefulWidget {
   const RewardsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> coupons = [
-      {'store': 'Amazon Perks', 'code': 'AMZN25', 'desc': 'Get 25% cashback on purchases.', 'expiry': 'Expires Aug 31'},
-      {'store': 'Starbucks Cafe', 'code': 'COFFEEFREE', 'desc': 'Buy 1 Get 1 Free Espresso drink.', 'expiry': 'Expires Aug 25'},
-      {'store': 'Uber Rides', 'code': 'UBERRIDE10', 'desc': '₹50 discount on next 3 rides.', 'expiry': 'Expires Sep 10'},
-    ];
+  State<RewardsScreen> createState() => _RewardsScreenState();
+}
 
-    void _copyCode(String code) {
-      Clipboard.setData(ClipboardData(text: code));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Promo Code "$code" copied to clipboard!'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 1),
+class _RewardsScreenState extends State<RewardsScreen> {
+  final RewardRepository _rewardRepository = MockRewardRepository();
+
+  List<CashbackModel> _cashbacks = [];
+  List<CouponModel> _coupons = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRewards();
+  }
+
+  Future<void> _loadRewards() async {
+    final cshList = await _rewardRepository.getCashbacks();
+    final cpnList = await _rewardRepository.getCoupons();
+    if (mounted) {
+      setState(() {
+        _cashbacks = cshList;
+        _coupons = cpnList;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _copyCode(String code) {
+    Clipboard.setData(ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Promo Code "$code" copied to clipboard!'),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalCashback = RewardService.calculateTotalCashback(_cashbacks);
+
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'Rewards', showLeading: false),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
         ),
       );
     }
@@ -41,8 +78,8 @@ class RewardsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.s24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Lifetime Cashback Earned',
                     style: TextStyle(
                       fontFamily: 'Inter',
@@ -51,10 +88,10 @@ class RewardsScreen extends StatelessWidget {
                       color: AppColors.primaryLight,
                     ),
                   ),
-                  SizedBox(height: AppSpacing.s8),
+                  const SizedBox(height: AppSpacing.s8),
                   Text(
-                    '₹2,450',
-                    style: TextStyle(
+                    '₹${totalCashback.toStringAsFixed(0)}',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 32.0,
                       fontWeight: FontWeight.bold,
@@ -65,6 +102,7 @@ class RewardsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
+
             // Referral Card
             AppCard(
               color: AppColors.surface,
@@ -105,6 +143,7 @@ class RewardsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
+
             const Text(
               'My Active Coupons',
               style: TextStyle(
@@ -115,7 +154,8 @@ class RewardsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            ...coupons.map((coupon) {
+
+            ..._coupons.map((coupon) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                 child: AppCard(
@@ -135,14 +175,14 @@ class RewardsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              coupon['store']!,
+                              coupon.merchantName,
                               style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14.0),
                             ),
                             Text(
-                              coupon['desc']!,
+                              'Code: ${coupon.discountCode}',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 11.0,
@@ -151,7 +191,7 @@ class RewardsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              coupon['expiry']!,
+                              'Expires ${coupon.expiryDate}',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 10.0,
@@ -164,13 +204,13 @@ class RewardsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.s8),
                       TextButton(
-                        onPressed: () => _copyCode(coupon['code']!),
+                        onPressed: () => _copyCode(coupon.discountCode),
                         style: TextButton.styleFrom(
                           backgroundColor: AppColors.primaryLight,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.button)),
                         ),
                         child: Text(
-                          coupon['code']!,
+                          coupon.discountCode,
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 12,
@@ -185,6 +225,7 @@ class RewardsScreen extends StatelessWidget {
               );
             }).toList(),
             const SizedBox(height: AppSpacing.s32),
+
             const Text(
               'Reward History',
               style: TextStyle(
@@ -195,11 +236,8 @@ class RewardsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s12),
-            ...[
-              {'title': 'Referral Bonus', 'date': 'Aug 01, 2026', 'amount': '+₹150.00'},
-              {'title': 'Starbucks Cashback perk', 'date': 'Jul 24, 2026', 'amount': '+₹24.00'},
-              {'title': 'Amazon Prime signup promo', 'date': 'Jul 10, 2026', 'amount': '+₹100.00'},
-            ].map((rew) {
+
+            ..._cashbacks.map((rew) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
                 child: Row(
@@ -208,16 +246,16 @@ class RewardsScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          rew['title']!,
-                          style: const TextStyle(
+                        const Text(
+                          'Cashback Earned',
+                          style: TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
                         ),
                         Text(
-                          rew['date']!,
+                          rew.date,
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 11,
@@ -227,7 +265,7 @@ class RewardsScreen extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      rew['amount']!,
+                      '+₹${rew.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.bold,

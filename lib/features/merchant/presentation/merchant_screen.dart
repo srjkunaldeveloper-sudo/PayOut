@@ -4,13 +4,52 @@ import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
 import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/features/merchant/models/merchant_models.dart';
+import 'package:payout/features/merchant/repositories/merchant_repository.dart';
+import 'package:payout/features/merchant/dummy/dummy_merchant_data.dart';
 
 // 1. MERCHANT LANDING DASHBOARD
-class MerchantScreen extends StatelessWidget {
+class MerchantScreen extends StatefulWidget {
   const MerchantScreen({super.key});
 
   @override
+  State<MerchantScreen> createState() => _MerchantScreenState();
+}
+
+class _MerchantScreenState extends State<MerchantScreen> {
+  final MerchantRepository _merchantRepository = MockMerchantRepository();
+  MerchantProfileModel? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final data = await _merchantRepository.getMerchantProfile();
+    if (mounted) {
+      setState(() {
+        _profile = data;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'Business Console'),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+        ),
+      );
+    }
+
+    final businessName = _profile?.businessName ?? DummyMerchantData.dummyProfile.businessName;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Business Console'),
@@ -28,7 +67,7 @@ class MerchantScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Text(
-                    'Today\'s Business Sales',
+                    "Today's Business Sales",
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12.0,
@@ -75,7 +114,7 @@ class MerchantScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MerchantQRScreen()),
+                  MaterialPageRoute(builder: (context) => MerchantQRScreen(businessName: businessName, merchantId: _profile?.id ?? 'organic@payout')),
                 );
               },
               child: Row(
@@ -141,7 +180,7 @@ class MerchantScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MerchantProfileScreen()),
+                  MaterialPageRoute(builder: (context) => MerchantProfileScreen(profile: _profile ?? DummyMerchantData.dummyProfile)),
                 );
               },
               child: Row(
@@ -211,7 +250,14 @@ class MerchantScreen extends StatelessWidget {
 
 // 2. MERCHANT QR SCREEN
 class MerchantQRScreen extends StatelessWidget {
-  const MerchantQRScreen({super.key});
+  final String businessName;
+  final String merchantId;
+
+  const MerchantQRScreen({
+    super.key,
+    required this.businessName,
+    required this.merchantId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -229,16 +275,16 @@ class MerchantQRScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
                 child: Column(
                   children: [
-                    const CustomAvatar(
-                      name: 'Organic Organics',
+                    CustomAvatar(
+                      name: businessName,
                       size: 56,
                       backgroundColor: AppColors.primaryLight,
                       textColor: AppColors.primary,
                     ),
                     const SizedBox(height: AppSpacing.s12),
-                    const Text(
-                      'Organic Organics Retailers',
-                      style: TextStyle(
+                    Text(
+                      businessName,
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -251,9 +297,9 @@ class MerchantQRScreen extends StatelessWidget {
                         color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        'Merchant ID: organic@payout',
-                        style: TextStyle(
+                      child: Text(
+                        'Merchant ID: $merchantId',
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -424,7 +470,12 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
 
 // 4. BUSINESS PROFILE SCREEN
 class MerchantProfileScreen extends StatelessWidget {
-  const MerchantProfileScreen({super.key});
+  final MerchantProfileModel profile;
+
+  const MerchantProfileScreen({
+    super.key,
+    required this.profile,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -447,14 +498,14 @@ class MerchantProfileScreen extends StatelessWidget {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Legal Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      SizedBox(width: 8),
+                    children: [
+                      const Text('Legal Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+                      const SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          'Organic Organics Retailers Pvt Ltd',
+                          profile.businessName,
                           textAlign: TextAlign.right,
-                          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
+                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -464,9 +515,9 @@ class MerchantProfileScreen extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Display Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('Organic Organics', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                    children: [
+                      const Text('Display Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+                      Text(profile.businessName.split(' ')[0], style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.s12),
@@ -492,9 +543,9 @@ class MerchantProfileScreen extends StatelessWidget {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('GSTIN Number', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('07AAAAA1111A1Z1', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                    children: [
+                      const Text('GSTIN Number', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+                      Text(profile.gstNumber, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.s12),
@@ -524,77 +575,98 @@ class MerchantProfileScreen extends StatelessWidget {
 }
 
 // 5. SETTLEMENT HISTORY SCREEN
-class MerchantSettlementHistoryScreen extends StatelessWidget {
+class MerchantSettlementHistoryScreen extends StatefulWidget {
   const MerchantSettlementHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> sweepLogs = [
-      {'date': 'Aug 07, 2026', 'amount': 38240.00, 'ref': 'SETL908122', 'status': 'SETTLED'},
-      {'date': 'Aug 06, 2026', 'amount': 45190.00, 'ref': 'SETL907765', 'status': 'SETTLED'},
-      {'date': 'Aug 05, 2026', 'amount': 29870.00, 'ref': 'SETL906321', 'status': 'SETTLED'},
-    ];
+  State<MerchantSettlementHistoryScreen> createState() => _MerchantSettlementHistoryScreenState();
+}
 
+class _MerchantSettlementHistoryScreenState extends State<MerchantSettlementHistoryScreen> {
+  final MerchantRepository _merchantRepository = MockMerchantRepository();
+  List<SettlementModel> _settlements = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettlements();
+  }
+
+  Future<void> _loadSettlements() async {
+    final list = await _merchantRepository.getSettlementHistory();
+    if (mounted) {
+      setState(() {
+        _settlements = list;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Settlement History'),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: sweepLogs.length,
-        itemBuilder: (context, index) {
-          final log = sweepLogs[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-            child: AppCard(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Settled on ${log['date']}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ref: ${log['ref']}',
-                        style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '₹${(log['amount'] as double).toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(4),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppSpacing.s24),
+              itemCount: _settlements.length,
+              itemBuilder: (context, index) {
+                final log = _settlements[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                  child: AppCard(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Settled on ${log.date}',
+                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Ref: ${log.id}',
+                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          log['status'] as String,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.success,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '₹${log.amount.toStringAsFixed(2)}',
+                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                log.status,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

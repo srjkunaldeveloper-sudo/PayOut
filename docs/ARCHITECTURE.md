@@ -17,3 +17,8 @@ Payout follows a Feature-First DDD folder hierarchy structure.
 ### 3. Data / Repositories
 - Data providers, local secure storages, and remote API gateways.
 - Contract implementation layers (`MockUserRepository`, etc.).
+
+---
+
+## 💼 Domain Repositories
+Every feature operates under dedicated repositories, ensuring backend compatibility without modifying the UI layer. For example, `MerchantRepository` and `RewardRepository` handle business dashboard details and scratch cards.

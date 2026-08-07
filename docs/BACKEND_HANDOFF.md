@@ -8,3 +8,4 @@ This file serves as a guide for backend team developers integrating remote REST 
 - **Authentication:** Connects OTP trigger verification endpoints.
 - **Payments:** Handles NPCI interfaces, bank account linkings, and UPI transactions.
 - **User Settings:** Interfaces preferences configuration changes (themes, languages).
+- **Merchant & Rewards:** Integrates sales analytics maps, settlement requests, active coupons, and scratch cards.
