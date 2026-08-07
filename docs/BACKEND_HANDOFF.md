@@ -11,3 +11,4 @@ This file serves as a guide for backend team developers integrating remote REST 
 - **Merchant & Rewards:** Integrates sales analytics maps, settlement requests, active coupons, and scratch cards.
 - **Financial Products:** Integrates active loan offers checkers, insurance premium billing checkouts, and mutual funds portfolio indicators.
 - **Travel Enterprise:** Integrates flight schedules queries, seat locks status, bus listings, and movie multiplex parameters.
+- **Core Network client:** Connects target REST base URLs directly to `ApiClient`.

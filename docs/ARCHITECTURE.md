@@ -21,4 +21,4 @@ Payout follows a Feature-First DDD folder hierarchy structure.
 ---
 
 ## 💼 Domain Repositories
-Every feature operates under dedicated repositories, ensuring backend compatibility without modifying the UI layer. For example, `MerchantRepository`, `RewardRepository`, `FinancialRepository` and `TravelRepository` handle business dashboard details, scratch cards, user portfolios, and travel bookings.
+Every feature operates under dedicated repositories, ensuring backend compatibility without modifying the UI layer. For example, `MerchantRepository`, `RewardRepository`, `FinancialRepository` and `TravelRepository` handle business dashboard details, scratch cards, user portfolios, and travel bookings. Core networking and security configurations reside under `lib/core/network/` and `lib/core/security/`.

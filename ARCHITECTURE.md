@@ -85,3 +85,9 @@ Coordinates flight bookings, train berths allocation, hotel reservations, and mo
 - **Validators:** `TravelValidator` monitors ticket quantities and travel calendar entries.
 - **Repository:** `TravelRepository` handles schedule indices search and boarding pass printouts.
 
+---
+
+## 🔒 Security & Core Network Infrastructure
+- **Network Layer:** API client bindings (`ApiClient`), request adapters configurations (`DioClient`), and safety interceptors (`AuthInterceptor`).
+- **Security Protocols:** Credentials token lockers (`TokenManager`), cryptographic sanitation helpers (`EncryptionHelper`), and biometric checks triggers (`BiometricManager`).
+

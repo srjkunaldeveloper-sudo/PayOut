@@ -3,6 +3,7 @@
 ## [1.0.1] - 2026-08-07
 
 ### Added
+- **Production Hardening & Release Readiness:** Set up abstract Dio API clients, network request interceptors, PIN lock manager, encryption utils, Firebase mock services, localizations base, unit and widget test files, and GitHub actions configuration.
 - **Travel Enterprise Production Readiness:** Restructured flight ticketing, train berth allocations, bus layouts, hotel suites booking, and multiplex movie seats tracking flows to fetch data models via `MockTravelRepository` under `lib/features/travel/`.
 - **Financial Products Production Readiness:** Consolidated loans eligibility checks, insurance coverage summaries, and investment portfolio tracking maps under a unified directory structure inside `lib/features/financial/`.
 - **Merchant & Rewards Production Readiness:** Centralized all sales analytics, settlements timelines, cashback status, scratch cards, and active coupon codes under `lib/features/merchant/` and `lib/features/rewards/`.
