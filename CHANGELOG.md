@@ -3,6 +3,8 @@
 ## [1.0.1] - 2026-08-07
 
 ### Added
+- **Payments Production Readiness:** Upgraded the payments module directory structure into Domain-Driven Design (DDD) layers. Controlled via mock repository contracts.
+- **Dedicated Payment outcome screens:** Added `PaymentPendingScreen`, `PaymentFailedScreen`, and a detailed `ReceiptScreen` mapping transaction UTR codes.
 - **Global AppConfig Configuration:** Global AppConfig introduced for application-wide configuration.
 - **Authentication Demo Mode:** Added for client presentation. Controlled via `AppConfig.isDemoMode`.
 - **Dynamic OTP verification stubs:** Accept any 6-digit verification code under Demo Mode (e.g., 000000, 111111, 999999).

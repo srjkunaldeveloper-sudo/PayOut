@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/payments/presentation/receipt_screen.dart';
+import 'package:payout/features/payments/repositories/payments_repository.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final String recipientName;
@@ -163,17 +165,23 @@ class PaymentSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s24),
               
-              // Share and Done Button Actions
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButtonV2(
-                      text: 'Share Receipt',
-                      iconLeft: Icons.share_rounded,
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Sharing payment receipt...')),
-                        );
+                      text: 'View Receipt',
+                      iconLeft: Icons.receipt_long_rounded,
+                      onPressed: () async {
+                        final repo = MockPaymentsRepository();
+                        final receipt = await repo.getReceipt(txnId);
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReceiptScreen(receipt: receipt),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ),

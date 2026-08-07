@@ -3,6 +3,7 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/review_payment_screen.dart';
+import 'package:payout/features/payments/validators/payments_validator.dart';
 
 class AmountEntryScreen extends StatefulWidget {
   final String recipientName;
@@ -251,6 +252,16 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                       text: 'Continue',
                       onPressed: parsedAmount > 0.0
                           ? () {
+                              final validation = PaymentsValidator.validateAmount(parsedAmount);
+                              if (!validation.isValid) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(validation.errorMessage ?? 'Invalid amount.'),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

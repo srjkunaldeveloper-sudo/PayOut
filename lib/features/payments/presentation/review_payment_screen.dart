@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/payments/presentation/payment_success_screen.dart';
+import 'package:payout/features/payments/presentation/payment_pending_screen.dart';
 
 class ReviewPaymentScreen extends StatefulWidget {
   final String recipientName;
@@ -31,26 +31,18 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
     setState(() {
       _isProcessing = true;
     });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PaymentSuccessScreen(
-              recipientName: widget.recipientName,
-              amount: widget.amount,
-            ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
-        );
-      }
-    });
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentPendingScreen(
+          recipientName: widget.recipientName,
+          recipientDetail: widget.recipientDetail,
+          recipientType: widget.recipientType,
+          amount: widget.amount,
+          note: widget.note,
+        ),
+      ),
+    );
   }
 
   @override

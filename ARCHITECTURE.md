@@ -28,3 +28,11 @@ All application-wide toggles are stored inside `lib/core/config/app_config.dart`
 - `isDemoMode`: Bypasses strict OTP validations for presentations and client reviews.
 - `enableLogs`: Master toggle for console logs and analytics telemetry.
 - `enableMockRepository`: Determines whether modules connect to mock data repositories or production services.
+
+---
+
+## 💳 Payments Domain
+The Payments module is organized to handle multiple instruments:
+- **Validators:** `PaymentsValidator` verifies that amount ranges, IFSC formats, and VPA strings conform to National Payments Corporation of India (NPCI) criteria.
+- **Repository:** `PaymentsRepository` coordinates verified beneficiary contacts retrieval, payments execution, and receipt generation.
+
