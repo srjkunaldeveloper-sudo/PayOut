@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/auth/constants/auth_constants.dart';
+import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/states/auth_state.dart';
+import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/biometric_screen.dart';
 
 class MPINScreen extends StatefulWidget {
@@ -12,39 +17,80 @@ class MPINScreen extends StatefulWidget {
 }
 
 class _MPINScreenState extends State<MPINScreen> {
+  final AuthRepository _authRepository = MockAuthRepository();
+
   String _pin = '';
   bool _isConfirmStage = false;
   String _firstPin = '';
-  String? _errorMessage;
+  
+  AuthState _state = const AuthState(status: AuthStatus.idle);
 
   void _onKeyPress(String val) {
-    if (_pin.length < 6) {
+    if (_pin.length < AuthConstants.mpinLength) {
       setState(() {
-        _errorMessage = null;
+        _state = const AuthState(status: AuthStatus.typing);
         _pin += val;
       });
 
-      if (_pin.length == 6) {
-        Future.delayed(const Duration(milliseconds: 300), () {
+      if (_pin.length == AuthConstants.mpinLength) {
+        Future.delayed(const Duration(milliseconds: 300), () async {
           if (!mounted) return;
 
           if (!_isConfirmStage) {
-            // Move to confirm stage
-            setState(() {
-              _firstPin = _pin;
-              _pin = '';
-              _isConfirmStage = true;
-            });
-          } else {
-            // Verify match
-            if (_pin == _firstPin) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const BiometricScreen()),
-              );
+            // First stage validation
+            final validationResult = AuthValidator.validateMPIN(_pin);
+            if (validationResult.isValid) {
+              setState(() {
+                _firstPin = _pin;
+                _pin = '';
+                _isConfirmStage = true;
+              });
             } else {
               setState(() {
                 _pin = '';
-                _errorMessage = 'PINs do not match. Please try again.';
+                _state = AuthState(
+                  status: AuthStatus.failure,
+                  errorMessage: validationResult.errorMessage ?? 'Invalid MPIN.',
+                );
+              });
+            }
+          } else {
+            // Confirm stage validation
+            final confirmResult = AuthValidator.validateConfirmMPIN(_firstPin, _pin);
+            if (confirmResult.isValid) {
+              setState(() {
+                _state = const AuthState(status: AuthStatus.loading);
+              });
+
+              // Create MPIN in repo stub
+              final success = await _authRepository.createMPIN(_pin);
+
+              if (!mounted) return;
+
+              if (success) {
+                setState(() {
+                  _state = const AuthState(status: AuthStatus.success);
+                });
+
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const BiometricScreen()),
+                );
+              } else {
+                setState(() {
+                  _pin = '';
+                  _state = const AuthState(
+                    status: AuthStatus.failure,
+                    errorMessage: 'Failed to create MPIN. Please try again.',
+                  );
+                });
+              }
+            } else {
+              setState(() {
+                _pin = '';
+                _state = AuthState(
+                  status: AuthStatus.failure,
+                  errorMessage: confirmResult.errorMessage ?? 'MPINs do not match.',
+                );
               });
             }
           }
@@ -56,7 +102,7 @@ class _MPINScreenState extends State<MPINScreen> {
   void _onBackspace() {
     if (_pin.isNotEmpty) {
       setState(() {
-        _errorMessage = null;
+        _state = const AuthState(status: AuthStatus.typing);
         _pin = _pin.substring(0, _pin.length - 1);
       });
     }
@@ -90,6 +136,8 @@ class _MPINScreenState extends State<MPINScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final showLoading = _state.status == AuthStatus.loading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: ''),
@@ -127,49 +175,56 @@ class _MPINScreenState extends State<MPINScreen> {
               const SizedBox(height: AppSpacing.s8),
               Text(
                 _isConfirmStage 
-                    ? 'Re-enter your 6-digit PIN to confirm.'
-                    : 'Create a secure 6-digit PIN for instant access.',
+                    ? 'Re-enter your ${AuthConstants.mpinLength}-digit PIN to confirm.'
+                    : 'Create a secure ${AuthConstants.mpinLength}-digit PIN for instant access.',
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: AppSpacing.s40),
-              
-              // 6-digit indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(6, (index) {
-                  final isFilled = index < _pin.length;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: isFilled ? AppColors.primary : Colors.transparent,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isFilled ? AppColors.primary : AppColors.divider,
-                        width: 2.0,
-                      ),
-                    ),
-                  );
-                }),
-              ),
-              
-              if (_errorMessage != null) ...[
-                const SizedBox(height: AppSpacing.s24),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    color: AppColors.error,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+              const SizedBox(height: AppSpacing.s32),
+
+              if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
+                AuthErrorWidget(
+                  title: 'PIN Match Error',
+                  description: _state.errorMessage!,
+                  onDismiss: () {
+                    setState(() {
+                      _state = const AuthState(status: AuthStatus.idle);
+                    });
+                  },
                 ),
+                const SizedBox(height: AppSpacing.s24),
               ],
+              
+              if (showLoading)
+                const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                )
+              else
+                // Indicators
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(AuthConstants.mpinLength, (index) {
+                    final isFilled = index < _pin.length;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: isFilled ? AppColors.primary : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isFilled ? AppColors.primary : AppColors.divider,
+                          width: 2.0,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
               
               const Spacer(),
               

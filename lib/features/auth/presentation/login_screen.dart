@@ -3,6 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/auth/constants/auth_constants.dart';
+import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/auth/models/auth_models.dart';
+import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/states/auth_state.dart';
+import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/otp_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,9 +20,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
+  final AuthRepository _authRepository = MockAuthRepository();
+
+  AuthState _state = const AuthState(status: AuthStatus.idle);
   bool _isValid = false;
-  bool _isProcessing = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -25,45 +32,55 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _checkValidation(String value) {
+    final result = AuthValidator.validateMobile(value);
     setState(() {
-      _errorMessage = null;
-      _isValid = value.length == 10;
+      _isValid = result.isValid;
+      _state = const AuthState(status: AuthStatus.typing);
     });
   }
 
   Future<void> _requestOTP() async {
     setState(() {
-      _isProcessing = true;
-      _errorMessage = null;
-    });
-
-    // Simulate dummy API request latency
-    await Future.delayed(const Duration(milliseconds: 1200));
-
-    if (!mounted) return;
-
-    setState(() {
-      _isProcessing = false;
+      _state = const AuthState(status: AuthStatus.loading);
     });
 
     final phone = _phoneController.text;
-    // Simulate invalid mobile validation failure block
-    if (phone == '9999999999') {
-      setState(() {
-        _errorMessage = 'This mobile number is blocked or invalid.';
-      });
-      return;
-    }
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => OTPScreen(phoneNumber: '+91 $phone'),
-      ),
+    final request = LoginRequest(
+      mobile: phone,
+      countryCode: AuthConstants.countryCode,
     );
+
+    final response = await _authRepository.login(request);
+
+    if (!mounted) return;
+
+    if (response.success && response.sessionId != null) {
+      setState(() {
+        _state = const AuthState(status: AuthStatus.success);
+      });
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OTPScreen(
+            phoneNumber: '${AuthConstants.countryCode} $phone',
+            sessionId: response.sessionId!,
+          ),
+        ),
+      );
+    } else {
+      setState(() {
+        _state = AuthState(
+          status: AuthStatus.failure,
+          errorMessage: response.message ?? 'Authentication failed.',
+        );
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final showLoading = _state.status == AuthStatus.loading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: '', showLeading: false),
@@ -99,7 +116,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: AppSpacing.s40),
+              const SizedBox(height: AppSpacing.s32),
+
+              if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
+                AuthErrorWidget(
+                  title: 'Blocked Account',
+                  description: _state.errorMessage!,
+                  onDismiss: () {
+                    setState(() {
+                      _state = const AuthState(status: AuthStatus.idle);
+                    });
+                  },
+                ),
+                const SizedBox(height: AppSpacing.s24),
+              ],
 
               // Mobile number input row
               Row(
@@ -115,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      '+91',
+                      AuthConstants.countryCode,
                       style: AppTypography.bodyLarge.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -124,51 +154,39 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(width: AppSpacing.s12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: 54,
-                          child: TextField(
-                            controller: _phoneController,
-                            onChanged: _checkValidation,
-                            keyboardType: TextInputType.phone,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            style: AppTypography.bodyLarge.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Enter 10-digit number',
-                              counterText: '',
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: AppColors.divider),
-                                borderRadius: BorderRadius.circular(AppRadius.md),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-                                borderRadius: BorderRadius.circular(AppRadius.md),
-                              ),
-                            ),
+                    child: SizedBox(
+                      height: 54,
+                      child: TextField(
+                        controller: _phoneController,
+                        onChanged: _checkValidation,
+                        keyboardType: TextInputType.phone,
+                        enabled: !showLoading,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(AuthConstants.mobileLength),
+                        ],
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter ${AuthConstants.mobileLength}-digit number',
+                          counterText: '',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: AppColors.divider),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: AppColors.divider),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                         ),
-                        if (_errorMessage != null) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            _errorMessage!,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              color: AppColors.error,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -187,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: AppSpacing.s16),
               PrimaryButton(
                 text: 'Send Verification Code',
-                isLoading: _isProcessing,
-                onPressed: _isValid && !_isProcessing ? _requestOTP : null,
+                isLoading: showLoading,
+                onPressed: _isValid && !showLoading ? _requestOTP : null,
               ),
               const SizedBox(height: AppSpacing.s24),
             ],

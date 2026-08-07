@@ -3,25 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/auth/constants/auth_constants.dart';
+import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/auth/models/auth_models.dart';
+import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/states/auth_state.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
+import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/mpin_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
+  final String sessionId;
 
-  const OTPScreen({super.key, required this.phoneNumber});
+  const OTPScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.sessionId,
+  });
 
   @override
   State<OTPScreen> createState() => _OTPScreenState();
 }
 
 class _OTPScreenState extends State<OTPScreen> {
-  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  final List<TextEditingController> _controllers = List.generate(AuthConstants.otpLength, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(AuthConstants.otpLength, (_) => FocusNode());
+  final AuthRepository _authRepository = MockAuthRepository();
+
+  AuthState _state = const AuthState(status: AuthStatus.idle);
   bool _isValid = false;
-  bool _isProcessing = false;
-  bool _isSuccess = false;
-  
-  int _secondsRemaining = 30;
+  int _secondsRemaining = AuthConstants.timerDuration;
   Timer? _timer;
 
   @override
@@ -31,7 +43,7 @@ class _OTPScreenState extends State<OTPScreen> {
   }
 
   void _startTimer() {
-    _secondsRemaining = 30;
+    _secondsRemaining = AuthConstants.timerDuration;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
         setState(() {
@@ -57,7 +69,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   void _onChanged(String value, int index) {
     if (value.isNotEmpty) {
-      if (index < 5) {
+      if (index < AuthConstants.otpLength - 1) {
         _focusNodes[index + 1].requestFocus();
       } else {
         _focusNodes[index].unfocus();
@@ -68,28 +80,42 @@ class _OTPScreenState extends State<OTPScreen> {
       }
     }
 
+    final enteredCode = _controllers.map((c) => c.text).join();
+    final result = AuthValidator.validateOTP(enteredCode);
     setState(() {
-      _isValid = _controllers.every((controller) => controller.text.isNotEmpty);
+      _isValid = result.isValid;
+      _state = const AuthState(status: AuthStatus.typing);
     });
   }
 
   Future<void> _verifyOTP() async {
     setState(() {
-      _isProcessing = true;
+      _state = const AuthState(status: AuthStatus.loading);
     });
 
-    // Simulate backend verification check latency
-    await Future.delayed(const Duration(milliseconds: 1000));
-
     final enteredCode = _controllers.map((c) => c.text).join();
+    final request = OTPRequest(
+      sessionId: widget.sessionId,
+      code: enteredCode,
+    );
 
-    if (enteredCode == '123456') {
+    final response = await _authRepository.verifyOTP(request);
+
+    if (!mounted) return;
+
+    if (response.success && response.accessToken != null && response.refreshToken != null && response.user != null) {
+      // Initialize active session
+      await SessionManager.instance.initSession(
+        response.accessToken!,
+        response.refreshToken!,
+        response.user!,
+      );
+
       setState(() {
-        _isProcessing = false;
-        _isSuccess = true;
+        _state = const AuthState(status: AuthStatus.success);
       });
 
-      // Show success validation state for exactly 1 second before navigating
+      // Show success checkmark for exactly 1 second before moving
       await Future.delayed(const Duration(seconds: 1));
 
       if (!mounted) return;
@@ -100,19 +126,19 @@ class _OTPScreenState extends State<OTPScreen> {
       );
     } else {
       setState(() {
-        _isProcessing = false;
+        _state = AuthState(
+          status: AuthStatus.failure,
+          errorMessage: response.message ?? 'OTP verification failed.',
+        );
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid OTP. Please enter 123456.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final showLoading = _state.status == AuthStatus.loading;
+    final isSuccess = _state.status == AuthStatus.success;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: ''),
@@ -148,17 +174,30 @@ class _OTPScreenState extends State<OTPScreen> {
               ),
               const SizedBox(height: AppSpacing.s8),
               Text(
-                'We sent a 6-digit code to ${widget.phoneNumber}.',
+                'We sent a ${AuthConstants.otpLength}-digit code to ${widget.phoneNumber}.',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: AppSpacing.s40),
-              
-              // 6-digit OTP input grid
+              const SizedBox(height: AppSpacing.s32),
+
+              if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
+                AuthErrorWidget(
+                  title: 'Verification Failed',
+                  description: _state.errorMessage!,
+                  onDismiss: () {
+                    setState(() {
+                      _state = const AuthState(status: AuthStatus.idle);
+                    });
+                  },
+                ),
+                const SizedBox(height: AppSpacing.s24),
+              ],
+
+              // OTP input grid
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) {
+                children: List.generate(AuthConstants.otpLength, (index) {
                   return SizedBox(
                     width: 45,
                     height: 54,
@@ -169,6 +208,7 @@ class _OTPScreenState extends State<OTPScreen> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       maxLength: 1,
+                      enabled: !showLoading && !isSuccess,
                       style: AppTypography.headlineMedium.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -184,13 +224,17 @@ class _OTPScreenState extends State<OTPScreen> {
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
                         ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          borderSide: const BorderSide(color: AppColors.divider, width: 1.0),
+                        ),
                       ),
                     ),
                   );
                 }),
               ),
               const SizedBox(height: AppSpacing.s32),
-              
+
               Center(
                 child: _secondsRemaining > 0
                     ? Text(
@@ -198,8 +242,9 @@ class _OTPScreenState extends State<OTPScreen> {
                         style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
                       )
                     : TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           _startTimer();
+                          await _authRepository.resendOTP(widget.phoneNumber);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('OTP Code resent successfully.'),
@@ -217,8 +262,8 @@ class _OTPScreenState extends State<OTPScreen> {
                       ),
               ),
               const Spacer(),
-              
-              if (_isSuccess)
+
+              if (isSuccess)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -244,8 +289,8 @@ class _OTPScreenState extends State<OTPScreen> {
               else
                 PrimaryButton(
                   text: 'Verify & Proceed',
-                  isLoading: _isProcessing,
-                  onPressed: _isValid && !_isProcessing ? _verifyOTP : null,
+                  isLoading: showLoading,
+                  onPressed: _isValid && !showLoading ? _verifyOTP : null,
                 ),
               const SizedBox(height: AppSpacing.s24),
             ],
