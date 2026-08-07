@@ -39,19 +39,13 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.s16),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.lock_outline_rounded,
-                    color: AppColors.primary,
-                    size: 24,
-                  ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/logo/brand_logo.jpeg',
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),

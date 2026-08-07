@@ -3,6 +3,8 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/features/recharge/presentation/operator_selection_screen.dart';
 
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({super.key});
@@ -12,21 +14,34 @@ class RechargeScreen extends StatefulWidget {
 }
 
 class _RechargeScreenState extends State<RechargeScreen> {
-  final TextEditingController _numberController = TextEditingController();
-  String? _selectedOperator;
-  String? _selectedPlan;
+  final TextEditingController _phoneController = TextEditingController();
+  bool _isValid = false;
 
-  final List<String> _operators = ['Verizon', 'AT&T', 'T-Mobile', 'Vodafone'];
-  final List<Map<String, String>> _plans = [
-    {'price': '\$15.00', 'desc': 'Unlimited Talk & Text + 2GB High Speed Data. 30 Days.'},
-    {'price': '\$35.00', 'desc': 'Unlimited Talk, Text & Data + 10GB Hotspot. 30 Days.'},
-    {'price': '\$55.00', 'desc': 'Unlimited Premium Data + 50GB Hotspot + Roaming. 30 Days.'},
+  final List<Map<String, String>> _recentRecharges = [
+    {'name': 'Mom Cell', 'num': '+1 (555) 012-3456', 'op': 'Verizon'},
+    {'name': 'Alex Work', 'num': '+1 (555) 019-9888', 'op': 'AT&T'},
+    {'name': 'John Doe', 'num': '+1 (555) 018-7766', 'op': 'T-Mobile'},
   ];
 
   @override
   void dispose() {
-    _numberController.dispose();
+    _phoneController.dispose();
     super.dispose();
+  }
+
+  void _validateInput(String val) {
+    setState(() {
+      _isValid = val.length >= 10;
+    });
+  }
+
+  void _proceedToOperator(String mobileNum) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OperatorSelectionScreen(mobileNumber: mobileNum),
+      ),
+    );
   }
 
   @override
@@ -34,206 +49,112 @@ class _RechargeScreenState extends State<RechargeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Mobile Recharge'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Feature Banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.s20),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(AppRadii.card),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.s12),
+              const Text(
+                'Enter Mobile Number',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 36),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Zero Fees Recharge',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16.0,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          'Recharge in seconds with direct wallet checkout.',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12.0,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.s12),
+              // Number Input
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                onChanged: _validateInput,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Enter 10-digit mobile number',
+                  prefixIcon: Icon(Icons.phone_iphone_rounded, color: AppColors.textSecondary),
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'Mobile Number',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+              const SizedBox(height: AppSpacing.s32),
+              const Text(
+                'Recent Recharges',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.s8),
-            TextField(
-              controller: _numberController,
-              keyboardType: TextInputType.phone,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16.0,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: const InputDecoration(
-                hintText: 'Enter phone number',
-                prefixIcon: Icon(Icons.phone_iphone_rounded, color: AppColors.textSecondary),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-            const Text(
-              'Select Operator',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: _operators.map((op) {
-                final isSel = _selectedOperator == op;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedOperator = op;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSel ? AppColors.primaryLight : AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSel ? AppColors.primary : AppColors.divider,
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Text(
-                      op,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                        color: isSel ? AppColors.primary : AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'Select Plan',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            ..._plans.map((plan) {
-              final isSel = _selectedPlan == plan['price'];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                child: AppCard(
-                  onTap: () {
-                    setState(() {
-                      _selectedPlan = plan['price']!;
-                    });
-                  },
-                  color: isSel ? AppColors.primaryLight.withOpacity(0.3) : AppColors.surface,
-                  border: Border.all(
-                    color: isSel ? AppColors.primary : AppColors.divider,
-                    width: 1.0,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: AppSpacing.s12),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _recentRecharges.length,
+                  itemBuilder: (context, index) {
+                    final item = _recentRecharges[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                      child: AppCard(
+                        onTap: () => _proceedToOperator(item['num']!),
+                        child: Row(
                           children: [
-                            Text(
-                              plan['price']!,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                            CustomAvatar(
+                              name: item['name']!,
+                              size: 40,
+                              backgroundColor: AppColors.primaryLight,
+                              textColor: AppColors.primary,
+                            ),
+                            const SizedBox(width: AppSpacing.s12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['name']!,
+                                    style: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.0,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${item['num']} • ${item['op']}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 12.0,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: AppSpacing.s4),
-                            Text(
-                              plan['desc']!,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12.0,
-                                color: AppColors.textSecondary,
-                              ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 12,
+                              color: AppColors.textSecondary,
                             ),
                           ],
                         ),
                       ),
-                      Radio<String>(
-                        value: plan['price']!,
-                        groupValue: _selectedPlan,
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedPlan = val;
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            }).toList(),
-            const SizedBox(height: AppSpacing.s32),
-            SizedBox(
-              width: double.infinity,
-              child: AppButton(
-                text: 'Proceed to Recharge',
-                onPressed: _numberController.text.isNotEmpty && _selectedOperator != null && _selectedPlan != null
-                    ? () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Recharge of ${_selectedPlan} successful for ${_numberController.text}.'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                        Navigator.pop(context);
-                      }
-                    : null,
               ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-          ],
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  text: 'Continue',
+                  onPressed: _isValid ? () => _proceedToOperator(_phoneController.text) : null,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+            ],
+          ),
         ),
       ),
     );
