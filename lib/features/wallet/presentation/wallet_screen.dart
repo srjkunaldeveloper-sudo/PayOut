@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/wallet/constants/wallet_constants.dart';
+import 'package:payout/features/wallet/validators/wallet_validator.dart';
+import 'package:payout/features/wallet/models/wallet_models.dart';
+import 'package:payout/features/wallet/repositories/wallet_repository.dart';
+import 'package:payout/features/wallet/services/wallet_logger.dart';
+import 'package:payout/features/wallet/dummy/dummy_wallet_data.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -11,7 +17,33 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  double _walletBalance = 1250.75;
+  final WalletRepository _walletRepository = MockWalletRepository();
+
+  WalletModel? _walletModel;
+  List<WalletTransactionModel> _transactions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWalletData();
+    WalletLogger.logWalletOpened();
+  }
+
+  Future<void> _loadWalletData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final wallet = await _walletRepository.getWallet();
+    final txns = await _walletRepository.getTransactions();
+    if (mounted) {
+      setState(() {
+        _walletModel = wallet;
+        _transactions = txns;
+        _isLoading = false;
+      });
+    }
+  }
 
   void _showAddMoneyBottomSheet() {
     double? addedAmount;
@@ -53,9 +85,9 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Enter the amount to add from your linked account.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+              Text(
+                'Enter the amount to add from your linked account. (Limit: ${WalletConstants.currencySymbol}${WalletConstants.minimumAddMoney} - ${WalletConstants.currencySymbol}${WalletConstants.maximumAddMoney})',
+                style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: AppSpacing.s24),
               TextField(
@@ -80,16 +112,32 @@ class _WalletScreenState extends State<WalletScreen> {
                 width: double.infinity,
                 child: PrimaryButton(
                   text: 'Add Funds',
-                  onPressed: () {
-                    if (addedAmount != null && addedAmount! > 0) {
-                      setState(() {
-                        _walletBalance += addedAmount!;
-                      });
+                  onPressed: () async {
+                    final amount = addedAmount ?? 0.0;
+                    final validation = WalletValidator.validateAddMoney(amount);
+                    final messenger = ScaffoldMessenger.of(context);
+
+                    if (validation.isValid) {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      
+                      final success = await _walletRepository.addMoney(amount);
+                      if (success) {
+                        await _loadWalletData();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('₹${amount.toStringAsFixed(2)} added to your wallet.'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      }
+                    } else {
+                      messenger.showSnackBar(
                         SnackBar(
-                          content: Text('₹${addedAmount!.toStringAsFixed(2)} added to your wallet.'),
-                          backgroundColor: AppColors.success,
+                          content: Text(validation.errorMessage ?? 'Invalid amount entered.'),
+                          backgroundColor: AppColors.error,
                         ),
                       );
                     }
@@ -171,22 +219,32 @@ class _WalletScreenState extends State<WalletScreen> {
                 width: double.infinity,
                 child: PrimaryButton(
                   text: 'Withdraw Funds',
-                  onPressed: () {
-                    if (withdrawAmount != null && withdrawAmount! > 0 && withdrawAmount! <= _walletBalance) {
-                      setState(() {
-                        _walletBalance -= withdrawAmount!;
-                      });
+                  onPressed: () async {
+                    final amount = withdrawAmount ?? 0.0;
+                    final currentBalance = _walletModel?.balance ?? 0.0;
+                    final validation = WalletValidator.validateWithdraw(amount, currentBalance);
+                    final messenger = ScaffoldMessenger.of(context);
+
+                    if (validation.isValid) {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      final success = await _walletRepository.withdrawMoney(amount);
+                      if (success) {
+                        await _loadWalletData();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('₹${amount.toStringAsFixed(2)} transferred to bank account.'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      }
+                    } else {
+                      messenger.showSnackBar(
                         SnackBar(
-                          content: Text('₹${withdrawAmount!.toStringAsFixed(2)} transferred to bank account.'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    } else if (withdrawAmount != null && withdrawAmount! > _walletBalance) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Insufficient balance in your Payout wallet.'),
+                          content: Text(validation.errorMessage ?? 'Invalid withdrawal amount.'),
                           backgroundColor: AppColors.error,
                         ),
                       );
@@ -204,120 +262,142 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading && _walletModel == null) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'Wallet Balance'),
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+        ),
+      );
+    }
+
+    final wallet = _walletModel ?? DummyWalletData.dummyWallet;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Wallet Balance'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WalletCard(
-              balance: _walletBalance,
-              linkedBankName: 'HDFC Bank •••• 9821',
-              cashbackEarned: 1425.0,
-              lastUpdated: 'Updated just now',
-              onAddMoney: _showAddMoneyBottomSheet,
-              onWithdraw: _showWithdrawBottomSheet,
-            ),
-            const SizedBox(height: AppSpacing.s32),
-            Row(
-              children: [
-                Expanded(
-                  child: AppCard(
-                    padding: const EdgeInsets.all(AppSpacing.s16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.workspace_premium_rounded, color: AppColors.warning, size: 24),
-                        SizedBox(height: AppSpacing.s8),
-                        Text(
-                          'Cashback',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          '₹1,425 earned',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12.0,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s16),
-                Expanded(
-                  child: AppCard(
-                    padding: const EdgeInsets.all(AppSpacing.s16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.percent_rounded, color: AppColors.success, size: 24),
-                        SizedBox(height: AppSpacing.s8),
-                        Text(
-                          'Active Offers',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          '8 perks nearby',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12.0,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'Wallet History',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 18.0,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+      body: RefreshIndicator(
+        onRefresh: _loadWalletData,
+        color: AppColors.primary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WalletCard(
+                balance: wallet.balance,
+                linkedBankName: wallet.linkedBank,
+                cashbackEarned: wallet.cashbackEarned,
+                lastUpdated: wallet.lastUpdated,
+                onAddMoney: _showAddMoneyBottomSheet,
+                onWithdraw: _showWithdrawBottomSheet,
               ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            TransactionTile(
-              title: 'Added via Bank Account',
-              subtitle: 'Wallet Load',
-              date: 'Aug 07, 2026',
-              amount: 500.00,
-              isCredit: true,
-            ),
-            const Divider(color: AppColors.divider),
-            TransactionTile(
-              title: 'Transfer to John Doe',
-              subtitle: 'Wallet Debit',
-              date: 'Aug 05, 2026',
-              amount: 45.00,
-              isCredit: false,
-            ),
-            const Divider(color: AppColors.divider),
-            TransactionTile(
-              title: 'Cashback Received',
-              subtitle: 'Promo Reward',
-              date: 'Jul 28, 2026',
-              amount: 15.00,
-              isCredit: true,
-            ),
-            const SizedBox(height: AppSpacing.s24),
-          ],
+              const SizedBox(height: AppSpacing.s32),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.s16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.workspace_premium_rounded, color: AppColors.warning, size: 24),
+                          const SizedBox(height: AppSpacing.s8),
+                          const Text(
+                            'Cashback',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            '₹${wallet.cashbackEarned.toStringAsFixed(0)} earned',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.0,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s16),
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.s16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Icon(Icons.percent_rounded, color: AppColors.success, size: 24),
+                          SizedBox(height: AppSpacing.s8),
+                          Text(
+                            'Active Offers',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            '8 perks nearby',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.0,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s32),
+              const Text(
+                'Wallet History',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s16),
+              if (_transactions.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    child: Text(
+                      'No transactions yet.',
+                      style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary),
+                    ),
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _transactions.length,
+                  separatorBuilder: (context, index) => const Divider(color: AppColors.divider),
+                  itemBuilder: (context, index) {
+                    final tx = _transactions[index];
+                    return TransactionTile(
+                      title: tx.title,
+                      subtitle: tx.subtitle,
+                      date: tx.date,
+                      amount: tx.amount,
+                      isCredit: tx.isCredit,
+                    );
+                  },
+                ),
+              const SizedBox(height: AppSpacing.s24),
+            ],
+          ),
         ),
       ),
     );
