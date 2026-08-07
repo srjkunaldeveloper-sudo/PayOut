@@ -3,19 +3,52 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/features/loans/presentation/financial_success_screen.dart';
+import 'package:payout/features/financial/loans/presentation/financial_success_screen.dart';
+import 'package:payout/features/financial/shared/models/financial_models.dart';
+import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
 
 // 1. INSURANCE LANDING / CATEGORIES PAGE
-class InsuranceScreen extends StatelessWidget {
+class InsuranceScreen extends StatefulWidget {
   const InsuranceScreen({super.key});
 
   @override
+  State<InsuranceScreen> createState() => _InsuranceScreenState();
+}
+
+class _InsuranceScreenState extends State<InsuranceScreen> {
+  final FinancialRepository _financialRepository = MockFinancialRepository();
+  List<InsurancePolicyModel> _policies = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPolicies();
+  }
+
+  Future<void> _loadPolicies() async {
+    final list = await _financialRepository.getPolicies();
+    if (mounted) {
+      setState(() {
+        _policies = list;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> categories = [
-      {'name': 'Health Insurance', 'desc': 'Cashless hospitalization at 10,000+ network hospitals', 'icon': Icons.medical_services_rounded, 'color': Colors.red},
-      {'name': 'Life Insurance', 'desc': 'Protect your family\'s financial future with term covers', 'icon': Icons.favorite_rounded, 'color': Colors.pink},
-      {'name': 'Motor Insurance', 'desc': 'Instant third party & comprehensive car/bike cover', 'icon': Icons.directions_car_rounded, 'color': Colors.blue},
-      {'name': 'Travel Insurance', 'desc': 'Cover flight delays, medical emergency & baggage loss', 'icon': Icons.flight_takeoff_rounded, 'color': Colors.teal},
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'Insurance Hub'),
+        body: Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary))),
+      );
+    }
+
+    final List<Map<String, dynamic>> categoryUIMap = [
+      {'type': 'Health', 'desc': 'Cashless hospitalization at 10,000+ network hospitals', 'icon': Icons.medical_services_rounded, 'color': Colors.red},
+      {'type': 'Life', 'desc': 'Protect your family\'s financial future with term covers', 'icon': Icons.favorite_rounded, 'color': Colors.pink},
+      {'type': 'Motor', 'desc': 'Instant third party & comprehensive car/bike cover', 'icon': Icons.directions_car_rounded, 'color': Colors.blue},
     ];
 
     return Scaffold(
@@ -72,7 +105,12 @@ class InsuranceScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s16),
-            ...categories.map((cat) {
+            ..._policies.map((policy) {
+              final ui = categoryUIMap.firstWhere(
+                (c) => c['type'] == policy.type,
+                orElse: () => {'desc': 'Protect what matters most to you', 'icon': Icons.shield_rounded, 'color': Colors.teal},
+              );
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.s16),
                 child: AppCard(
@@ -80,9 +118,7 @@ class InsuranceScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => InsurancePolicyDetailsScreen(
-                          categoryName: cat['name'] as String,
-                        ),
+                        builder: (context) => InsurancePremiumSummaryScreen(policy: policy),
                       ),
                     );
                   },
@@ -91,10 +127,10 @@ class InsuranceScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.s12),
                         decoration: BoxDecoration(
-                          color: (cat['color'] as Color).withOpacity(0.08),
+                          color: (ui['color'] as Color).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(cat['icon'] as IconData, color: cat['color'] as Color, size: 24),
+                        child: Icon(ui['icon'] as IconData, color: ui['color'] as Color, size: 24),
                       ),
                       const SizedBox(width: AppSpacing.s16),
                       Expanded(
@@ -102,7 +138,7 @@ class InsuranceScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              cat['name'] as String,
+                              policy.name,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.bold,
@@ -112,7 +148,7 @@ class InsuranceScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              cat['desc'] as String,
+                              ui['desc'] as String,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 11.0,
@@ -138,112 +174,13 @@ class InsuranceScreen extends StatelessWidget {
   }
 }
 
-// 2. POLICY DETAILS SCREEN
-class InsurancePolicyDetailsScreen extends StatelessWidget {
-  final String categoryName;
-
-  const InsurancePolicyDetailsScreen({super.key, required this.categoryName});
-
-  @override
-  Widget build(BuildContext context) {
-    // Localized insurance provider offers
-    final List<Map<String, dynamic>> offers = [
-      {'provider': 'HDFC Ergo Protection', 'sumInsured': 500000.0, 'basePremium': 3500.0, 'coverDesc': 'Cashless ICU, Daycare treatments & organ donor cover'},
-      {'provider': 'ICICI Lombard Guard', 'sumInsured': 1000000.0, 'basePremium': 5800.0, 'coverDesc': 'No room rent limit, COVID-19 cover & free health checkup'},
-      {'provider': 'TATA AIG Active Health', 'sumInsured': 500000.0, 'basePremium': 3200.0, 'coverDesc': 'Restore benefits, AYUSH treatment & maternity cover'},
-    ];
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: categoryName),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        itemCount: offers.length,
-        itemBuilder: (context, index) {
-          final policy = offers[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.s16),
-            child: AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => InsurancePremiumSummaryScreen(
-                      categoryName: categoryName,
-                      providerName: policy['provider'] as String,
-                      sumInsured: policy['sumInsured'] as double,
-                      basePremium: policy['basePremium'] as double,
-                    ),
-                  ),
-                );
-              },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        policy['provider'],
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.0,
-                        ),
-                      ),
-                      Text(
-                        '₹${(policy['basePremium'] as double).toStringAsFixed(0)}/yr',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15.0,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Sum Insured: ₹${(policy['sumInsured'] as double).toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    policy['coverDesc'],
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12.0,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// 3. PREMIUM SUMMARY SCREEN
+// 2. PREMIUM SUMMARY SCREEN
 class InsurancePremiumSummaryScreen extends StatefulWidget {
-  final String categoryName;
-  final String providerName;
-  final double sumInsured;
-  final double basePremium;
+  final InsurancePolicyModel policy;
 
   const InsurancePremiumSummaryScreen({
     super.key,
-    required this.categoryName,
-    required this.providerName,
-    required this.sumInsured,
-    required this.basePremium,
+    required this.policy,
   });
 
   @override
@@ -251,21 +188,25 @@ class InsurancePremiumSummaryScreen extends StatefulWidget {
 }
 
 class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryScreen> {
+  final FinancialRepository _financialRepository = MockFinancialRepository();
   bool _isProcessing = false;
 
-  void _payPremium() {
+  void _payPremium() async {
     setState(() {
       _isProcessing = true;
     });
 
-    final gst = widget.basePremium * 0.18;
-    final total = widget.basePremium + gst;
+    final success = await _financialRepository.buyPolicy(widget.policy.id);
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
+
+      if (success) {
+        final gst = widget.policy.premium * 0.18;
+        final total = widget.policy.premium + gst;
+
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
@@ -273,7 +214,7 @@ class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryS
               title: 'Policy Issued!',
               subtitle: 'Your insurance cover is active instantly.',
               referenceLabel: 'Policy Number',
-              details: '${widget.categoryName} • ${widget.providerName} • Cover: ₹${widget.sumInsured.toStringAsFixed(0)}',
+              details: '${widget.policy.name} • Cover: ₹${widget.policy.coverage.toStringAsFixed(0)}',
               amount: total,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -282,13 +223,13 @@ class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryS
           ),
         );
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final gst = widget.basePremium * 0.18;
-    final total = widget.basePremium + gst;
+    final gst = widget.policy.premium * 0.18;
+    final total = widget.policy.premium + gst;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -311,7 +252,7 @@ class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryS
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.providerName,
+                          widget.policy.name,
                           style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -325,7 +266,7 @@ class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryS
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Base Premium', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text('₹${widget.basePremium.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text('₹${widget.policy.premium.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.s8),
@@ -341,7 +282,7 @@ class _InsurancePremiumSummaryScreenState extends State<InsurancePremiumSummaryS
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Cover Plan', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text('₹${widget.sumInsured.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text('₹${widget.policy.coverage.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                   ],

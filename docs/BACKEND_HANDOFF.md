@@ -9,3 +9,4 @@ This file serves as a guide for backend team developers integrating remote REST 
 - **Payments:** Handles NPCI interfaces, bank account linkings, and UPI transactions.
 - **User Settings:** Interfaces preferences configuration changes (themes, languages).
 - **Merchant & Rewards:** Integrates sales analytics maps, settlement requests, active coupons, and scratch cards.
+- **Financial Products:** Integrates active loan offers checkers, insurance premium billing checkouts, and mutual funds portfolio indicators.

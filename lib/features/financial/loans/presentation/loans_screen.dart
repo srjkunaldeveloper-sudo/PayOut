@@ -3,19 +3,53 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_button.dart';
 import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/features/loans/presentation/financial_success_screen.dart';
+import 'package:payout/features/financial/loans/presentation/financial_success_screen.dart';
+import 'package:payout/features/financial/shared/models/financial_models.dart';
+import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
+import 'package:payout/features/financial/shared/services/financial_service.dart';
 
 // 1. LOANS LANDING / CATEGORIES PAGE
-class LoansScreen extends StatelessWidget {
+class LoansScreen extends StatefulWidget {
   const LoansScreen({super.key});
 
   @override
+  State<LoansScreen> createState() => _LoansScreenState();
+}
+
+class _LoansScreenState extends State<LoansScreen> {
+  final FinancialRepository _financialRepository = MockFinancialRepository();
+  List<LoanModel> _loans = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoans();
+  }
+
+  Future<void> _loadLoans() async {
+    final list = await _financialRepository.getLoans();
+    if (mounted) {
+      setState(() {
+        _loans = list;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> loanTypes = [
-      {'name': 'Personal Loan', 'desc': 'Instant credit for medical, travel or shopping', 'icon': Icons.person_rounded, 'color': AppColors.primary},
-      {'name': 'Business Loan', 'desc': 'Expand operations, buy inventory or hire staff', 'icon': Icons.business_center_rounded, 'color': Colors.indigo},
-      {'name': 'Home Loan', 'desc': 'Low interest rates for purchasing new houses', 'icon': Icons.home_rounded, 'color': Colors.orange},
-      {'name': 'Education Loan', 'desc': 'Support higher education at top institutes', 'icon': Icons.school_rounded, 'color': Colors.teal},
+    if (_isLoading) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'Loans & Credit'),
+        body: Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary))),
+      );
+    }
+
+    final List<Map<String, dynamic>> loanUIMap = [
+      {'category': 'Personal', 'desc': 'Instant credit for medical, travel or shopping', 'icon': Icons.person_rounded, 'color': AppColors.primary},
+      {'category': 'Business', 'desc': 'Expand operations, buy inventory or hire staff', 'icon': Icons.business_center_rounded, 'color': Colors.indigo},
+      {'category': 'Home', 'desc': 'Low interest rates for purchasing new houses', 'icon': Icons.home_rounded, 'color': Colors.orange},
     ];
 
     return Scaffold(
@@ -66,7 +100,12 @@ class LoansScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s16),
-            ...loanTypes.map((loan) {
+            ..._loans.map((loan) {
+              final ui = loanUIMap.firstWhere(
+                (u) => u['category'] == loan.category,
+                orElse: () => {'desc': 'Tailored financing alternatives', 'icon': Icons.credit_card_rounded, 'color': Colors.teal},
+              );
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.s16),
                 child: AppCard(
@@ -74,9 +113,7 @@ class LoansScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LoanEligibilityScreen(
-                          loanName: loan['name'] as String,
-                        ),
+                        builder: (context) => LoanEligibilityScreen(loan: loan),
                       ),
                     );
                   },
@@ -85,10 +122,10 @@ class LoansScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(AppSpacing.s12),
                         decoration: BoxDecoration(
-                          color: (loan['color'] as Color).withOpacity(0.08),
+                          color: (ui['color'] as Color).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(loan['icon'] as IconData, color: loan['color'] as Color, size: 24),
+                        child: Icon(ui['icon'] as IconData, color: ui['color'] as Color, size: 24),
                       ),
                       const SizedBox(width: AppSpacing.s16),
                       Expanded(
@@ -96,7 +133,7 @@ class LoansScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              loan['name'] as String,
+                              loan.title,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.bold,
@@ -106,7 +143,7 @@ class LoansScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              loan['desc'] as String,
+                              ui['desc'] as String,
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 11.0,
@@ -134,9 +171,9 @@ class LoansScreen extends StatelessWidget {
 
 // 2. ELIGIBILITY SCREEN
 class LoanEligibilityScreen extends StatefulWidget {
-  final String loanName;
+  final LoanModel loan;
 
-  const LoanEligibilityScreen({super.key, required this.loanName});
+  const LoanEligibilityScreen({super.key, required this.loan});
 
   @override
   State<LoanEligibilityScreen> createState() => _LoanEligibilityScreenState();
@@ -159,11 +196,10 @@ class _LoanEligibilityScreenState extends State<LoanEligibilityScreen> {
           _isChecking = false;
         });
 
-        // Determine approved limit based on category
         double limit = 500000.0;
-        if (widget.loanName == 'Business Loan') {
+        if (widget.loan.category == 'Business') {
           limit = 800000.0;
-        } else if (widget.loanName == 'Home Loan') {
+        } else if (widget.loan.category == 'Home') {
           limit = 2500000.0;
         }
 
@@ -171,7 +207,7 @@ class _LoanEligibilityScreenState extends State<LoanEligibilityScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => LoanDetailsScreen(
-              loanName: widget.loanName,
+              loan: widget.loan,
               approvedLimit: limit,
               name: _nameController.text,
             ),
@@ -185,7 +221,7 @@ class _LoanEligibilityScreenState extends State<LoanEligibilityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: '${widget.loanName} Eligibility'),
+      appBar: CustomAppBar(title: '${widget.loan.category} Loan Eligibility'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s24),
@@ -248,23 +284,20 @@ class _LoanEligibilityScreenState extends State<LoanEligibilityScreen> {
 
 // 3. LOAN DETAILS SCREEN
 class LoanDetailsScreen extends StatelessWidget {
-  final String loanName;
+  final LoanModel loan;
   final double approvedLimit;
   final String name;
 
   const LoanDetailsScreen({
     super.key,
-    required this.loanName,
+    required this.loan,
     required this.approvedLimit,
     required this.name,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Math logic for EMI
-    final rate = loanName == 'Home Loan' ? 0.085 : 0.115; // 8.5% or 11.5%
-    final months = loanName == 'Home Loan' ? 120 : 36;
-    final emi = (approvedLimit * rate / 12) * (1 / (1 - 1 / (1 + rate / 12))); // Simple approx EMI
+    final emi = FinancialService.calculateEMI(approvedLimit, loan.interestRate, loan.tenureMonths);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -325,7 +358,7 @@ class LoanDetailsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Interest Rate', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-                        Text('${(rate * 100).toStringAsFixed(1)}% p.a.', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text('${loan.interestRate.toStringAsFixed(1)}% p.a.', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.s12),
@@ -333,7 +366,7 @@ class LoanDetailsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Tenure', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-                        Text('$months Months', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text('${loan.tenureMonths} Months', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ],
@@ -349,12 +382,10 @@ class LoanDetailsScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => LoanReviewScreen(
-                          loanName: loanName,
+                          loan: loan,
                           approvedLimit: approvedLimit,
                           name: name,
                           emi: emi,
-                          tenure: months,
-                          rate: rate,
                         ),
                       ),
                     );
@@ -371,21 +402,17 @@ class LoanDetailsScreen extends StatelessWidget {
 
 // 4. REVIEW SCREEN
 class LoanReviewScreen extends StatefulWidget {
-  final String loanName;
+  final LoanModel loan;
   final double approvedLimit;
   final String name;
   final double emi;
-  final int tenure;
-  final double rate;
 
   const LoanReviewScreen({
     super.key,
-    required this.loanName,
+    required this.loan,
     required this.approvedLimit,
     required this.name,
     required this.emi,
-    required this.tenure,
-    required this.rate,
   });
 
   @override
@@ -393,18 +420,22 @@ class LoanReviewScreen extends StatefulWidget {
 }
 
 class _LoanReviewScreenState extends State<LoanReviewScreen> {
+  final FinancialRepository _financialRepository = MockFinancialRepository();
   bool _isProcessing = false;
 
-  void _submitApplication() {
+  void _submitApplication() async {
     setState(() {
       _isProcessing = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+    final success = await _financialRepository.applyLoan(widget.loan.id, widget.approvedLimit);
+
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
+
+      if (success) {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
@@ -412,7 +443,7 @@ class _LoanReviewScreenState extends State<LoanReviewScreen> {
               title: 'Application Submitted!',
               subtitle: 'Your loan application is under bank review.',
               referenceLabel: 'Application ID',
-              details: '${widget.loanName} • Approved: ₹${widget.approvedLimit.toStringAsFixed(0)} • EMI: ₹${widget.emi.toStringAsFixed(0)}/mo',
+              details: '${widget.loan.title} • Approved: ₹${widget.approvedLimit.toStringAsFixed(0)} • EMI: ₹${widget.emi.toStringAsFixed(0)}/mo',
               amount: widget.approvedLimit,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -421,7 +452,7 @@ class _LoanReviewScreenState extends State<LoanReviewScreen> {
           ),
         );
       }
-    });
+    }
   }
 
   @override
@@ -447,7 +478,7 @@ class _LoanReviewScreenState extends State<LoanReviewScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          widget.loanName,
+                          widget.loan.title,
                           style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -477,7 +508,7 @@ class _LoanReviewScreenState extends State<LoanReviewScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Tenure Plan', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text('${widget.tenure} Months', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text('${widget.loan.tenureMonths} Months', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
                       ],
                     ),
                   ],

@@ -71,3 +71,10 @@ Provides merchant invoice monitoring and loyalty offers management:
 - **Validators:** `MerchantValidator` and `RewardValidator` check business details and coupon codes.
 - **Repositories:** `MerchantRepository` and `RewardRepository` retrieve settlements and active scratch cards.
 
+---
+
+## 🏦 Financial Products Domain
+Coordinates loan assessments, EMI calculators, insurance packages, and portfolio assets:
+- **Validators:** `FinancialValidator` confirms PAN compliance and minimum transaction boundaries.
+- **Repository:** `FinancialRepository` manages portfolios status updates, policy checkouts, and loan applications.
+

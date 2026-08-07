@@ -3,6 +3,7 @@
 ## [1.0.1] - 2026-08-07
 
 ### Added
+- **Financial Products Production Readiness:** Consolidated loans eligibility checks, insurance coverage summaries, and investment portfolio tracking maps under a unified directory structure inside `lib/features/financial/`.
 - **Merchant & Rewards Production Readiness:** Centralized all sales analytics, settlements timelines, cashback status, scratch cards, and active coupon codes under `lib/features/merchant/` and `lib/features/rewards/`.
 - **Persistent Login Session (Demo Mode):** Integrated persistent session tracking via `SecureStorageService` and `SharedPreferences` to keep users logged in until they explicitly logout.
 - **User Domain Production Readiness:** Centralized all settings configs, KYC verification details, and profile parameters under `lib/features/user/`.
