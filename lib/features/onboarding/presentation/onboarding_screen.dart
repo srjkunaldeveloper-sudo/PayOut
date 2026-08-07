@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_button.dart';
+import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -55,12 +55,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       MaterialPageRoute(builder: (context) => const LoginScreen()),
                     );
                   },
-                  child: const Text(
+                  child: Text(
                     'Skip',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -85,10 +83,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.s32),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.divider, width: 1.0),
                           ),
                           child: Icon(
                             slide['icon'],
@@ -100,19 +97,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           slide['title'],
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: AppTypography.headlineLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.s16),
                         Text(
                           slide['description'],
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 15.0,
-                                height: 1.5,
-                              ),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                            height: 1.5,
+                          ),
                         ),
                       ],
                     ),
@@ -143,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(height: AppSpacing.s32),
                   SizedBox(
                     width: double.infinity,
-                    child: AppButton(
+                    child: PrimaryButton(
                       text: _currentPage == _slides.length - 1 ? 'Get Started' : 'Next',
                       onPressed: () {
                         if (_currentPage < _slides.length - 1) {
