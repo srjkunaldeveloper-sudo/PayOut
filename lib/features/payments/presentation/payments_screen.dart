@@ -3,7 +3,7 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
-import 'package:payout/features/scan_qr/presentation/scan_qr_screen.dart';
+import 'package:payout/features/qr/presentation/scan_qr_screen.dart';
 import 'package:payout/features/transaction_history/presentation/transaction_history_screen.dart';
 import 'package:payout/features/payments/models/payments_models.dart';
 import 'package:payout/features/payments/repositories/payments_repository.dart';

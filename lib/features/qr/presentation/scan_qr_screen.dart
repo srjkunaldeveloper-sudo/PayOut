@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
+import 'package:payout/features/qr/models/qr_models.dart';
+import 'package:payout/features/qr/repositories/qr_repository.dart';
 
 class ScanQRScreen extends StatefulWidget {
   const ScanQRScreen({super.key});
@@ -11,9 +13,14 @@ class ScanQRScreen extends StatefulWidget {
 }
 
 class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderStateMixin {
+  final QrRepository _qrRepository = MockQrRepository();
+  
   bool _isFlashOn = false;
   late AnimationController _animationController;
   late Animation<double> _scanAnimation;
+
+  MerchantModel? _scannedMerchant;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -24,6 +31,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
     )..repeat(reverse: true);
     
     _scanAnimation = Tween<double>(begin: 0.0, end: 240.0).animate(_animationController);
+    _simulateScanningAutoTrigger();
   }
 
   @override
@@ -32,8 +40,42 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
+  // Simulate dynamic scan result lookup for client demo
+  Future<void> _simulateScanningAutoTrigger() async {
+    setState(() {
+      _isProcessing = true;
+    });
+    // Simulates VPA resolution delay of 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+    final merchant = await _qrRepository.getMerchant('MER-101'); // Auto-resolve Starbucks
+    if (mounted) {
+      setState(() {
+        _scannedMerchant = merchant;
+        _isProcessing = false;
+      });
+    }
+  }
+
+  Future<void> _simulateGallerySelection() async {
+    setState(() {
+      _scannedMerchant = null;
+      _isProcessing = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 800));
+    // Resolve Domino's Pizza for demo
+    final merchant = await _qrRepository.getMerchant('MER-102');
+    if (mounted) {
+      setState(() {
+        _scannedMerchant = merchant;
+        _isProcessing = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final merchant = _scannedMerchant;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -83,7 +125,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
             ),
           ),
 
-          // 2. Translucent guides overlay
+          // 2. Scanner Guides Overlay
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -138,7 +180,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
             ),
           ),
 
-          // 3. Floating action panels (Flash / Gallery / My QR)
+          // 3. Floating action panels (Flash / Gallery)
           Positioned(
             top: 100,
             right: AppSpacing.s24,
@@ -155,100 +197,107 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                 const SizedBox(height: AppSpacing.s16),
                 _buildFloatingButton(
                   icon: Icons.photo_library_rounded,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Opening Gallery...')),
-                    );
-                  },
+                  onTap: _simulateGallerySelection,
                 ),
               ],
             ),
           ),
 
           // 4. Merchant Bottom Sheet card
-          Positioned(
-            bottom: AppSpacing.s32,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-            child: AppCard(
-              color: Colors.white,
-              borderRadius: AppRadius.xxl,
-              padding: const EdgeInsets.all(AppSpacing.s20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      const CustomAvatar(
-                        name: 'Starbucks Coffee',
-                        size: 44,
-                        backgroundColor: AppColors.primaryContainer,
-                        textColor: AppColors.primary,
-                      ),
-                      const SizedBox(width: AppSpacing.s12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Starbucks Coffee',
+          if (_isProcessing)
+            const Positioned(
+              bottom: AppSpacing.s32,
+              left: AppSpacing.s24,
+              right: AppSpacing.s24,
+              child: Center(
+                child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+              ),
+            )
+          else if (merchant != null)
+            Positioned(
+              bottom: AppSpacing.s32,
+              left: AppSpacing.s24,
+              right: AppSpacing.s24,
+              child: AppCard(
+                color: Colors.white,
+                borderRadius: AppRadius.xxl,
+                padding: const EdgeInsets.all(AppSpacing.s20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        CustomAvatar(
+                          name: merchant.name,
+                          size: 44,
+                          backgroundColor: AppColors.primaryContainer,
+                          textColor: AppColors.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.s12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                merchant.name,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15.0,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'UPI ID: ${merchant.upiId}',
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11.0,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (merchant.isVerified)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(AppRadius.xs),
+                            ),
+                            child: const Text(
+                              'Verified',
                               style: TextStyle(
                                 fontFamily: 'Inter',
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15.0,
-                                color: AppColors.textPrimary,
+                                color: AppColors.success,
                               ),
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              'UPI ID: starbucks@okhdfc',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 11.0,
-                                color: AppColors.textSecondary,
-                              ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.s20),
+                    PrimaryButton(
+                      text: 'Continue to Pay',
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AmountEntryScreen(
+                              recipientName: merchant.name,
+                              recipientDetail: merchant.upiId,
+                              recipientType: 'Merchant',
                             ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(AppRadius.xs),
-                        ),
-                        child: const Text(
-                          'Verified',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.success,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s20),
-                  PrimaryButton(
-                    text: 'Continue to Pay',
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AmountEntryScreen(
-                            recipientName: 'Starbucks Coffee',
-                            recipientDetail: 'starbucks@okhdfc',
-                            recipientType: 'Merchant',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

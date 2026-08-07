@@ -3,24 +3,70 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/qr/models/qr_models.dart';
+import 'package:payout/features/qr/repositories/qr_repository.dart';
+import 'package:payout/features/qr/services/qr_logger.dart';
 
-class MyQRScreen extends StatelessWidget {
+class MyQRScreen extends StatefulWidget {
   const MyQRScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const upiId = 'alexmorgan@payout';
+  State<MyQRScreen> createState() => _MyQRScreenState();
+}
 
-    void _copyUPI() {
-      Clipboard.setData(const ClipboardData(text: upiId));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('UPI ID "$upiId" copied to clipboard!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 1),
+class _MyQRScreenState extends State<MyQRScreen> {
+  final QrRepository _qrRepository = MockQrRepository();
+  
+  PersonalQRModel? _qrModel;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQRData();
+  }
+
+  Future<void> _loadQRData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final model = await _qrRepository.getMyQR();
+    if (mounted) {
+      setState(() {
+        _qrModel = model;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _copyUPI() {
+    final upi = _qrModel?.upiId ?? 'rahulsharma@okaxis';
+    Clipboard.setData(ClipboardData(text: upi));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('UPI ID "$upi" copied to clipboard!'),
+        backgroundColor: AppColors.success,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading && _qrModel == null) {
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'My QR Code'),
+        body: Center(
+          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
         ),
       );
     }
+
+    final model = _qrModel ?? const PersonalQRModel(
+      upiId: 'rahulsharma@okaxis',
+      qrCodeUrl: '',
+      userName: 'Rahul Sharma',
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -50,8 +96,8 @@ class MyQRScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 40, horizontal: AppSpacing.s24),
                 child: Column(
                   children: [
-                    const CustomAvatar(
-                      name: 'Alex Morgan',
+                    CustomAvatar(
+                      name: model.userName,
                       size: 64,
                       backgroundColor: AppColors.primaryContainer,
                       textColor: AppColors.primary,
@@ -59,18 +105,18 @@ class MyQRScreen extends StatelessWidget {
                     const SizedBox(height: AppSpacing.s16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Text(
-                          'Alex Morgan',
-                          style: TextStyle(
+                          model.userName,
+                          style: const TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.verified_rounded, color: AppColors.success, size: 18),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.verified_rounded, color: AppColors.success, size: 18),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -86,18 +132,18 @@ class MyQRScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Text(
-                              upiId,
-                              style: TextStyle(
+                              model.upiId,
+                              style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(Icons.copy_rounded, size: 12, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.copy_rounded, size: 12, color: AppColors.primary),
                           ],
                         ),
                       ),
@@ -132,11 +178,7 @@ class MyQRScreen extends StatelessWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(AppRadius.md),
-                            child: Image.asset(
-                              'assets/logo/brand_logo.jpeg',
-                              errorBuilder: (c, e, s) => const Icon(Icons.payment_rounded, color: AppColors.primary),
-                              fit: BoxFit.cover,
-                            ),
+                            child: const Icon(Icons.payment_rounded, color: AppColors.primary),
                           ),
                         ),
                       ],
@@ -164,6 +206,7 @@ class MyQRScreen extends StatelessWidget {
                       text: 'Share Code',
                       iconLeft: Icons.share_rounded,
                       onPressed: () {
+                        QrLogger.logShareQR();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Sharing QR Link...')),
                         );
@@ -176,6 +219,7 @@ class MyQRScreen extends StatelessWidget {
                       text: 'Save Image',
                       iconLeft: Icons.download_rounded,
                       onPressed: () {
+                        QrLogger.logDownloadQR();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Downloading QR Image...')),
                         );

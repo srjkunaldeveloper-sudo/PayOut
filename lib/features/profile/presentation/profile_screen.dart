@@ -5,7 +5,7 @@ import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/kyc_status/presentation/kyc_status_screen.dart';
-import 'package:payout/features/my_qr/presentation/my_qr_screen.dart';
+import 'package:payout/features/qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
 import 'package:payout/features/settings/presentation/settings_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
