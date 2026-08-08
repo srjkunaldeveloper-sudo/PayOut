@@ -1,23 +1,22 @@
+// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
-import 'package:payout/core/config/app_config.dart';
 
 class MerchantLogger {
   static void log(String message) {
-    if (kDebugMode && AppConfig.enableLogs) {
-      final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[MERCHANT_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+    if (kDebugMode) {
+      print('[MERCHANT_LOG] ${DateTime.now().toIso8601String()}: [DEMO MODE] $message');
     }
   }
 
-  static void logProfileLoaded(String id) {
-    log('Merchant profile loaded: $id');
+  static void logProfileLoaded(String merchantId) {
+    log('Merchant profile loaded: $merchantId');
   }
 
   static void logSettlementTriggered(double amount) {
-    log('Settlement triggered for amount: ₹${amount.toStringAsFixed(2)}');
+    log('Settlement sweep initiated: ₹${amount.toStringAsFixed(2)}');
   }
 
-  static void logStatementDownloaded(String date) {
-    log('Monthly earnings statement downloaded for: $date');
+  static void logOfferCreated(String offerId) {
+    log('Store offer published: $offerId');
   }
 }

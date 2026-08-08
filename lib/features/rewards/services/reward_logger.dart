@@ -1,19 +1,22 @@
+// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
-import 'package:payout/core/config/app_config.dart';
 
 class RewardLogger {
   static void log(String message) {
-    if (kDebugMode && AppConfig.enableLogs) {
-      final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[REWARD_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+    if (kDebugMode) {
+      print('[REWARD_LOG] ${DateTime.now().toIso8601String()}: [DEMO MODE] $message');
     }
   }
 
-  static void logScratchCardOpened(String id, double amount) {
-    log('Scratch card opened: $id (Amount won: ₹${amount.toStringAsFixed(2)})');
+  static void logScratchCardOpened(String cardId, double amount) {
+    log('Scratch card opened: $cardId (Amount won: ₹${amount.toStringAsFixed(2)})');
   }
 
-  static void logCouponRedeemed(String code) {
-    log('Coupon code discount redeemed: $code');
+  static void logCouponRedeemed(String couponCode) {
+    log('Coupon code discount redeemed: $couponCode');
+  }
+
+  static void logCashbackCredited(double amount) {
+    log('Cashback reward credited: ₹${amount.toStringAsFixed(2)}');
   }
 }

@@ -66,10 +66,17 @@ Stores preference configurations, identity compliance, and session controls:
 
 ---
 
-## 💼 Merchant & Rewards Domains
-Provides merchant invoice monitoring and loyalty offers management:
-- **Validators:** `MerchantValidator` and `RewardValidator` check business details and coupon codes.
-- **Repositories:** `MerchantRepository` and `RewardRepository` retrieve settlements and active scratch cards.
+## 💼 Merchant & Rewards Ecosystem Domain (Phase 10)
+Provides comprehensive merchant business console, instant settlement sweep, loyalty rewards, mystery scratch cards, and promo coupons:
+- **Merchant Models (`merchant_models.dart`):** `MerchantProfileModel`, `MerchantSalesSummaryModel`, `MerchantTransactionModel`, `SettlementModel`, `MerchantOfferModel`, `BusinessInsightModel`.
+- **Merchant Calculations (`MerchantService`):** Pure aggregation functions for `calculateTotalSettled`, `calculateSalesSummary`, `filterTransactions`, `filterOffers`, and `isSettlementEligible`.
+- **Merchant Validation (`MerchantValidator`):** `validateBusinessName`, `validateGST`, `validatePAN`, `validateMobile`, `validateEmail`, `validatePincode`, `validateSettlementAmount`.
+- **Merchant Repository (`MerchantRepository` & `MockMerchantRepository`):** Constructor-injected `TransactionRepository` and `NotificationRepository`. Instant settlement sweeps route through `PaymentMPINVerificationScreen` with 6-digit MPIN authorization.
+- **Rewards Models (`reward_models.dart`):** `CouponModel`, `ScratchCardModel`, `CashbackModel`, `RewardSummaryModel`, `RewardModel`.
+- **Rewards Calculations (`RewardService`):** Pure functions for `calculateTotalCashback`, `calculateRewardSummary`, `filterCoupons`, `filterCashbacks`, and `calculateDiscountAmount`.
+- **Rewards Validation (`RewardValidator`):** `validateCouponCode`, `validateCouponEligibility`, `validateMinimumSpend`, `validateRewardAmount`.
+- **Rewards Repository (`RewardRepository` & `MockRewardRepository`):** Constructor-injected `TransactionRepository` and `NotificationRepository`. Interactive scratch cards credit rewards wallet and dispatch ledger transactions and push notifications.
+- **Standardized Logging:** `MerchantLogger` and `RewardLogger` with timestamped `[DEMO MODE]` logs and zero PII.
 
 ---
 
@@ -91,7 +98,9 @@ Coordinates full in-app travel discovery, seat maps, multiplex ticketing, and re
 
 ---
 
-## 🔒 Security & Core Network Infrastructure
-- **Network Layer:** API client bindings (`ApiClient`), request adapters configurations (`DioClient`), and safety interceptors (`AuthInterceptor`).
-- **Security Protocols:** Credentials token lockers (`TokenManager`), cryptographic sanitation helpers (`EncryptionHelper`), and biometric checks triggers (`BiometricManager`).
+## 🔒 Security, Core Network & Dependency Injection Infrastructure (Phase 11)
+- **Central Composition Root (`AppDependencies`):** Manages singleton instances, constructor DI wiring, and service locator inversion across all 15 domain repositories without external heavy packages.
+- **Central Repository & Environment Config (`AppConfig`):** Single source of truth for `RepositoryMode` (`mock`, `api`), base API URLs, and timeout policies.
+- **Network Layer (`DioClient`, `ApiClient`):** Pre-configured Dio HTTP client with `AuthInterceptor`, sanitized `LoggingInterceptor`, full HTTP verbs (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`), and standard `ApiResponse<T>` / `NetworkException` error mapping.
+- **Security & PII Sanitization:** Token manager (`TokenManager`), session store (`SessionManager`), cryptographic helpers (`EncryptionHelper`), and zero-PII network interceptors that strip tokens, cookies, and sensitive payload data from logs.
 

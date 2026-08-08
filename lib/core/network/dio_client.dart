@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:payout/core/config/app_config.dart';
 import 'package:payout/core/network/auth_interceptor.dart';
 import 'package:payout/core/network/logging_interceptor.dart';
 
@@ -9,13 +10,22 @@ class DioClient {
     if (_dio == null) {
       _dio = Dio(
         BaseOptions(
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 15),
+          baseUrl: AppConfig.apiBaseUrl,
+          connectTimeout: AppConfig.connectTimeout,
+          receiveTimeout: AppConfig.receiveTimeout,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
         ),
       );
       _dio!.interceptors.add(AuthInterceptor());
       _dio!.interceptors.add(LoggingInterceptor());
     }
     return _dio!;
+  }
+
+  static void reset() {
+    _dio = null;
   }
 }

@@ -1,5 +1,54 @@
 # Changelog
 
+## [1.8.0] - Phase 11 Backend-Ready Core Integration & API Adapter Foundation - 2026-08-08
+
+### Added & Upgraded
+- **Central Composition Root & Dependency Injection**:
+  - `lib/core/di/app_dependencies.dart`: Implemented `AppDependencies` singleton and composition root to wire and manage all 15 domain repositories with constructor DI.
+  - `lib/core/di/di.dart`: Public export barrel for dependency management.
+- **Central Environment & Repository Configuration**:
+  - `lib/core/config/app_config.dart`: Added `RepositoryMode` (`mock`, `api`) enum and central API base URLs and timeouts.
+- **Sanitized Network Logging**:
+  - `lib/core/network/logging_interceptor.dart`: Strict credential and PII sanitization. Strips `Authorization`, `Cookie`, `Set-Cookie`, `x-api-key`, passwords, and token payloads.
+- **Enriched Network Exceptions & Response Wrapper**:
+  - `lib/core/network/network_exception.dart`: Added `NetworkExceptionType` enum and `fromStatusCode` factory.
+  - `lib/core/network/api_response.dart`: Added HTTP status code mapping and `hasData` helper.
+  - `lib/core/network/api_client.dart`: Extended with full HTTP verb suite (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+  - `lib/core/network/auth_interceptor.dart`: Enriched with Bearer token injection and 401 handling boundaries.
+- **Backend Handoff Documentation**:
+  - `docs/BACKEND_REPOSITORY_MAP.md`: Complete matrix mapping all 15 domain repositories, mock vs. API implementations, and file boundaries.
+  - `docs/API_INTEGRATION_GUIDE.md`: Developer guide with practical step-by-step mock-to-API replacement tutorial.
+  - `docs/BACKEND_HANDOFF.md`: Comprehensive handoff specification.
+- **Architecture Verification Suite**:
+  - `test/unit/repository_architecture_test.dart`: Automated test suite verifying composition root, `AppConfig`, `ApiResponse`, and `NetworkException`.
+
+## [1.7.0] - Phase 10 Merchant Console & Rewards Ecosystem Upgrade - 2026-08-08
+
+### Added & Upgraded
+- **Merchant Console & Store Ecosystem Upgrade**:
+  - `merchant_models.dart`: Centralized domain models for `MerchantProfileModel`, `MerchantSalesSummaryModel`, `MerchantTransactionModel`, `SettlementModel`, `MerchantOfferModel`, `BusinessInsightModel`, and `InvoiceModel`.
+  - `MerchantService`: Clean aggregation functions for `calculateTotalSettled`, `calculateSalesSummary`, `filterTransactions`, `filterOffers`, and `isSettlementEligible` with business logic decoupled from presentation.
+  - `MerchantValidator`: Validation suite (`validateBusinessName`, `validateGST`, `validatePAN`, `validateMobile`, `validateEmail`, `validatePincode`, `validateSettlementAmount`).
+  - `MerchantRepository` & `MockMerchantRepository`: Constructor dependency injection of `TransactionRepository` and `NotificationRepository`.
+  - Realistic Demo Outcomes: ₹100 = FAILED, ₹200 = PENDING, other = SUCCESS encapsulated in repository.
+  - Standardized Logging: `MerchantLogger` with timestamped `[DEMO MODE]` logs and zero PII.
+  - `MerchantProfileScreen`: Business details, verified GSTIN, PAN, KYC status, store UPI ID, and masked settlement bank.
+  - `MerchantTransactionsScreen`: Search by customer, Txn ID, or UTR, status chips (`SUCCESS`, `PENDING`, `FAILED`), and payment mode chips (`UPI`, `CARD`, `WALLET`).
+  - `MerchantSettlementScreen`: Available settlement balance, destination bank account selector from `BankAccountRepository`, review bottom sheet, and 6-digit MPIN checkout via `PaymentMPINVerificationScreen`.
+  - `MerchantScreen`: Redesigned business console hero dashboard, store sales metrics, static QR dialog, quick actions, active promotions, and recent payments.
+- **Rewards, Coupons & Cashback Upgrade**:
+  - `reward_models.dart`: Centralized domain models for `CouponModel`, `ScratchCardModel`, `CashbackModel`, `RewardSummaryModel`, and `RewardModel`.
+  - `RewardService`: Clean calculation engines for `calculateTotalCashback`, `calculateRewardSummary`, `filterCoupons`, `filterCashbacks`, and `calculateDiscountAmount`.
+  - `RewardValidator`: Validation suite (`validateCouponCode`, `validateCouponEligibility`, `validateMinimumSpend`, `validateRewardAmount`).
+  - `RewardRepository` & `MockRewardRepository`: Constructor dependency injection of `TransactionRepository` and `NotificationRepository`.
+  - `ScratchCardScreen`: Interactive tap-to-scratch reveal animation, prize amount crediting to rewards wallet, and automatic transaction + notification dispatch.
+  - `CouponDetailsScreen`: Discount hero card, promo code copy button, terms & breakdown, minimum spend limits, and coupon redemption action.
+  - `CashbackHistoryScreen`: Filter chips (`All`, `AVAILABLE`, `PENDING`, `EXPIRED`) with itemized cashback ledger and transaction references.
+  - `RewardsScreen`: Lifetime cashback earned hero card, mystery scratch cards horizontal carousel, category-filtered active coupons, invite friends banner, and history preview.
+- **Testing & Verification**:
+  - 9 dedicated Phase 10 test suites covering models, validators, services, merchant dashboard, settlement flow, rewards hub, scratch card reveal, and coupon redemption.
+  - 100% test pass rate across all 49 test suites in the repository.
+
 ## [1.6.0] - Phase 9 Travel & Booking Ecosystem Upgrade (Flights, Trains, Buses, Hotels, Movies, My Bookings) - 2026-08-08
 
 ### Added & Upgraded

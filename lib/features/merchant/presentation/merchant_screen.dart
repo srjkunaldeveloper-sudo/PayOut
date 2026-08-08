@@ -1,40 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/core/widgets/avatar.dart';
+import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 import 'package:payout/features/merchant/models/merchant_models.dart';
 import 'package:payout/features/merchant/repositories/merchant_repository.dart';
-import 'package:payout/features/merchant/dummy/dummy_merchant_data.dart';
+import 'package:payout/features/merchant/presentation/merchant_profile_screen.dart';
+import 'package:payout/features/merchant/presentation/merchant_transactions_screen.dart';
+import 'package:payout/features/merchant/presentation/merchant_settlement_screen.dart';
 
-// 1. MERCHANT LANDING DASHBOARD
 class MerchantScreen extends StatefulWidget {
-  const MerchantScreen({super.key});
+  final MerchantRepository? merchantRepository;
+  final BankAccountRepository? bankAccountRepository;
+
+  const MerchantScreen({
+    super.key,
+    this.merchantRepository,
+    this.bankAccountRepository,
+  });
 
   @override
   State<MerchantScreen> createState() => _MerchantScreenState();
 }
 
 class _MerchantScreenState extends State<MerchantScreen> {
-  final MerchantRepository _merchantRepository = MockMerchantRepository();
+  late final MerchantRepository _merchantRepo;
+  late final BankAccountRepository _bankAccountRepo;
   MerchantProfileModel? _profile;
+  MerchantSalesSummaryModel? _salesSummary;
+  List<MerchantTransactionModel> _recentTransactions = [];
+  List<MerchantOfferModel> _activeOffers = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _merchantRepo = widget.merchantRepository ?? MockMerchantRepository();
+    _bankAccountRepo = widget.bankAccountRepository ?? MockBankAccountRepository();
+    _loadMerchantData();
   }
 
-  Future<void> _loadProfile() async {
-    final data = await _merchantRepository.getMerchantProfile();
-    if (mounted) {
-      setState(() {
-        _profile = data;
-        _isLoading = false;
-      });
+  Future<void> _loadMerchantData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final profile = await _merchantRepo.getMerchantProfile();
+      final summary = await _merchantRepo.getSalesSummary();
+      final txns = await _merchantRepo.getTransactions();
+      final offers = await _merchantRepo.getOffers();
+
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _salesSummary = summary;
+          _recentTransactions = txns.take(3).toList();
+          _activeOffers = offers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load merchant console data. Please try again.';
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _showQRCodeDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Store Static QR Code',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _profile?.storeName ?? 'Store QR Code',
+              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: const Icon(Icons.qr_code_2_rounded, size: 180, color: Colors.black87),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'UPI ID: ${_profile?.upiId ?? "merchant@payout"}',
+              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Accept payments from Google Pay, PhonePe, Paytm, BHIM & all UPI apps.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            PrimaryButton(
+              text: 'Close',
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -48,625 +132,464 @@ class _MerchantScreenState extends State<MerchantScreen> {
       );
     }
 
-    final businessName = _profile?.businessName ?? DummyMerchantData.dummyProfile.businessName;
+    if (_errorMessage != null || _profile == null || _salesSummary == null) {
+      return Scaffold(
+        appBar: const CustomAppBar(title: 'Business Console'),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage ?? 'Merchant details unavailable',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
+                PrimaryButton(
+                  text: 'Retry',
+                  onPressed: _loadMerchantData,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final profile = _profile!;
+    final summary = _salesSummary!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Business Console'),
+      appBar: CustomAppBar(
+        title: 'Business Console',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_rounded, color: AppColors.textPrimary),
+            tooltip: 'View QR Code',
+            onPressed: _showQRCodeDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.storefront_rounded, color: AppColors.textPrimary),
+            tooltip: 'Store Profile',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MerchantProfileScreen(merchantRepository: _merchantRepo),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.s24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Business Sales Card
+            // Business Header Card
             AppCard(
               color: AppColors.primary,
               borderRadius: AppRadii.cardHero,
-              padding: const EdgeInsets.all(AppSpacing.s24),
+              padding: const EdgeInsets.all(AppSpacing.s20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    "Today's Business Sales",
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryLight,
-                    ),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              profile.storeName,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${profile.businessCategory} • ${profile.city}',
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11.0,
+                                color: AppColors.primaryLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.success.withValues(alpha: 0.5), width: 1),
+                        ),
+                        child: Text(
+                          profile.kycStatus.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    '₹42,560.80',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 34.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white24, height: 1),
+                  const SizedBox(height: 14),
+
+                  // Sales Metrics Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Today's Store Sales",
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '₹${summary.todaySales.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'Settlement Balance',
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '₹${summary.settlementPending.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amberAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Next automatic settlement at 06:00 AM tomorrow.',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11.0,
-                      color: AppColors.primaryLight,
+                  const SizedBox(height: 14),
+
+                  // Instant Sweep Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MerchantSettlementScreen(
+                              merchantRepository: _merchantRepo,
+                              bankAccountRepository: _bankAccountRepo,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadMerchantData();
+                        }
+                      },
+                      icon: const Icon(Icons.flash_on_rounded, size: 16, color: AppColors.primary),
+                      label: const Text('Instant Sweep to Bank', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s32),
+            const SizedBox(height: AppSpacing.s24),
+
+            // Merchant Hub Quick Actions Grid
             const Text(
               'Merchant Actions',
               style: TextStyle(
                 fontFamily: 'Inter',
-                fontSize: 16.0,
+                fontSize: 15.0,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: AppSpacing.s16),
-            // Merchant static QR
-            AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MerchantQRScreen(businessName: businessName, merchantId: _profile?.id ?? 'organic@payout')),
-                );
-              },
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Store QR Code', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Display static UPI QR to accept customer cash', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            // Settlement info settings
-            AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MerchantSettlementScreen()),
-                );
-              },
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: const Icon(Icons.swap_horizontal_circle_rounded, color: Colors.indigo),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Settlements & Sweep', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Configure bank deposit & trigger manual sweeps', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            // Business Profile
-            AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MerchantProfileScreen(profile: _profile ?? DummyMerchantData.dummyProfile)),
-                );
-              },
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: const Icon(Icons.storefront_rounded, color: AppColors.success),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Business Profile', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('GSTIN, KYC status, bank account & category', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            // Payout History
-            AppCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MerchantSettlementHistoryScreen()),
-                );
-              },
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: const Icon(Icons.history_rounded, color: Colors.orange),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Settlement History', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Review details of funds swept to bank accounts', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 2. MERCHANT QR SCREEN
-class MerchantQRScreen extends StatelessWidget {
-  final String businessName;
-  final String merchantId;
-
-  const MerchantQRScreen({
-    super.key,
-    required this.businessName,
-    required this.merchantId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Business QR'),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppCard(
-                color: AppColors.surface,
-                padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-                child: Column(
-                  children: [
-                    CustomAvatar(
-                      name: businessName,
-                      size: 56,
-                      backgroundColor: AppColors.primaryLight,
-                      textColor: AppColors.primary,
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Text(
-                      businessName,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 6.0),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Merchant ID: $merchantId',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s32),
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.s16),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.divider, width: 1.5),
-                      ),
-                      child: const Icon(
-                        Icons.qr_code_2_rounded,
-                        size: 220,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s24),
-                    const Text(
-                      'Accepts all UPI Apps (Google Pay, PhonePe, Paytm, BHIM)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: AppSpacing.s12),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: [
+                _buildActionCard(
+                  icon: Icons.qr_code_scanner_rounded,
+                  title: 'Store Static QR Code',
+                  subtitle: 'Download & print QR',
+                  color: Colors.blue,
+                  onTap: _showQRCodeDialog,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.s32),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Download Poster QR',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Downloading High-Res Poster...')),
+                _buildActionCard(
+                  icon: Icons.receipt_long_rounded,
+                  title: 'Store Transactions',
+                  subtitle: '${summary.transactionCount} records today',
+                  color: Colors.indigo,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MerchantTransactionsScreen(merchantRepository: _merchantRepo),
+                      ),
                     );
                   },
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// 3. MERCHANT SETTLEMENT SCREEN
-class MerchantSettlementScreen extends StatefulWidget {
-  const MerchantSettlementScreen({super.key});
-
-  @override
-  State<MerchantSettlementScreen> createState() => _MerchantSettlementScreenState();
-}
-
-class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
-  bool _isSweeping = false;
-
-  void _triggerSweep() {
-    setState(() {
-      _isSweeping = true;
-    });
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        setState(() {
-          _isSweeping = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Instant sweep triggered! ₹42,560 will be credited to HDFC Bank.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        Navigator.pop(context);
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Settlement Settings'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Settlement Destination Bank',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryLight,
-                        shape: BoxShape.circle,
+                _buildActionCard(
+                  icon: Icons.account_balance_rounded,
+                  title: 'Settlement History',
+                  subtitle: 'Instant sweep records',
+                  color: Colors.teal,
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MerchantSettlementScreen(
+                          merchantRepository: _merchantRepo,
+                          bankAccountRepository: _bankAccountRepo,
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'H',
-                        style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                    );
+                    if (result == true) {
+                      _loadMerchantData();
+                    }
+                  },
+                ),
+                _buildActionCard(
+                  icon: Icons.badge_rounded,
+                  title: 'Business Profile',
+                  subtitle: 'GST, KYC & Bank',
+                  color: Colors.deepPurple,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MerchantProfileScreen(merchantRepository: _merchantRepo),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.s16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('HDFC Bank Ltd', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
-                          Text('Current A/c: •••• 9832', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.check_circle_rounded, color: AppColors.success),
-                  ],
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(height: AppSpacing.s32),
-              const Text(
-                'Instant Settlement (Sweep)',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                padding: const EdgeInsets.all(AppSpacing.s20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Pending Balance: ₹42,560.80', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
-                    SizedBox(height: 4),
-                    Text('Transfer outstanding store balance to your bank account instantly. Standard sweeps are processed daily at 06:00 AM for free.',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
-                  ],
+              ],
+            ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // Active Customer Offers
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Active Store Offers',
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 15.0, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Instant Sweep to Bank',
-                  isLoading: _isSweeping,
-                  onPressed: _isSweeping ? null : _triggerSweep,
+                Text(
+                  '${_activeOffers.length} Active',
+                  style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// 4. BUSINESS PROFILE SCREEN
-class MerchantProfileScreen extends StatelessWidget {
-  final MerchantProfileModel profile;
-
-  const MerchantProfileScreen({
-    super.key,
-    required this.profile,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Business Profile'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.s24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Store Information',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              ],
             ),
             const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: const EdgeInsets.all(AppSpacing.s20),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ..._activeOffers.map((offer) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                child: AppCard(
+                  child: Row(
                     children: [
-                      const Text('Legal Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      const SizedBox(width: 8),
-                      Flexible(
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.s10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(AppRadii.cardSmall),
+                        ),
+                        child: const Icon(Icons.local_offer_rounded, color: AppColors.primary, size: 22),
+                      ),
+                      const SizedBox(width: AppSpacing.s12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              offer.title,
+                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Code: ${offer.code} • Min spend ₹${offer.minSpend.toInt()}',
+                              style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Text(
-                          profile.businessName,
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          '${offer.discountPercent.toInt()}% OFF',
+                          style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Display Name', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text(profile.businessName.split(' ')[0], style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
+                ),
+              );
+            }),
+            const SizedBox(height: AppSpacing.s24),
+
+            // Recent Customer Payments
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Store Payments',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Category', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('Grocery & Retail Stores', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MerchantTransactionsScreen(merchantRepository: _merchantRepo),
+                      ),
+                    );
+                  },
+                  child: const Text('View All', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                ),
+              ],
             ),
+            const SizedBox(height: 4),
+
+            ..._recentTransactions.map((txn) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            txn.customerName,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${txn.paymentMethod} • ${txn.dateTime}',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+₹${txn.amount.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
             const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'Tax & Compliance',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: const EdgeInsets.all(AppSpacing.s20),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('GSTIN Number', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text(profile.gstNumber, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('PAN Number', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('AABCP8832K', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('KYC Verification', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
-                      Text('COMPLETED', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
     );
   }
-}
 
-// 5. SETTLEMENT HISTORY SCREEN
-class MerchantSettlementHistoryScreen extends StatefulWidget {
-  const MerchantSettlementHistoryScreen({super.key});
-
-  @override
-  State<MerchantSettlementHistoryScreen> createState() => _MerchantSettlementHistoryScreenState();
-}
-
-class _MerchantSettlementHistoryScreenState extends State<MerchantSettlementHistoryScreen> {
-  final MerchantRepository _merchantRepository = MockMerchantRepository();
-  List<SettlementModel> _settlements = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettlements();
-  }
-
-  Future<void> _loadSettlements() async {
-    final list = await _merchantRepository.getSettlementHistory();
-    if (mounted) {
-      setState(() {
-        _settlements = list;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Settlement History'),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(AppSpacing.s24),
-              itemCount: _settlements.length,
-              itemBuilder: (context, index) {
-                final log = _settlements[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                  child: AppCard(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Settled on ${log.date}',
-                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Ref: ${log.id}',
-                              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '₹${log.amount.toStringAsFixed(2)}',
-                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                log.status,
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.success,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: AppCard(
+        padding: const EdgeInsets.all(AppSpacing.s12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
