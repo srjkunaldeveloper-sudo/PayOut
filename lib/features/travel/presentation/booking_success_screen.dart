@@ -1,83 +1,86 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/home/presentation/home_screen.dart';
+import 'package:payout/features/travel/presentation/my_bookings_screen.dart';
+import 'package:payout/features/travel/shared/models/travel_models.dart';
 
-class BookingSuccessScreen extends StatelessWidget {
-  final String serviceName;
-  final String details;
-  final double amount;
+class TravelBookingSuccessScreen extends StatelessWidget {
+  final TravelBookingModel booking;
 
-  const BookingSuccessScreen({
+  const TravelBookingSuccessScreen({
     super.key,
-    required this.serviceName,
-    required this.details,
-    required this.amount,
+    required this.booking,
   });
-
-  String _generateBookingId() {
-    final rand = Random();
-    final buffer = StringBuffer('BK-');
-    for (int i = 0; i < 6; i++) {
-      buffer.write(rand.nextInt(10));
-    }
-    return buffer.toString();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final bookingId = _generateBookingId();
-    final now = DateTime.now();
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final dateStr = '${months[now.month - 1]} ${now.day.toString().padLeft(2, '0')}, ${now.year}';
+    final isConfirmed = booking.status == 'CONFIRMED';
+    final isPending = booking.status == 'PAYMENT_PENDING';
+    final statusColor = isConfirmed
+        ? AppColors.success
+        : isPending
+            ? Colors.orange
+            : AppColors.error;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Booking Confirmed', showLeading: false),
+      appBar: CustomAppBar(
+        title: '${booking.category} Booking',
+        onLeadingPressed: () => Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        ),
+      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             children: [
-              const Spacer(),
+              // Status Header Icon
               Center(
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(AppSpacing.s24),
+                      padding: const EdgeInsets.all(AppSpacing.s20),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.08),
+                        color: statusColor.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.check_circle_rounded,
-                        size: 64,
-                        color: AppColors.success,
+                      child: Icon(
+                        isConfirmed
+                            ? Icons.check_circle_rounded
+                            : isPending
+                                ? Icons.hourglass_top_rounded
+                                : Icons.cancel_rounded,
+                        size: 56,
+                        color: statusColor,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.s20),
-                    const Text(
-                      'Booking Successful!',
-                      style: TextStyle(
+                    const SizedBox(height: AppSpacing.s16),
+                    Text(
+                      isConfirmed
+                          ? '${booking.category} Booking Confirmed!'
+                          : isPending
+                              ? 'Booking Payment Pending'
+                              : 'Booking Failed',
+                      style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 22.0,
+                        fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppSpacing.s8),
+                    const SizedBox(height: 4),
                     Text(
-                      serviceName,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14.0,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Text(
-                      details,
+                      isConfirmed
+                          ? 'Your booking is successful. Ref: ${booking.referenceCode}'
+                          : isPending
+                              ? 'Payment is being processed by the bank. Ref: ${booking.referenceCode}'
+                              : 'Payment could not be completed. Please try again.',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12.0,
@@ -88,158 +91,153 @@ class BookingSuccessScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s24),
+
+              // Booking Ticket / Voucher Card
               AppCard(
-                padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Booking ID',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                booking.title,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                booking.subtitle,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12.0,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          bookingId,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(AppRadius.xs),
+                          ),
+                          child: Text(
+                            booking.status,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 11.0,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: AppSpacing.s16),
+                    const Divider(color: AppColors.divider),
                     const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Date',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          dateStr,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Amount Paid',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          '₹${amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Payment Method',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        const Text(
-                          'Payout Wallet Balance',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
+
+                    _buildInfoRow('Route / Location', booking.routeOrLocation),
+                    _buildInfoRow('Date & Time', booking.travelDate),
+                    if (booking.returnOrCheckOutDate.isNotEmpty)
+                      _buildInfoRow('Check-out Date', booking.returnOrCheckOutDate),
+                    if (booking.seatOrRoomNumbers.isNotEmpty)
+                      _buildInfoRow(
+                        booking.category == 'Hotel' ? 'Rooms' : 'Seat Number(s)',
+                        booking.seatOrRoomNumbers.join(', '),
+                      ),
+                    _buildInfoRow('Primary Guest/Pax', booking.primaryContactName),
+                    _buildInfoRow('Contact Mobile', booking.contactPhone),
+                    _buildInfoRow('Reference / PNR', booking.referenceCode),
+                    _buildInfoRow('Transaction ID', booking.transactionId),
+                    const SizedBox(height: AppSpacing.s8),
+                    const Divider(color: AppColors.divider),
+                    const SizedBox(height: AppSpacing.s8),
+                    _buildInfoRow(
+                      'Total Paid',
+                      '₹${booking.totalAmount.toStringAsFixed(2)}',
+                      isTotal: true,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Downloading Ticket PDF...')),
-                        );
-                      },
-                      icon: const Icon(Icons.file_download_outlined, color: AppColors.primary, size: 18),
-                      label: const Text(
-                        'Download',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Sharing Booking Link...')),
-                        );
-                      },
-                      icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary, size: 18),
-                      label: const Text(
-                        'Share Ticket',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.surface,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: const BorderSide(color: AppColors.divider),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s24),
+
+              // Action Buttons
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Back to Home',
+                  text: 'View in My Bookings',
                   onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+                    );
                   },
                 ),
               ),
-              const SizedBox(height: AppSpacing.s24),
+              const SizedBox(height: AppSpacing.s12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      (route) => false,
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: AppColors.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                  ),
+                  child: const Text('Back to Home', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, color: AppColors.primary)),
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: isTotal ? 14.0 : 12.0,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: isTotal ? 16.0 : 12.0,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
+              color: isTotal ? AppColors.primary : AppColors.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }

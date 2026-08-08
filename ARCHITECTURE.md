@@ -80,10 +80,14 @@ Coordinates loan assessments, EMI calculators, insurance packages, and portfolio
 
 ---
 
-## ✈️ Travel Enterprise Domain
-Coordinates flight bookings, train berths allocation, hotel reservations, and movie ticketing:
-- **Validators:** `TravelValidator` monitors ticket quantities and travel calendar entries.
-- **Repository:** `TravelRepository` handles schedule indices search and boarding pass printouts.
+## ✈️ Travel & Booking Ecosystem Domain (Phase 9)
+Coordinates full in-app travel discovery, seat maps, multiplex ticketing, and reservation management:
+- **Centralized Models (`travel_models.dart`):** `FlightModel`, `TrainModel`, `BusModel`, `HotelModel`, `MovieModel`, `TravelBookingModel`.
+- **Calculations & Business Logic (`TravelService`):** Dedicated pure service functions for `calculateFlightFare`, `calculateTrainFare`, `calculateBusFare`, `calculateStayNights`, `calculateHotelPricing`, `calculateMoviePricing`, and `calculateRefundEstimate`. Zero pricing computations reside in widgets.
+- **Validators (`TravelValidator`):** `validatePassengerName`, `validateAge`, `validateMobile`, `validateEmail`, `validateSearchCities`, `validateTravelDates`, `validatePassengerCount`.
+- **Repository (`TravelRepository` & `MockTravelRepository`):** Constructor-injected `TransactionRepository` and `NotificationRepository`. Only `CONFIRMED` bookings dispatch transactions and user alerts. Contains clear `// TODO(api)` hooks for future airline, IRCTC, bus GDS, hotel CRS, and cinema ticketing engine backend integrations.
+- **Unified MPIN Payment Integration:** All bookings seamlessly route through `PaymentMPINVerificationScreen` with 6-digit MPIN authorization.
+- **Standardized Logging (`TravelLogger`):** Timestamped `[DEMO MODE]` logging with zero PII.
 
 ---
 

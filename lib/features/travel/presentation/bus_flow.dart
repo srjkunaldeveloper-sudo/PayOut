@@ -2,75 +2,185 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
 import 'package:payout/features/travel/shared/services/travel_service.dart';
+import 'package:payout/features/travel/shared/validators/travel_validator.dart';
 
+// ==========================================
 // 1. BUS SEARCH SCREEN
+// ==========================================
+
 class BusSearchScreen extends StatefulWidget {
-  const BusSearchScreen({super.key});
+  final TravelRepository? travelRepository;
+
+  const BusSearchScreen({super.key, this.travelRepository});
 
   @override
   State<BusSearchScreen> createState() => _BusSearchScreenState();
 }
 
 class _BusSearchScreenState extends State<BusSearchScreen> {
-  final TextEditingController _fromController = TextEditingController(text: 'Delhi');
-  final TextEditingController _toController = TextEditingController(text: 'Jaipur');
+  late final TravelRepository _travelRepository;
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _fromController = TextEditingController();
+  final TextEditingController _toController = TextEditingController();
+  DateTime _travelDate = DateTime.now().add(const Duration(days: 3));
+  bool? _isAC;
+
+  @override
+  void initState() {
+    super.initState();
+    _travelRepository = widget.travelRepository ??
+        MockTravelRepository(
+          transactionRepository: MockTransactionRepository(),
+          notificationRepository: MockNotificationRepository(),
+        );
+  }
+
+  @override
+  void dispose() {
+    _fromController.dispose();
+    _toController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _travelDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 90)),
+    );
+    if (picked != null) {
+      setState(() => _travelDate = picked);
+    }
+  }
+
+  void _submitSearch() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final from = _fromController.text.trim();
+    final to = _toController.text.trim();
+
+    final cityRes = TravelValidator.validateSearchCities(from, to);
+    if (!cityRes.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(cityRes.errorMessage!), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    final request = BusSearchRequest(
+      from: from,
+      to: to,
+      travelDate: _travelDate,
+      isAC: _isAC,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BusResultsScreen(
+          request: request,
+          travelRepository: _travelRepository,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Search Buses'),
+      appBar: const CustomAppBar(title: 'Book Bus Tickets'),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppCard(
-                padding: const EdgeInsets.all(AppSpacing.s20),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _fromController,
-                      decoration: const InputDecoration(
-                        labelText: 'From City',
-                        prefixIcon: Icon(Icons.directions_bus_rounded),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppCard(
+                  child: Column(
+                    children: [
+                      AppTextField(
+                        controller: _fromController,
+                        labelText: 'From City / Boarding Point',
+                        hintText: 'e.g. Delhi (Kashmere Gate)',
+                        prefix: const Icon(Icons.directions_bus_rounded, size: 20),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin city is required' : null,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.s16),
-                    TextField(
-                      controller: _toController,
-                      decoration: const InputDecoration(
-                        labelText: 'To City',
-                        prefixIcon: Icon(Icons.directions_bus_rounded),
+                      const SizedBox(height: AppSpacing.s12),
+                      AppTextField(
+                        controller: _toController,
+                        labelText: 'To City / Destination',
+                        hintText: 'e.g. Jaipur (Sindhi Camp)',
+                        prefix: const Icon(Icons.location_on_outlined, size: 20),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination city is required' : null,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  text: 'Search Buses',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BusResultsScreen(
-                          from: _fromController.text,
-                          to: _toController.text,
+                      const SizedBox(height: AppSpacing.s16),
+
+                      InkWell(
+                        onTap: () => _selectDate(context),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Date of Travel',
+                            prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                          ),
+                          child: Text(
+                            '${_travelDate.day}/${_travelDate.month}/${_travelDate.year}',
+                            style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                          ),
                         ),
                       ),
-                    );
-                  },
+                      const SizedBox(height: AppSpacing.s16),
+
+                      Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('All Buses', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                            selected: _isAC == null,
+                            selectedColor: AppColors.primaryContainer,
+                            onSelected: (val) => setState(() => _isAC = null),
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('AC Only', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                            selected: _isAC == true,
+                            selectedColor: AppColors.primaryContainer,
+                            onSelected: (val) => setState(() => _isAC = true),
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('Non-AC', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                            selected: _isAC == false,
+                            selectedColor: AppColors.primaryContainer,
+                            onSelected: (val) => setState(() => _isAC = false),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.s24),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    text: 'Search Buses',
+                    onPressed: _submitSearch,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -78,33 +188,40 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
   }
 }
 
+// ==========================================
 // 2. BUS RESULTS SCREEN
-class BusResultsScreen extends StatefulWidget {
-  final String from;
-  final String to;
+// ==========================================
 
-  const BusResultsScreen({super.key, required this.from, required this.to});
+class BusResultsScreen extends StatefulWidget {
+  final BusSearchRequest request;
+  final TravelRepository travelRepository;
+
+  const BusResultsScreen({
+    super.key,
+    required this.request,
+    required this.travelRepository,
+  });
 
   @override
   State<BusResultsScreen> createState() => _BusResultsScreenState();
 }
 
 class _BusResultsScreenState extends State<BusResultsScreen> {
-  final TravelRepository _travelRepository = MockTravelRepository();
-  List<BusModel> _buses = [];
   bool _isLoading = true;
+  List<BusModel> _buses = [];
 
   @override
   void initState() {
     super.initState();
-    _loadBuses();
+    _fetchBuses();
   }
 
-  Future<void> _loadBuses() async {
-    final list = await _travelRepository.getBuses();
+  Future<void> _fetchBuses() async {
+    setState(() => _isLoading = true);
+    final results = await widget.travelRepository.searchBuses(widget.request);
     if (mounted) {
       setState(() {
-        _buses = list;
+        _buses = results;
         _isLoading = false;
       });
     }
@@ -112,182 +229,139 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filtered = TravelService.filterBuses(_buses, isAC: widget.request.isAC);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: '${widget.from} to ${widget.to}'),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(AppSpacing.s24),
-              itemCount: _buses.length,
-              itemBuilder: (context, index) {
-                final bus = _buses[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.s16),
-                  child: AppCard(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BusDetailsScreen(
-                            from: widget.from,
-                            to: widget.to,
-                            bus: bus,
+      appBar: CustomAppBar(
+        title: '${widget.request.from} → ${widget.request.to}',
+      ),
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : filtered.isEmpty
+                ? const Center(child: Text('No buses available on this route', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(AppSpacing.s20),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final bus = filtered[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.s16),
+                        child: AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      bus.operatorName,
+                                      style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.star_rounded, size: 14, color: AppColors.success),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          bus.rating.toString(),
+                                          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(bus.busType, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                              const SizedBox(height: 12),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(bus.departureTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text(bus.from, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                    ],
+                                  ),
+                                  Text(bus.duration, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(bus.arrivalTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text(bus.to, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              const Divider(color: AppColors.divider),
+                              const SizedBox(height: 8),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('₹${bus.price.toInt()}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                                      Text('${bus.availableSeats} seats left', style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+                                    ],
+                                  ),
+                                  PrimaryButton(
+                                    text: 'Select Seats',
+                                    width: 120,
+                                    height: 38,
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BusSeatSelectionScreen(
+                                            bus: bus,
+                                            request: widget.request,
+                                            travelRepository: widget.travelRepository,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       );
                     },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              bus.operatorName,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.0,
-                              ),
-                            ),
-                            Text(
-                              '₹${bus.price.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16.0,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.s12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
-                              'AC Sleeper (2+1)',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 13.0,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              '12 Seats Left',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12.0,
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ),
-                );
-              },
-            ),
-    );
-  }
-}
-
-// 3. BUS DETAILS SCREEN
-class BusDetailsScreen extends StatelessWidget {
-  final String from;
-  final String to;
-  final BusModel bus;
-
-  const BusDetailsScreen({
-    super.key,
-    required this.from,
-    required this.to,
-    required this.bus,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Bus Details'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppCard(
-                padding: const EdgeInsets.all(AppSpacing.s20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      bus.operatorName,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          from,
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
-                        ),
-                        const Icon(Icons.arrow_forward_rounded, color: AppColors.textSecondary, size: 16),
-                        Text(
-                          to,
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  text: 'Select Seat',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BusSeatSelectionScreen(
-                          from: from,
-                          to: to,
-                          bus: bus,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
 }
 
-// 4. SEAT SELECTION SCREEN
+// ==========================================
+// 3. BUS SEAT SELECTION SCREEN
+// ==========================================
+
 class BusSeatSelectionScreen extends StatefulWidget {
-  final String from;
-  final String to;
   final BusModel bus;
+  final BusSearchRequest request;
+  final TravelRepository travelRepository;
 
   const BusSeatSelectionScreen({
     super.key,
-    required this.from,
-    required this.to,
     required this.bus,
+    required this.request,
+    required this.travelRepository,
   });
 
   @override
@@ -295,34 +369,387 @@ class BusSeatSelectionScreen extends StatefulWidget {
 }
 
 class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
-  String? _selectedSeat;
+  final List<BusSeatModel> _selectedSeats = [];
 
-  Widget _buildSeat(String code) {
-    final isSelected = _selectedSeat == code;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSeat = code;
-        });
-      },
+  void _toggleSeat(BusSeatModel seat) {
+    if (!seat.isAvailable) return;
+
+    setState(() {
+      if (_selectedSeats.any((s) => s.seatNumber == seat.seatNumber)) {
+        _selectedSeats.removeWhere((s) => s.seatNumber == seat.seatNumber);
+      } else {
+        if (_selectedSeats.length >= 6) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Maximum 6 seats allowed per booking.')),
+          );
+          return;
+        }
+        _selectedSeats.add(seat);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalFare = TravelService.calculateBusFare(selectedSeats: _selectedSeats);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: CustomAppBar(title: widget.bus.operatorName),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Legend
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20, vertical: AppSpacing.s12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildLegendItem('Available', Colors.white, Border.all(color: AppColors.divider)),
+                  _buildLegendItem('Selected', AppColors.primary, null),
+                  _buildLegendItem('Occupied', Colors.grey.shade300, null),
+                  _buildLegendItem('Ladies', Colors.pink.shade100, Border.all(color: Colors.pink.shade300)),
+                ],
+              ),
+            ),
+            const Divider(color: AppColors.divider),
+
+            // Interactive Seat Layout Grid
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.s24),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.s16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      children: [
+                        // Steering Icon at front
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Icon(Icons.directions_bus_outlined, color: AppColors.textSecondary, size: 28),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Seat rows
+                        ...List.generate(7, (rowIndex) {
+                          final rowSeats = widget.bus.seats.where((s) => s.row == rowIndex).toList();
+                          if (rowSeats.isEmpty) return const SizedBox.shrink();
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Left 2 seats
+                                if (rowSeats.isNotEmpty) _buildSeatWidget(rowSeats[0]),
+                                const SizedBox(width: 8),
+                                if (rowSeats.length > 1) _buildSeatWidget(rowSeats[1]),
+
+                                // Aisle
+                                const SizedBox(width: 32),
+
+                                // Right 2 seats
+                                if (rowSeats.length > 2) _buildSeatWidget(rowSeats[2]),
+                                const SizedBox(width: 8),
+                                if (rowSeats.length > 3) _buildSeatWidget(rowSeats[3]),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom Fare and Proceed Ticker
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.s20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _selectedSeats.isEmpty ? 'Select Seats' : '${_selectedSeats.length} Seat(s) Selected',
+                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      Text(
+                        '₹${totalFare.toStringAsFixed(2)}',
+                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                  PrimaryButton(
+                    text: 'Continue',
+                    width: 140,
+                    height: 44,
+                    onPressed: _selectedSeats.isNotEmpty
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BusPassengerScreen(
+                                  bus: widget.bus,
+                                  request: widget.request,
+                                  selectedSeats: _selectedSeats,
+                                  totalFare: totalFare,
+                                  travelRepository: widget.travelRepository,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSeatWidget(BusSeatModel seat) {
+    final isSelected = _selectedSeats.any((s) => s.seatNumber == seat.seatNumber);
+
+    Color bg = Colors.white;
+    Border? border = Border.all(color: AppColors.divider);
+
+    if (isSelected) {
+      bg = AppColors.primary;
+      border = null;
+    } else if (!seat.isAvailable) {
+      bg = Colors.grey.shade300;
+      border = null;
+    } else if (seat.isLadies) {
+      bg = Colors.pink.shade100;
+      border = Border.all(color: Colors.pink.shade300);
+    }
+
+    return InkWell(
+      onTap: () => _toggleSeat(seat),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        margin: const EdgeInsets.all(6.0),
-        width: 48,
-        height: 48,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider, width: 1.5),
+          color: bg,
+          border: border,
+          borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
         child: Text(
-          code,
+          seat.seatNumber,
           style: TextStyle(
             fontFamily: 'Inter',
+            fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected ? Colors.white : (seat.isAvailable ? AppColors.textPrimary : Colors.grey.shade600),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color, BoxBorder? border) {
+    return Row(
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(color: color, border: border, borderRadius: BorderRadius.circular(3)),
+        ),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+      ],
+    );
+  }
+}
+
+// ==========================================
+// 4. BUS PASSENGER & REVIEW SCREEN
+// ==========================================
+
+class BusPassengerScreen extends StatefulWidget {
+  final BusModel bus;
+  final BusSearchRequest request;
+  final List<BusSeatModel> selectedSeats;
+  final double totalFare;
+  final TravelRepository travelRepository;
+
+  const BusPassengerScreen({
+    super.key,
+    required this.bus,
+    required this.request,
+    required this.selectedSeats,
+    required this.totalFare,
+    required this.travelRepository,
+  });
+
+  @override
+  State<BusPassengerScreen> createState() => _BusPassengerScreenState();
+}
+
+class _BusPassengerScreenState extends State<BusPassengerScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  String _gender = 'Male';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    _mobileController.dispose();
+    super.dispose();
+  }
+
+  void _showReviewModal() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final seatNums = widget.selectedSeats.map((s) => s.seatNumber).join(', ');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
+              ),
+              const SizedBox(height: AppSpacing.s16),
+              const Text('Review Bus Ticket Booking', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 4),
+              const Text('Authorize ticket booking via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const SizedBox(height: AppSpacing.s16),
+              AppCard(
+                child: Column(
+                  children: [
+                    _buildReviewRow('Operator', widget.bus.operatorName),
+                    const Divider(color: AppColors.divider),
+                    _buildReviewRow('Route', '${widget.request.from} → ${widget.request.to}'),
+                    const Divider(color: AppColors.divider),
+                    _buildReviewRow('Departure', widget.bus.departureTime),
+                    const Divider(color: AppColors.divider),
+                    _buildReviewRow('Seat(s)', seatNums),
+                    const Divider(color: AppColors.divider),
+                    _buildReviewRow('Passenger', '${_nameController.text.trim()} (${_ageController.text.trim()} Yrs, $_gender)'),
+                    const Divider(color: AppColors.divider),
+                    _buildReviewRow('Total Fare (Inc. GST)', '₹${widget.totalFare.toStringAsFixed(2)}', isTotal: true),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  text: 'Proceed to Pay ₹${widget.totalFare.toStringAsFixed(2)}',
+                  onPressed: () {
+                    Navigator.pop(modalContext);
+                    _navigateToMPINPayment();
+                  },
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _navigateToMPINPayment() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentMPINVerificationScreen(
+          recipientName: widget.bus.operatorName,
+          recipientDetail: 'Bus Booking (${widget.selectedSeats.map((s) => s.seatNumber).join(', ')})',
+          recipientType: 'Bus',
+          amount: widget.totalFare,
+          note: 'Bus Ticket ${widget.bus.id}',
+          methodId: 'wallet',
+          onSuccess: () async {
+            final booking = TravelBookingModel(
+              id: 'BKG-BUS-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+              category: 'Bus',
+              title: widget.bus.operatorName,
+              subtitle: widget.bus.busType,
+              routeOrLocation: '${widget.request.from} → ${widget.request.to}',
+              travelDate: '${widget.request.travelDate.day}/${widget.request.travelDate.month}/${widget.request.travelDate.year}, ${widget.bus.departureTime}',
+              quantity: widget.selectedSeats.length,
+              seatOrRoomNumbers: widget.selectedSeats.map((s) => s.seatNumber).toList(),
+              primaryContactName: _nameController.text.trim(),
+              contactPhone: _mobileController.text.trim(),
+              totalAmount: widget.totalFare,
+              status: 'CONFIRMED',
+              referenceCode: 'BUS-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+              transactionId: 'TXN-BUS-${DateTime.now().millisecondsSinceEpoch}',
+              createdAt: 'Today',
+            );
+
+            final confirmed = await widget.travelRepository.createBooking(booking);
+
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TravelBookingSuccessScreen(booking: confirmed),
+                ),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewRow(String label, String value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -331,178 +758,108 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Choose Seat'),
+      appBar: const CustomAppBar(title: 'Passenger Details'),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSeat('L1'),
-                          _buildSeat('L2'),
-                          const SizedBox(width: AppSpacing.s32),
-                          _buildSeat('L3'),
+                          Text(widget.bus.operatorName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          const SizedBox(height: 2),
+                          Text('Seat(s): ${widget.selectedSeats.map((s) => s.seatNumber).join(', ')}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildSeat('L4'),
-                          _buildSeat('L5'),
-                          const SizedBox(width: AppSpacing.s32),
-                          _buildSeat('L6'),
-                        ],
+                      Text(
+                        '₹${widget.totalFare.toStringAsFixed(2)}',
+                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
                 ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  text: _selectedSeat == null ? 'Select Seat' : 'Continue with $_selectedSeat',
-                  onPressed: _selectedSeat == null
-                      ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BusFareSummaryScreen(
-                                from: widget.from,
-                                to: widget.to,
-                                bus: widget.bus,
-                                seatCode: _selectedSeat!,
-                              ),
-                            ),
-                          );
-                        },
+                const SizedBox(height: AppSpacing.s20),
+
+                const Text('Passenger Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: AppSpacing.s12),
+
+                AppTextField(
+                  controller: _nameController,
+                  labelText: 'Primary Passenger Name',
+                  hintText: 'Full Name',
+                  prefix: const Icon(Icons.person_outline_rounded, size: 20),
+                  validator: (v) {
+                    final res = TravelValidator.validatePassengerName(v ?? '');
+                    return res.isValid ? null : res.errorMessage;
+                  },
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+                const SizedBox(height: AppSpacing.s12),
 
-// 5. FARE SUMMARY SCREEN
-class BusFareSummaryScreen extends StatefulWidget {
-  final String from;
-  final String to;
-  final BusModel bus;
-  final String seatCode;
-
-  const BusFareSummaryScreen({
-    super.key,
-    required this.from,
-    required this.to,
-    required this.bus,
-    required this.seatCode,
-  });
-
-  @override
-  State<BusFareSummaryScreen> createState() => _BusFareSummaryScreenState();
-}
-
-class _BusFareSummaryScreenState extends State<BusFareSummaryScreen> {
-  final TravelRepository _travelRepository = MockTravelRepository();
-  bool _isBooking = false;
-
-  void _bookTicket() async {
-    setState(() {
-      _isBooking = true;
-    });
-
-    final totalCost = TravelService.calculateTotalCost(rate: widget.bus.price, quantity: 1);
-    final success = await _travelRepository.bookTicket('Bus', widget.bus.id, totalCost);
-
-    if (mounted) {
-      setState(() {
-        _isBooking = false;
-      });
-
-      if (success) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BookingSuccessScreen(
-              serviceName: 'Bus Ticket: ${widget.bus.operatorName}',
-              details: '${widget.from} to ${widget.to} • Seat: ${widget.seatCode}',
-              amount: totalCost,
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final totalCost = TravelService.calculateTotalCost(rate: widget.bus.price, quantity: 1);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Fare Breakup'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Verify Pricing Breakup',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                child: Column(
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.bus.operatorName,
-                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.s8),
-                        Text(
-                          '₹${totalCost.toStringAsFixed(0)}',
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
-                        ),
-                      ],
+                    Expanded(
+                      child: AppTextField(
+                        controller: _ageController,
+                        labelText: 'Age (Years)',
+                        hintText: 'e.g. 26',
+                        keyboardType: TextInputType.number,
+                        prefix: const Icon(Icons.cake_outlined, size: 18),
+                        validator: (v) {
+                          final res = TravelValidator.validateAge(v ?? '');
+                          return res.isValid ? null : res.errorMessage;
+                        },
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Base Fare', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text('₹${widget.bus.price.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _gender,
+                        items: const [
+                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                        ],
+                        onChanged: (val) => setState(() => _gender = val ?? 'Male'),
+                        decoration: InputDecoration(
+                          labelText: 'Gender',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  text: 'Confirm & Book Ticket',
-                  isLoading: _isBooking,
-                  onPressed: _isBooking ? null : _bookTicket,
+                const SizedBox(height: AppSpacing.s12),
+
+                AppTextField(
+                  controller: _mobileController,
+                  labelText: 'Contact Mobile Number',
+                  hintText: '10-digit mobile number',
+                  keyboardType: TextInputType.phone,
+                  prefix: const Icon(Icons.phone_outlined, size: 20),
+                  validator: (v) {
+                    final res = TravelValidator.validateMobile(v ?? '');
+                    return res.isValid ? null : res.errorMessage;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.s24),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    text: 'Review Bus Ticket',
+                    onPressed: _showReviewModal,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

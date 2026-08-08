@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.6.0] - Phase 9 Travel & Booking Ecosystem Upgrade (Flights, Trains, Buses, Hotels, Movies, My Bookings) - 2026-08-08
+
+### Added & Upgraded
+- **Travel Domain Architecture & Centralized Models**:
+  - `travel_models.dart`: Centralized domain models for `FlightModel`, `FlightSearchRequest`, `FlightFareModel`, `FlightPassengerModel`, `TrainModel`, `TrainSearchRequest`, `TrainClassAvailability`, `TrainPassengerModel`, `BusModel`, `BusSearchRequest`, `BusSeatModel`, `BusPassengerModel`, `HotelModel`, `HotelSearchRequest`, `HotelRoomModel`, `HotelGuestModel`, `MovieModel`, `MovieTheatreModel`, `MovieShowModel`, `MovieSeatModel`, `TravelBookingModel`, and `TravelBookingStatus`.
+  - `TravelService`: Centralized calculation engines for `calculateFlightFare`, `calculateTrainFare`, `calculateBusFare`, `calculateStayNights`, `calculateHotelPricing`, `calculateMoviePricing`, and `calculateRefundEstimate` with zero pricing logic in UI widgets.
+  - `TravelValidator`: Input validation suite (`validatePassengerName`, `validateAge`, `validateMobile`, `validateEmail`, `validateSearchCities`, `validateTravelDates`, `validatePassengerCount`).
+  - `TravelRepository` & `MockTravelRepository`: Constructor dependency injection of `TransactionRepository` and `NotificationRepository`.
+  - Realistic Demo Outcomes: ₹100 = FAILED, ₹200 = PAYMENT_PENDING, other = CONFIRMED encapsulated in repository.
+  - Standardized Logging: `TravelLogger` with timestamped `[DEMO MODE]` logs and zero PII.
+- **Paytm-Style Flight Booking Flow**:
+  - `FlightSearchScreen`: One Way / Round Trip toggle, non-prefilled origin/destination inputs, date pickers, pax & class selectors.
+  - `FlightResultsScreen`: Non-stop filter, airline chips, dynamic pricing cards, and flight selection.
+  - `FlightPassengerAndReviewScreen`: Clean passenger information form, live fare breakdown (Base + 12% GST + Fee), and 6-digit MPIN checkout.
+- **Paytm-Style IRCTC Train Reservation**:
+  - `TrainSearchScreen`: Origin/Destination station inputs, date picker, class quota selection.
+  - `TrainResultsScreen`: Class availability cards (`3A`, `2A`, `1A`, `SL`) with live seat status (`AVAILABLE`, `RAC`, `WL`) and fares.
+  - `TrainPassengerAndReviewScreen`: Passenger form with berth choice, IRCTC service charges, and MPIN checkout.
+- **Paytm-Style Bus Booking Flow**:
+  - `BusSearchScreen`: Boarding & drop cities, date picker, AC/Non-AC filter chips.
+  - `BusResultsScreen`: Operator ratings, amenities, starting fare, and seat availability.
+  - `BusSeatSelectionScreen`: Interactive bus layout with Available, Selected, Occupied, and Ladies seat statuses, live total fare ticker, and passenger checkout.
+- **Hotel Stays & Luxury Resorts Flow**:
+  - `HotelSearchScreen`: Destination search, check-in / check-out date range, stay nights counter, room/guest selectors.
+  - `HotelResultsScreen`: Star rating filters, luxury property cards with amenities chips.
+  - `HotelGuestAndReviewScreen`: Room selection, guest information form, 18% GST calculation, and MPIN checkout.
+- **Zomato / District-Style Movie Ticket Experience**:
+  - `MovieHomeScreen`: City selector (Delhi, Mumbai, Bengaluru, etc.), Now Showing / Coming Soon tabs, language & genre filters.
+  - `MovieDetailScreen`: Poster card, audience ratings, votes count, duration, synopsis, and cast chips.
+  - `MovieShowtimeSelectionScreen`: Horizontal date picker, multiplex theatres (PVR INOX, Cinepolis) with distance, format badges, and showtime slots.
+  - `CinemaSeatSelectionScreen`: Curved cinema screen graphic, seat matrix (Rows A-F) with Regular, Premium, and Recliner tiers, live ticket counter, and checkout.
+  - `MovieTicketReviewScreen`: Itemized ticket breakdown (Subtotal + Convenience Fee + GST), SMS/Email contact form, and MPIN verification.
+- **Universal Booking Confirmation & History**:
+  - `TravelBookingSuccessScreen`: Universal confirmation card with category icon, status badge, PNR/Voucher code, passenger info, and quick actions.
+  - `MyBookingsScreen`: Upcoming, Completed, and Cancelled tabs, category filter pills, booking details modal sheet, and interactive cancellation dialog with live demo refund estimation.
+- **Widget Test Suites**:
+  - Added 6 new test suites (`flight_booking_flow_test.dart`, `train_booking_flow_test.dart`, `bus_booking_flow_test.dart`, `hotel_booking_flow_test.dart`, `movie_booking_flow_test.dart`, `travel_booking_history_test.dart`). All 25 test suites passing (100%).
+
 ## [1.5.0] - Phase 8 Financial Products Ecosystem Upgrade (Loans, Insurance, Investments) - 2026-08-08
 
 ### Added & Upgraded

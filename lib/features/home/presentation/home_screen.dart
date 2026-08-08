@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
       {'name': 'Trains', 'icon': Icons.train_rounded, 'screen': const TrainSearchScreen(), 'color': Colors.indigo},
       {'name': 'Buses', 'icon': Icons.directions_bus_filled_rounded, 'screen': const BusSearchScreen(), 'color': AppColors.success},
       {'name': 'Hotels', 'icon': Icons.hotel_rounded, 'screen': const HotelSearchScreen(), 'color': Colors.orange},
-      {'name': 'Movies', 'icon': Icons.movie_creation_rounded, 'screen': const MovieSearchScreen(), 'color': Colors.red},
+      {'name': 'Movies', 'icon': Icons.movie_creation_rounded, 'screen': const MovieHomeScreen(), 'color': Colors.red},
     ];
 
     final List<String> recentContacts = ['Rahul Sharma', 'Priya Verma', 'Amit Kumar', 'Neha Singh'];
