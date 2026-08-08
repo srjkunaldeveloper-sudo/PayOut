@@ -421,15 +421,19 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   }
 
   Widget _buildPayToModeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildModeChip('contacts', 'Contacts', Icons.contacts_rounded),
-        const SizedBox(width: 8),
-        _buildModeChip('upi', 'UPI ID', Icons.alternate_email_rounded),
-        const SizedBox(width: 8),
-        _buildModeChip('bank', 'Bank Account', Icons.account_balance_rounded),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildModeChip('contacts', 'Contacts', Icons.contacts_rounded),
+          const SizedBox(width: 8),
+          _buildModeChip('upi', 'UPI ID', Icons.alternate_email_rounded),
+          const SizedBox(width: 8),
+          _buildModeChip('bank', 'Bank Account', Icons.account_balance_rounded),
+        ],
+      ),
     );
   }
 
