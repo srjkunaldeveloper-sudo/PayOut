@@ -1,187 +1,164 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/financial/shared/models/financial_models.dart';
 
 class FinancialSuccessScreen extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String referenceLabel;
-  final String details;
-  final double amount;
-  final bool isAmountApplicable;
+  final LoanApplicationModel application;
 
   const FinancialSuccessScreen({
     super.key,
-    required this.title,
-    required this.subtitle,
-    required this.referenceLabel,
-    required this.details,
-    required this.amount,
-    this.isAmountApplicable = true,
+    required this.application,
   });
-
-  String _generateRefId() {
-    final rand = Random();
-    final buffer = StringBuffer('REF');
-    for (int i = 0; i < 8; i++) {
-      buffer.write(rand.nextInt(10));
-    }
-    return buffer.toString();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final refId = _generateRefId();
-    final now = DateTime.now();
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final dateStr = '${months[now.month - 1]} ${now.day.toString().padLeft(2, '0')}, ${now.year}';
+    final isApproved = application.status == 'APPROVED';
+    final isPending = application.status == 'PENDING';
+
+    Color statusColor = isApproved ? AppColors.success : (isPending ? Colors.orange : AppColors.error);
+    IconData statusIcon = isApproved
+        ? Icons.check_circle_rounded
+        : (isPending ? Icons.hourglass_top_rounded : Icons.cancel_rounded);
+    String statusTitle = isApproved
+        ? 'Loan Application Approved'
+        : (isPending ? 'Application Under Review' : 'Application Not Approved');
+    String statusSubtitle = isApproved
+        ? 'Congratulations! Your loan request has been sanctioned. Disbursal initiated.'
+        : (isPending
+            ? 'We are reviewing your income records. You will receive an update in 2 hours.'
+            : (application.rejectionReason ?? 'Your profile did not meet the credit approval criteria.'));
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Success', showLeading: false),
+      appBar: CustomAppBar(
+        title: isApproved ? 'Application Approved' : (isPending ? 'Under Review' : 'Status'),
+        showLeading: false,
+      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             children: [
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s16),
               Center(
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(AppSpacing.s24),
+                      padding: const EdgeInsets.all(AppSpacing.s20),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.08),
+                        color: statusColor.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.check_circle_rounded,
-                        size: 64,
-                        color: AppColors.success,
-                      ),
+                      child: Icon(statusIcon, size: 56, color: statusColor),
                     ),
-                    const SizedBox(height: AppSpacing.s20),
+                    const SizedBox(height: AppSpacing.s16),
                     Text(
-                      title,
+                      statusTitle,
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 22.0,
+                        fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     Text(
-                      subtitle,
+                      statusSubtitle,
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 14.0,
+                        fontSize: 13.0,
                         color: AppColors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    if (isAmountApplicable) ...[
-                      const SizedBox(height: AppSpacing.s24),
+                    if (isApproved) ...[
+                      const SizedBox(height: AppSpacing.s20),
                       Text(
-                        '₹${amount.toStringAsFixed(2)}',
+                        '₹${application.requestedAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 34.0,
+                          fontSize: 32.0,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
                           letterSpacing: -0.5,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Sanctioned Amount',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                      ),
                     ],
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s28),
+
+              // Application Details Card
               AppCard(
-                padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          referenceLabel,
-                          style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          refId,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Date',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          dateStr,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Description',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        const SizedBox(width: AppSpacing.s24),
-                        Expanded(
-                          child: Text(
-                            details,
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildDetailRow('Application ID', application.id),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Loan Product', application.loanTitle),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Applicant', application.applicantName),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Tenure', '${application.tenureMonths} Months'),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Monthly EMI', '₹${application.monthlyEmi.toStringAsFixed(2)}'),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Processing Fee', '₹${application.processingFee.toStringAsFixed(2)}'),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Total Repayment', '₹${application.totalRepayment.toStringAsFixed(2)}'),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Status', application.status, valueColor: statusColor),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.s32),
+
+              // Bottom Actions
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
-                  text: 'Back to Home',
+                child: PrimaryButton(
+                  text: isApproved ? 'Done' : (isPending ? 'Check Status Later' : 'Try Another Product'),
                   onPressed: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                 ),
               ),
-              const SizedBox(height: AppSpacing.s24),
+              const SizedBox(height: AppSpacing.s16),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: valueColor ?? AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.5.0] - Phase 8 Financial Products Ecosystem Upgrade (Loans, Insurance, Investments) - 2026-08-08
+
+### Added & Upgraded
+- **Financial Domain Architecture & Models**:
+  - `financial_models.dart`: Centralized domain models for `LoanModel`, `LoanEmiCalculation`, `LoanApplicationModel`, `InsurancePolicyModel`, `InsuranceQuoteModel`, `InsurancePurchaseModel`, `InvestmentModel`, `InvestmentOrderModel`, `PortfolioHoldingModel`, and `PortfolioModel`.
+  - `FinancialService`: Centralized calculation engines for `calculateEMI(...)` and `calculateInsurancePremium(...)` with zero computation logic in UI widgets.
+  - `FinancialValidator`: Input validation suite (`validateName`, `validateDOB`, `validatePAN`, `validateMonthlyIncome`, `validateLoanAmount`, `validateAge`, `validateInvestmentAmount`).
+  - `FinancialRepository` & `MockFinancialRepository`: Constructor dependency injection of `TransactionRepository`, `NotificationRepository`, and `UserRepository`.
+  - Realistic Demo Outcomes: ₹100 = REJECTED, ₹200 = PENDING, other = APPROVED strictly encapsulated inside `MockFinancialRepository`.
+- **Loans & Credit Facility Flow**:
+  - `LoansScreen`: Category pills, non-prefilled applicant application form, live EMI and total interest calculation preview, KYC verification check (`UserRepository.getKYC()`) with redirect to `KYCFlowScreen` when unverified, and detailed application review bottom sheet.
+  - `FinancialSuccessScreen`: Comprehensive loan application outcome card supporting APPROVED, PENDING, and REJECTED states with sanctioned details and contextual actions.
+- **Insurance Marketplace & Instant Quotes**:
+  - `InsuranceScreen`: Category filters (Health, Life, Motor, Travel), policy detail cards with bulleted benefits, interactive quote builder with real-time premium updates, and review bottom sheet routing to the centralized `PaymentMPINVerificationScreen`.
+  - Dynamic Ledger & Notification: Policy issuance dispatches payment transactions and user notifications.
+- **Wealth & Investments Marketplace**:
+  - `InvestmentsScreen`: Live portfolio valuation card with invested vs current returns, dynamic holdings list, category funds exploration, order builder supporting One-Time (Lumpsum) and Monthly SIP with date selection.
+  - Risk Disclosure Modal: Mandatory market risk acknowledgement checkbox before routing to `PaymentMPINVerificationScreen`.
+  - Dynamic Portfolio Updates: Successful orders automatically update user holdings and portfolio value.
+- **Home Integration**:
+  - `HomeScreen`: Automatically refreshes dashboard state upon returning from financial product services.
+- **Widget Test Suites**:
+  - Added `loan_flow_upgrade_test.dart`, `insurance_flow_upgrade_test.dart`, and `investment_flow_upgrade_test.dart`. All 19 test suites passing.
+
 ## [1.4.0] - Phase 7 User Profile, KYC Center & Settings Upgrade - 2026-08-08
 
 ### Added & Upgraded

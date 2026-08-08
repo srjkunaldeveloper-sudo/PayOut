@@ -678,11 +678,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, index) {
                     final ser = services[index];
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => ser['screen'] as Widget),
                         );
+                        _loadDashboard();
                       },
                       child: Column(
                         children: [
