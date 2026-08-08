@@ -499,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 4,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.74,
+                  childAspectRatio: 0.65,
                   children: primaryQuickActions.map((act) {
                     return GestureDetector(
                       onTap: () {
