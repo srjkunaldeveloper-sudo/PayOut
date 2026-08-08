@@ -182,8 +182,13 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.s24),
 
               // 4. Quick Actions (Google Pay / phonepe style circles)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.76,
                 children: quickActions.map((act) {
                   return GestureDetector(
                     onTap: () {
@@ -201,23 +206,26 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         Container(
-                          width: 56,
-                          height: 56,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(18.0),
                           ),
-                          child: Icon(act['icon'] as IconData, color: AppColors.primary, size: 24),
+                          child: Icon(act['icon'] as IconData, color: Colors.white, size: 28),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           act['label'] as String,
                           style: const TextStyle(
                             fontFamily: 'Inter',
-                            fontSize: 11.0,
+                            fontSize: 12.0,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -238,7 +246,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s12),
               SizedBox(
-                height: 76,
+                height: 92,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: recentContacts.length + 1,
@@ -256,21 +264,22 @@ class HomeScreen extends StatelessWidget {
                           child: Column(
                             children: [
                               Container(
-                                width: 44,
-                                height: 44,
+                                width: 56,
+                                height: 56,
                                 decoration: BoxDecoration(
                                   color: AppColors.primaryLight,
                                   shape: BoxShape.circle,
                                   border: Border.all(color: AppColors.primary.withOpacity(0.15), width: 1.5),
                                 ),
-                                child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 20),
+                                child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 24),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               const Text(
                                 'Add',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
-                                  fontSize: 11.0,
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -293,16 +302,17 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             CustomAvatar(
                               name: name,
-                              size: 44,
+                              size: 56,
                               backgroundColor: AppColors.primaryLight,
                               textColor: AppColors.primary,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               name.split(' ')[0],
                               style: const TextStyle(
                                 fontFamily: 'Inter',
-                                fontSize: 11.0,
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.textPrimary,
                               ),
                             ),
@@ -334,7 +344,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisCount: 4,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.85,
+                  childAspectRatio: 0.78,
                 ),
                 itemBuilder: (context, index) {
                   final ser = services[index];
@@ -349,13 +359,13 @@ class HomeScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 48,
-                          height: 48,
+                          width: 56,
+                          height: 56,
                           decoration: BoxDecoration(
                             color: (ser['color'] as Color).withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(16.0),
+                            shape: BoxShape.circle,
                           ),
-                          child: Icon(ser['icon'] as IconData, color: ser['color'] as Color, size: 22),
+                          child: Icon(ser['icon'] as IconData, color: ser['color'] as Color, size: 24),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -363,8 +373,8 @@ class HomeScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontFamily: 'Inter',
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w500,
                             color: AppColors.textPrimary,
                           ),
                           maxLines: 1,

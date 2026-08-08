@@ -65,7 +65,7 @@ class MockPaymentsRepository implements PaymentsRepository {
     await Future.delayed(const Duration(milliseconds: 1500));
 
     final randomId = 'PAY-${100 + Random().nextInt(900)}';
-    final randomUTR = 'UTR${100000000000 + Random().nextInt(900000000000)}';
+    final randomUTR = 'UTR${100000 + Random().nextInt(900000)}${100000 + Random().nextInt(900000)}';
 
     // Simulate failure dynamically for demo purposes (e.g. amount == 9999)
     if (request.amount == 9999.0) {

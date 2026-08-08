@@ -58,7 +58,7 @@ class MockAuthRepository implements AuthRepository {
     if (request.code == '123456') {
       const user = UserModel(
         id: 'USR-789',
-        name: 'Rahul Sharma',
+        name: ' Sharma',
         phone: '+91 9876543210',
       );
       return const OTPResponse(
