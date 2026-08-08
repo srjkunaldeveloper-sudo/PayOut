@@ -30,6 +30,9 @@ class RechargePlanModel {
   final String data;
   final String description;
   final String category;
+  final String operator;
+  final String calls;
+  final String sms;
 
   const RechargePlanModel({
     required this.id,
@@ -38,6 +41,9 @@ class RechargePlanModel {
     required this.data,
     required this.description,
     required this.category,
+    required this.operator,
+    required this.calls,
+    required this.sms,
   });
 
   RechargePlanModel copyWith({
@@ -47,6 +53,9 @@ class RechargePlanModel {
     String? data,
     String? description,
     String? category,
+    String? operator,
+    String? calls,
+    String? sms,
   }) {
     return RechargePlanModel(
       id: id ?? this.id,
@@ -55,6 +64,9 @@ class RechargePlanModel {
       data: data ?? this.data,
       description: description ?? this.description,
       category: category ?? this.category,
+      operator: operator ?? this.operator,
+      calls: calls ?? this.calls,
+      sms: sms ?? this.sms,
     );
   }
 
@@ -66,6 +78,9 @@ class RechargePlanModel {
       'data': data,
       'description': description,
       'category': category,
+      'operator': operator,
+      'calls': calls,
+      'sms': sms,
     };
   }
 
@@ -77,6 +92,9 @@ class RechargePlanModel {
       data: json['data'] as String,
       description: json['description'] as String,
       category: json['category'] as String,
+      operator: json['operator'] as String? ?? '',
+      calls: json['calls'] as String? ?? '',
+      sms: json['sms'] as String? ?? '',
     );
   }
 }

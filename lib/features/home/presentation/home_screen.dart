@@ -211,11 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const ProfileScreen()),
                         );
+                        _loadDashboard();
                       },
                       child: Row(
                         children: [
@@ -264,11 +265,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.notifications_none_rounded, color: AppColors.primary),
-                            onPressed: () {
-                              Navigator.push(
+                            onPressed: () async {
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const NotificationsScreen()),
                               );
+                              _loadDashboard();
                             },
                           ),
                         ),
@@ -502,11 +504,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   childAspectRatio: 0.65,
                   children: primaryQuickActions.map((act) {
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => act['screen'] as Widget),
                         );
+                        _loadDashboard();
                       },
                       child: Column(
                         children: [

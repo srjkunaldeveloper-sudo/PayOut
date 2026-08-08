@@ -3,16 +3,17 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
 import 'package:payout/features/qr/presentation/my_qr_screen.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
-import 'package:payout/features/user/dummy/dummy_user_data.dart';
+import 'package:payout/features/user/presentation/edit_profile_screen.dart';
 import 'package:payout/features/user/presentation/kyc_status_screen.dart';
 import 'package:payout/features/user/presentation/settings_screen.dart';
-import 'package:payout/features/auth/services/session_manager.dart';
+import 'package:payout/features/user/presentation/about_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -27,7 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfileModel? _profile;
   KYCModel? _kyc;
   bool _isLoading = true;
-  double _paymentLimit = 50000.0;
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
         return SafeArea(
@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withOpacity(0.3),
+                    color: AppColors.divider,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -98,13 +98,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         text: 'Logout',
                         onPressed: () async {
                           await SessionManager.instance.logout();
-                          if (!mounted) return;
-                          Navigator.pop(context);
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
-                            (route) => false,
-                          );
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          }
                         },
                       ),
                     ),
@@ -120,281 +119,322 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading && _profile == null) {
+    if (_isLoading || _profile == null) {
       return const Scaffold(
-        appBar: CustomAppBar(title: 'My Profile', showLeading: false),
+        backgroundColor: AppColors.background,
+        appBar: CustomAppBar(title: 'My Profile'),
         body: Center(
           child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
         ),
       );
     }
 
-    final user = _profile ?? DummyUserData.currentUser;
-    final kycVal = _kyc ?? DummyUserData.currentKYC;
+    final profile = _profile!;
+    final isKycVerified = _kyc?.status.toUpperCase() == 'VERIFIED' || profile.isKycVerified;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         title: 'My Profile',
-        showLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_2_rounded, color: AppColors.textPrimary),
-            tooltip: 'My QR Code',
-            onPressed: () {
-              Navigator.push(
+            icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+            onPressed: () async {
+              final updated = await Navigator.push<bool>(
                 context,
-                MaterialPageRoute(builder: (context) => const MyQRScreen()),
+                MaterialPageRoute(builder: (context) => EditProfileScreen(profile: profile)),
               );
+              if (updated == true) {
+                _loadUserData();
+              }
             },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s16),
-        child: Column(
-          children: [
-            // 1. Profile Header Hero
-            Center(
-              child: Column(
+      body: RefreshIndicator(
+        onRefresh: _loadUserData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Profile Header
+              AppCard(
+                child: Row(
+                  children: [
+                    CustomAvatar(
+                      name: profile.name,
+                      size: 60,
+                      backgroundColor: AppColors.primaryContainer,
+                      textColor: AppColors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.s16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            profile.name,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '+91 ${profile.phone}',
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.0,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            profile.email,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 11.0,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: (isKycVerified ? AppColors.success : Colors.orange).withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(AppRadius.xs),
+                            ),
+                            child: Text(
+                              isKycVerified ? 'KYC Verified' : 'KYC Pending',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: isKycVerified ? AppColors.success : Colors.orange,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s16),
+
+              // 2. Overview Stats (Member Since / Linked Banks)
+              Row(
                 children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CustomAvatar(
-                        name: user.name,
-                        size: 88,
-                        backgroundColor: AppColors.primaryLight,
-                        textColor: AppColors.primary,
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.s16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Member Since', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          const SizedBox(height: 4),
+                          Text(profile.memberSince, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        ],
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const MyQRScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(AppSpacing.s6),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.qr_code_2_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.s16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        user.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                  const SizedBox(width: AppSpacing.s12),
+                  Expanded(
+                    child: AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.s16),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const BankAccountsScreen()));
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Linked Banks', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          const SizedBox(height: 4),
+                          Text('${profile.linkedBankCount} Accounts', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.verified_rounded,
-                        color: AppColors.success,
-                        size: 18,
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '+91 ${user.phone} • ${user.email}',
-                    style: const TextStyle(
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s24),
+
+              // 3. Account Section
+              const Text('Account & Identity', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: AppSpacing.s12),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _buildNavTile(
+                      icon: Icons.person_outline_rounded,
+                      title: 'Edit Personal Details',
+                      subtitle: 'Update name, email, DOB',
+                      onTap: () async {
+                        final res = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditProfileScreen(profile: profile)),
+                        );
+                        if (res == true) _loadUserData();
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.divider),
+                    _buildNavTile(
+                      icon: Icons.verified_user_outlined,
+                      title: 'KYC Verification Center',
+                      subtitle: isKycVerified ? 'Verified Level 2' : 'Action Required',
+                      trailingText: isKycVerified ? 'Verified' : 'Pending',
+                      trailingColor: isKycVerified ? AppColors.success : Colors.orange,
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const KYCStatusScreen()),
+                        );
+                        _loadUserData();
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.divider),
+                    _buildNavTile(
+                      icon: Icons.account_balance_outlined,
+                      title: 'Bank Accounts',
+                      subtitle: 'Manage linked bank accounts',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const BankAccountsScreen()));
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.divider),
+                    _buildNavTile(
+                      icon: Icons.qr_code_rounded,
+                      title: 'My UPI QR Code',
+                      subtitle: 'Receive money with personal QR',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const MyQRScreen()));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+
+              // 4. Preferences & Security Section
+              const Text('Preferences & Security', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: AppSpacing.s12),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _buildNavTile(
+                      icon: Icons.settings_outlined,
+                      title: 'App Settings & Security',
+                      subtitle: 'MPIN, Biometrics, Language, Alerts',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.divider),
+                    _buildNavTile(
+                      icon: Icons.stars_outlined,
+                      title: 'Rewards & Cashback',
+                      subtitle: 'Scratch cards, coupons, coins',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const RewardsScreen()));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+
+              // 5. Support & Legal Section
+              const Text('Support & Legal', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: AppSpacing.s12),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _buildNavTile(
+                      icon: Icons.help_outline_rounded,
+                      title: 'Help & Customer Support',
+                      subtitle: '24/7 assistance and FAQs',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SupportScreen()));
+                      },
+                    ),
+                    const Divider(height: 1, color: AppColors.divider),
+                    _buildNavTile(
+                      icon: Icons.info_outline_rounded,
+                      title: 'About Payout',
+                      subtitle: 'App version, terms, privacy',
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+
+              // 6. Logout Button
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(Icons.logout_rounded, color: AppColors.error),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.error,
                     ),
                   ),
-                ],
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
+                  onTap: _showLogoutSheet,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-
-            // 2. Account Status Details
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.verified_user_rounded, color: AppColors.success),
-                    title: const Text('KYC Verification', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: Text(
-                      kycVal.status,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: kycVal.status == 'VERIFIED' ? AppColors.success : Colors.orange,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const KYCStatusScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.account_balance_rounded, color: AppColors.primary),
-                    title: const Text('Linked Bank Accounts', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const BankAccountsScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-
-            // 3. Saved Cards
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Saved Cards',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  ...DummyUserData.savedCards.map((card) {
-                    return ListTile(
-                      leading: const Icon(Icons.credit_card_rounded, color: AppColors.primary),
-                      title: Text(card.cardHolderName, style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                      subtitle: Text(card.cardNumber, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      trailing: const Icon(Icons.more_vert_rounded),
-                    );
-                  }).toList(),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-
-            // 4. App Shortcuts & Preferences
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Preferences & Help',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.stars_rounded, color: Colors.orange),
-                    title: const Text('My Rewards & Cashback', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const RewardsScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.settings_rounded, color: AppColors.textSecondary),
-                    title: const Text('App Settings', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.support_agent_rounded, color: Colors.blueGrey),
-                    title: const Text('Help & Support', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SupportScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-
-            // 5. Daily limit slider cap
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Daily Payment Limit',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14.0, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            AppCard(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Limit Cap',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                      Text(
-                        '₹${_paymentLimit.toStringAsFixed(0)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
-                      ),
-                    ],
-                  ),
-                  Slider(
-                    value: _paymentLimit,
-                    min: 10000.0,
-                    max: 100000.0,
-                    divisions: 9,
-                    activeColor: AppColors.primary,
-                    inactiveColor: AppColors.primaryLight,
-                    onChanged: (val) {
-                      setState(() {
-                        _paymentLimit = val;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s32),
-
-            DangerButton(
-              text: 'Logout',
-              onPressed: _showLogoutSheet,
-            ),
-            const SizedBox(height: AppSpacing.s40),
-          ],
+              const SizedBox(height: AppSpacing.s32),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNavTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    String? trailingText,
+    Color? trailingColor,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.primary),
+      title: Text(title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingText != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Text(
+                trailingText,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                  color: trailingColor ?? AppColors.textSecondary,
+                ),
+              ),
+            ),
+          const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.textSecondary),
+        ],
+      ),
+      onTap: onTap,
     );
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_card.dart';
 import 'package:payout/core/widgets/search_bar.dart';
 import 'package:payout/core/widgets/transaction_tile.dart';
 import 'package:payout/features/transactions/models/transaction_models.dart';
 import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/transactions/services/transaction_service.dart';
+import 'package:payout/features/transactions/presentation/transaction_detail_screen.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -22,6 +22,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   List<TransactionModel> _transactions = [];
   bool _isLoading = true;
   String _selectedCategory = 'All';
+  String _searchQuery = '';
+
+  final List<String> _categories = [
+    'All',
+    'Sent',
+    'Received',
+    'Recharge',
+    'Bills',
+    'QR Payments',
+    'Bank Transfer',
+    'Wallet',
+  ];
 
   @override
   void initState() {
@@ -48,186 +60,115 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     }
   }
 
-  Future<void> _onSearch(String query) async {
-    setState(() {
-      _isLoading = true;
-    });
-    final txs = await _transactionRepository.searchTransactions(query);
-    if (mounted) {
-      setState(() {
-        _transactions = txs;
-        _isLoading = false;
-      });
-    }
-  }
+  List<TransactionModel> _getFilteredTransactions() {
+    return _transactions.where((tx) {
+      // 1. Search Query Filter
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final matches = tx.title.toLowerCase().contains(query) ||
+            tx.upiId.toLowerCase().contains(query) ||
+            tx.id.toLowerCase().contains(query) ||
+            tx.category.toLowerCase().contains(query) ||
+            tx.amount.toString().contains(query);
+        if (!matches) return false;
+      }
 
-  void _showReceipt(TransactionModel tx) async {
-    final receipt = await _transactionRepository.getReceipt(tx.id);
-    if (!mounted) return;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(AppSpacing.s24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              const Text(
-                'Transaction Receipt',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              AppCard(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(receipt.recipientName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
-                        Text(
-                          '${tx.type == 'CREDIT' ? '+' : '-'}₹${receipt.amount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            color: tx.type == 'CREDIT' ? AppColors.success : AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('UTR Number', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text(receipt.utrNumber, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Date & Time', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text('${receipt.date} at ${receipt.time}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Status', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                        Text(
-                          receipt.status,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            color: receipt.status == 'SUCCESS' ? AppColors.success : AppColors.error,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
-        );
-      },
-    );
+      // 2. Category Filter
+      switch (_selectedCategory) {
+        case 'Sent':
+          return tx.type.toUpperCase() == 'DEBIT';
+        case 'Received':
+          return tx.type.toUpperCase() == 'CREDIT';
+        case 'Recharge':
+          return tx.category.toLowerCase().contains('recharge');
+        case 'Bills':
+          return tx.category.toLowerCase().contains('bill');
+        case 'QR Payments':
+          return tx.category.toLowerCase().contains('qr');
+        case 'Bank Transfer':
+          return tx.category.toLowerCase().contains('bank') ||
+              tx.category.toLowerCase().contains('transfer') ||
+              tx.category.toLowerCase().contains('upi');
+        case 'Wallet':
+          return tx.paymentMethod.toLowerCase().contains('wallet');
+        case 'All':
+        default:
+          return true;
+      }
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Client side filtering for category chips
-    final filtered = _transactions.where((t) {
-      if (_selectedCategory == 'All') return true;
-      if (_selectedCategory == 'Transfer') return t.category.toLowerCase().contains('transfer') || t.category.toLowerCase().contains('refund');
-      return t.category.toLowerCase().contains(_selectedCategory.toLowerCase());
-    }).toList();
-
-    // Grouping
+    final filtered = _getFilteredTransactions();
     final grouped = TransactionService.groupTransactionsByDate(filtered);
-    final groupKeys = ['Today', 'Yesterday', 'This Week', 'Earlier'].where((k) => grouped[k] != null && grouped[k]!.isNotEmpty).toList();
-
-    final categories = ['All', 'Transfer', 'Bills', 'Food', 'Grocery'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Transaction History'),
       body: Column(
         children: [
-          // Search & Filter
+          // Search & Filter Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
-            child: Column(
-              children: [
-                CustomSearchBar(
-                  controller: _searchController,
-                  hintText: 'Search transactions...',
-                  onChanged: _onSearch,
-                ),
-                const SizedBox(height: AppSpacing.s12),
-                SizedBox(
-                  height: 32,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final isSelected = cat == _selectedCategory;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ChoiceChip(
-                          label: Text(
-                            cat,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12,
-                              color: isSelected ? Colors.white : AppColors.textPrimary,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary,
-                          backgroundColor: AppColors.surface,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _selectedCategory = cat;
-                              });
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+            child: CustomSearchBar(
+              controller: _searchController,
+              hintText: 'Search by name, UPI ID, or amount...',
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val.trim();
+                });
+              },
             ),
           ),
+
+          // Categories Filter Chips
+          SizedBox(
+            height: 36,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _categories.length,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+              itemBuilder: (context, index) {
+                final cat = _categories[index];
+                final isSelected = cat == _selectedCategory;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ChoiceChip(
+                    label: Text(
+                      cat,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: AppColors.primary,
+                    backgroundColor: AppColors.surface,
+                    checkmarkColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    onSelected: (val) {
+                      if (val) {
+                        setState(() {
+                          _selectedCategory = cat;
+                        });
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s12),
           const Divider(height: 1, color: AppColors.divider),
-          
-          // Transaction List
+
+          // Transactions List grouped by date
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
-                  )
+                ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
                 : filtered.isEmpty
                     ? const Center(
                         child: Text(
@@ -236,44 +177,49 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
-                        itemCount: groupKeys.length,
-                        itemBuilder: (context, groupIdx) {
-                          final key = groupKeys[groupIdx];
-                          final list = grouped[key] ?? [];
-                          
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s16),
+                        itemCount: grouped.keys.length,
+                        itemBuilder: (context, groupIndex) {
+                          final header = grouped.keys.elementAt(groupIndex);
+                          final items = grouped[header]!;
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(left: 12.0, top: 16.0, bottom: 8.0),
+                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s8),
                                 child: Text(
-                                  key,
+                                  header,
                                   style: const TextStyle(
                                     fontFamily: 'Inter',
-                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 13.0,
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: list.length,
-                                itemBuilder: (context, idx) {
-                                  final txn = list[idx];
-                                  return TransactionTile(
-                                    title: txn.title,
-                                    subtitle: txn.upiId,
-                                    date: txn.date,
-                                    amount: txn.amount,
-                                    isCredit: txn.type == 'CREDIT',
-                                    status: txn.status == 'SUCCESS' ? 'Succeeded' : txn.status,
-                                    onTap: () => _showReceipt(txn),
-                                  );
-                                },
-                              ),
+                              ...items.map((tx) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: AppSpacing.s8),
+                                  child: TransactionTile(
+                                    title: tx.title,
+                                    subtitle: tx.paymentMethod,
+                                    date: tx.date,
+                                    amount: tx.amount,
+                                    isCredit: tx.type.toUpperCase() == 'CREDIT',
+                                    status: tx.status,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TransactionDetailScreen(transaction: tx),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }),
+                              const SizedBox(height: AppSpacing.s12),
                             ],
                           );
                         },

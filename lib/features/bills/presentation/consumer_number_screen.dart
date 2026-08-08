@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bills/models/bill_models.dart';
+import 'package:payout/features/bills/repositories/bill_repository.dart';
 import 'package:payout/features/bills/presentation/bill_details_screen.dart';
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 
 class ConsumerNumberScreen extends StatefulWidget {
   final String categoryName;
@@ -18,33 +20,20 @@ class ConsumerNumberScreen extends StatefulWidget {
 }
 
 class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
+  late final BillRepository _billRepository;
   final TextEditingController _consumerController = TextEditingController();
-  String? _selectedProvider;
-  bool _isValid = false;
 
-  List<String> _getProviders() {
-    switch (widget.categoryName) {
-      case 'Electricity':
-        return ['State Power Grid', 'Clean Energy Corp', 'City Electric Systems'];
-      case 'Water':
-        return ['Aqua Water Systems', 'City Water Authority', 'County Water Supply'];
-      case 'Gas':
-        return ['National Gas Supply', 'Metro Gas Ltd', 'EcoGas Energy'];
-      case 'Broadband':
-        return ['Comcast Xfinity', 'AT&T Broadband', 'Verizon Fios'];
-      case 'DTH':
-        return ['DirecTV', 'Dish Network', 'Sky Cable'];
-      case 'FASTag':
-        return ['FASTag Toll Pass', 'Easy Toll Access', 'Metro Toll Authority'];
-      default:
-        return ['Generic Utility Provider A', 'Generic Utility Provider B'];
-    }
-  }
+  List<BillerModel> _billers = [];
+  BillerModel? _selectedBiller;
+  bool _isLoadingBillers = true;
+  bool _isFetchingBill = false;
+  bool _isValidInput = false;
 
-  void _validateInput(String val) {
-    setState(() {
-      _isValid = val.length >= 6 && _selectedProvider != null;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _billRepository = MockBillRepository(MockTransactionRepository());
+    _loadBillers();
   }
 
   @override
@@ -53,116 +42,178 @@ class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
     super.dispose();
   }
 
+  Future<void> _loadBillers() async {
+    final list = await _billRepository.getBillers();
+    if (mounted) {
+      setState(() {
+        _billers = list.where((b) => b.category.toLowerCase() == widget.categoryName.toLowerCase()).toList();
+        if (_billers.isNotEmpty) {
+          _selectedBiller = _billers.first;
+        }
+        _isLoadingBillers = false;
+      });
+    }
+  }
+
+  void _validateInput(String val) {
+    setState(() {
+      // Validate input - must be at least 6 digits/characters
+      _isValidInput = val.length >= 6 && _selectedBiller != null;
+    });
+  }
+
+  String _getInputLabel() {
+    final cat = widget.categoryName.toLowerCase();
+    if (cat.contains('electricity') || cat.contains('water') || cat.contains('broadband')) {
+      return 'Consumer Number';
+    } else if (cat.contains('dth')) {
+      return 'Subscriber ID';
+    } else if (cat.contains('lpg')) {
+      return 'LPG ID / Registered Mobile';
+    } else {
+      return 'Customer ID';
+    }
+  }
+
+  String _getInputHint() {
+    final cat = widget.categoryName.toLowerCase();
+    if (cat.contains('electricity') || cat.contains('water') || cat.contains('broadband')) {
+      return 'Enter 9-digit consumer number';
+    } else if (cat.contains('dth')) {
+      return 'Enter 10-digit subscriber ID';
+    } else if (cat.contains('lpg')) {
+      return 'Enter 10-digit registered number or LPG ID';
+    } else {
+      return 'Enter customer account number';
+    }
+  }
+
+  void _fetchBill() async {
+    if (_selectedBiller == null || _consumerController.text.isEmpty) return;
+
+    setState(() {
+      _isFetchingBill = true;
+    });
+
+    final bill = await _billRepository.fetchBill(_selectedBiller!.id, _consumerController.text);
+
+    if (!mounted) return;
+    setState(() {
+      _isFetchingBill = false;
+    });
+
+    if (bill != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BillDetailsScreen(bill: bill),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Bill Not Found'),
+          content: const Text('No active bill found for the provided details. Please verify and try again.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final providers = _getProviders();
+    final label = _getInputLabel();
+    final hint = _getInputHint();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(title: widget.categoryName),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.s12),
-              const Text(
-                'Select Provider',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: DropdownButtonFormField<String>(
-                  value: _selectedProvider,
-                  items: providers.map((prov) {
-                    return DropdownMenuItem<String>(
-                      value: prov,
-                      child: Text(
-                        prov,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
+        child: _isLoadingBillers
+            ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppSpacing.s12),
+                    const Text(
+                      'Select Biller / Provider',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedProvider = val;
-                    });
-                    _validateInput(_consumerController.text);
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Select your utility biller',
-                    filled: true,
-                    fillColor: AppColors.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadii.card),
-                      borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s32),
-              const Text(
-                'Account / Consumer ID',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              TextField(
-                controller: _consumerController,
-                onChanged: _validateInput,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  hintText: 'Enter 6 to 12 digit Account Number',
-                  prefixIcon: Icon(Icons.tag_rounded, color: AppColors.textSecondary),
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: 'Continue',
-                  onPressed: _isValid
-                      ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BillDetailsScreen(
-                                categoryName: widget.categoryName,
-                                providerName: _selectedProvider!,
-                                consumerNumber: _consumerController.text,
+                    const SizedBox(height: AppSpacing.s12),
+                    AppCard(
+                      padding: EdgeInsets.zero,
+                      child: DropdownButtonFormField<BillerModel>(
+                        value: _selectedBiller,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          border: InputBorder.none,
+                        ),
+                        items: _billers.map((biller) {
+                          return DropdownMenuItem<BillerModel>(
+                            value: biller,
+                            child: Text(
+                              biller.name,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           );
-                        }
-                      : null,
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedBiller = val;
+                          });
+                          _validateInput(_consumerController.text);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    AppTextField(
+                      controller: _consumerController,
+                      keyboardType: TextInputType.text,
+                      onChanged: _validateInput,
+                      labelText: label,
+                      hintText: hint,
+                      prefix: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
+                    ),
+                    const SizedBox(height: AppSpacing.s40),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PrimaryButton(
+                        text: 'Fetch Bill',
+                        isLoading: _isFetchingBill,
+                        onPressed: _isValidInput ? _fetchBill : null,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
-        ),
       ),
     );
   }

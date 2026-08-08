@@ -5,6 +5,9 @@ class NotificationModel {
   final String category; // Payment, Security, Offers, Recharge, Bills, etc.
   final String time;
   final bool isRead;
+  final String? actionRoute;
+  final String? relatedEntityId;
+  final String? relatedTransactionId;
 
   const NotificationModel({
     required this.id,
@@ -13,6 +16,9 @@ class NotificationModel {
     required this.category,
     required this.time,
     required this.isRead,
+    this.actionRoute,
+    this.relatedEntityId,
+    this.relatedTransactionId,
   });
 
   NotificationModel copyWith({
@@ -22,6 +28,9 @@ class NotificationModel {
     String? category,
     String? time,
     bool? isRead,
+    String? actionRoute,
+    String? relatedEntityId,
+    String? relatedTransactionId,
   }) {
     return NotificationModel(
       id: id ?? this.id,
@@ -30,6 +39,9 @@ class NotificationModel {
       category: category ?? this.category,
       time: time ?? this.time,
       isRead: isRead ?? this.isRead,
+      actionRoute: actionRoute ?? this.actionRoute,
+      relatedEntityId: relatedEntityId ?? this.relatedEntityId,
+      relatedTransactionId: relatedTransactionId ?? this.relatedTransactionId,
     );
   }
 
@@ -41,6 +53,9 @@ class NotificationModel {
       'category': category,
       'time': time,
       'isRead': isRead,
+      'actionRoute': actionRoute,
+      'relatedEntityId': relatedEntityId,
+      'relatedTransactionId': relatedTransactionId,
     };
   }
 
@@ -52,6 +67,9 @@ class NotificationModel {
       category: json['category'] as String,
       time: json['time'] as String,
       isRead: json['isRead'] as bool,
+      actionRoute: json['actionRoute'] as String?,
+      relatedEntityId: json['relatedEntityId'] as String?,
+      relatedTransactionId: json['relatedTransactionId'] as String?,
     );
   }
 }

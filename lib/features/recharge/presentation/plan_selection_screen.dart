@@ -5,6 +5,7 @@ import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/recharge/presentation/review_recharge_screen.dart';
 import 'package:payout/features/recharge/models/recharge_models.dart';
 import 'package:payout/features/recharge/repositories/recharge_repository.dart';
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 
 class PlanSelectionScreen extends StatefulWidget {
   final String mobileNumber;
@@ -21,10 +22,10 @@ class PlanSelectionScreen extends StatefulWidget {
 }
 
 class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
-  final RechargeRepository _rechargeRepository = MockRechargeRepository();
+  final RechargeRepository _rechargeRepository = MockRechargeRepository(MockTransactionRepository());
 
   int _activeCategory = 0;
-  final List<String> _categories = ['All', 'Popular', 'Unlimited', 'Data Only', 'Talktime'];
+  final List<String> _categories = ['All', 'Popular', 'Unlimited', 'Data', 'Validity', 'Talktime', 'SMS'];
 
   List<RechargePlanModel> _plans = [];
   bool _isLoading = true;
@@ -48,6 +49,149 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
     }
   }
 
+  void _showPlanDetails(RechargePlanModel plan) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.s24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '₹${plan.amount.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      plan.category,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s24),
+              const Text(
+                'Plan Benefits',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+              _buildBenefitRow(Icons.date_range_rounded, 'Validity', plan.validity),
+              _buildBenefitRow(Icons.swap_vert_rounded, 'Data Allowance', plan.data),
+              _buildBenefitRow(Icons.phone_rounded, 'Calls', plan.calls.isEmpty ? 'N/A' : plan.calls),
+              _buildBenefitRow(Icons.sms_rounded, 'SMS Allowance', plan.sms.isEmpty ? 'N/A' : plan.sms),
+              const SizedBox(height: AppSpacing.s16),
+              const Divider(color: AppColors.divider),
+              const SizedBox(height: AppSpacing.s16),
+              const Text(
+                'Description',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s8),
+              Text(
+                plan.description,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s32),
+              SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  text: 'Continue',
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewRechargeScreen(
+                          mobileNumber: widget.mobileNumber,
+                          operatorName: widget.operatorName,
+                          plan: plan,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: AppSpacing.s12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBenefitRow(IconData icon, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.textSecondary),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final activeCat = _categories[_activeCategory];
@@ -61,7 +205,6 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
       appBar: const CustomAppBar(title: 'Select Plan'),
       body: Column(
         children: [
-          // 1. Mobile & Operator header
           Padding(
             padding: const EdgeInsets.all(AppSpacing.s24),
             child: AppCard(
@@ -95,7 +238,6 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
             ),
           ),
 
-          // 2. Category selection filters
           SizedBox(
             height: 36,
             child: ListView.builder(
@@ -133,10 +275,8 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
           ),
           const SizedBox(height: AppSpacing.s20),
 
-          // 3. Plans list
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+            child: _isLoading? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
                 : filteredPlans.isEmpty
                     ? const Center(child: Text('No plans found for this category.', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
                     : ListView.builder(
@@ -148,19 +288,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: AppSpacing.s16),
                             child: AppCard(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ReviewRechargeScreen(
-                                      mobileNumber: widget.mobileNumber,
-                                      operatorName: widget.operatorName,
-                                      planPrice: plan.amount,
-                                      planDescription: plan.description,
-                                    ),
-                                  ),
-                                );
-                              },
+                              onTap: () => _showPlanDetails(plan),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [

@@ -175,3 +175,33 @@ class QRPaymentResponse {
 
   const QRPaymentResponse({required this.success, required this.transactionId, required this.status});
 }
+
+enum QRType {
+  merchant,
+  personal,
+  invalid,
+  expired,
+  unsupported,
+}
+
+class QRResolutionResult {
+  final QRType type;
+  final String name;
+  final String upiId;
+  final String category;
+  final bool isVerified;
+  final bool isExpired;
+  final String? errorMessage;
+  final String? qrPayload;
+
+  const QRResolutionResult({
+    required this.type,
+    required this.name,
+    required this.upiId,
+    required this.category,
+    required this.isVerified,
+    this.isExpired = false,
+    this.errorMessage,
+    this.qrPayload,
+  });
+}

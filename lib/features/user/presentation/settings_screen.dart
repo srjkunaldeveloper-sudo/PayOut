@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_card.dart';
-import 'package:payout/features/user/presentation/about_screen.dart';
+import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/auth/presentation/login_screen.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
+import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
+import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
+import 'package:payout/features/support/presentation/support_screen.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
+import 'package:payout/features/user/presentation/about_screen.dart';
+import 'package:payout/features/user/presentation/edit_profile_screen.dart';
+import 'package:payout/features/user/presentation/kyc_status_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,114 +23,229 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final UserRepository _userRepository = MockUserRepository();
 
-  bool _pushNotifications = true;
-  bool _biometricLock = true;
-  bool _darkTheme = false;
-  String _selectedLanguage = 'English';
+  PreferenceModel? _prefs;
+  UserProfileModel? _profile;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
+    _loadData();
   }
 
-  Future<void> _loadPreferences() async {
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
     final prefs = await _userRepository.getPreferences();
+    final profile = await _userRepository.getProfile();
     if (mounted) {
       setState(() {
-        _selectedLanguage = prefs.language;
-        _biometricLock = prefs.biometricEnabled;
-        _darkTheme = prefs.theme == 'Dark Mode';
+        _prefs = prefs;
+        _profile = profile;
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _updatePreferences() async {
-    final updatedPrefs = PreferenceModel(
-      theme: _darkTheme ? 'Dark Mode' : 'Light Mode',
-      language: _selectedLanguage,
-      biometricEnabled: _biometricLock,
+  Future<void> _updatePrefs(PreferenceModel newPrefs) async {
+    setState(() {
+      _prefs = newPrefs;
+    });
+    await _userRepository.updatePreferences(newPrefs);
+  }
+
+  void _showLogoutDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.s24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s24),
+                const Text(
+                  'Confirm Logout',
+                  style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: AppSpacing.s12),
+                const Text(
+                  'Are you sure you want to log out of your Payout account?',
+                  style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.s24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButtonV2(
+                        text: 'Cancel',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.s16),
+                    Expanded(
+                      child: DangerButton(
+                        text: 'Logout',
+                        onPressed: () async {
+                          await SessionManager.instance.logout();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
-    await _userRepository.updatePreferences(updatedPrefs);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_isLoading || _prefs == null) {
       return const Scaffold(
-        appBar: CustomAppBar(title: 'App Settings'),
+        backgroundColor: AppColors.background,
+        appBar: CustomAppBar(title: 'Settings & Security'),
         body: Center(
           child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
         ),
       );
     }
 
+    final prefs = _prefs!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'App Settings'),
+      appBar: const CustomAppBar(title: 'Settings & Security'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.s24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'General Settings',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-            ),
+            // 1. Account Settings
+            const Text('Account', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.language_rounded, color: AppColors.primary),
-                    title: const Text('Language', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: DropdownButton<String>(
-                      value: _selectedLanguage,
-                      items: const [
-                        DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
-                        DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedLanguage = val;
-                          });
-                          _updatePreferences();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Language set to $_selectedLanguage')),
-                          );
-                        }
-                      },
-                      underline: const SizedBox(),
-                    ),
+                  _buildNavTile(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Personal Details',
+                    subtitle: 'Name, email, date of birth',
+                    onTap: () {
+                      if (_profile != null) {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen(profile: _profile!)));
+                      }
+                    },
                   ),
                   const Divider(height: 1, color: AppColors.divider),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.palette_outlined, color: AppColors.primary),
-                    title: const Text('Dark Mode Theme', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    value: _darkTheme,
-                    onChanged: (val) {
-                      setState(() {
-                        _darkTheme = val;
-                      });
-                      _updatePreferences();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Theme changes will apply on restart.')),
-                      );
+                  _buildNavTile(
+                    icon: Icons.verified_user_outlined,
+                    title: 'KYC Verification',
+                    subtitle: 'Status and identity proofs',
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KYCStatusScreen()));
                     },
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  _buildNavTile(
+                    icon: Icons.account_balance_outlined,
+                    title: 'Linked Bank Accounts',
+                    subtitle: 'Manage primary and payout banks',
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const BankAccountsScreen()));
+                    },
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'Privacy & Security',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 2. Security Settings
+            const Text('Security & Access', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  _buildNavTile(
+                    icon: Icons.pin_outlined,
+                    title: 'Change 6-Digit MPIN',
+                    subtitle: 'Used to authorize payments and transfers',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentMPINVerificationScreen(
+                            recipientName: 'Security Update',
+                            recipientDetail: 'Change 6-Digit MPIN',
+                            recipientType: 'Security',
+                            amount: 0.0,
+                            note: 'Change MPIN',
+                            methodId: 'security',
+                            onSuccess: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('MPIN updated successfully!'), backgroundColor: AppColors.success),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
+                    title: const Text('Biometric Authentication', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Use FaceID / Fingerprint to log in', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    value: prefs.biometricEnabled,
+                    activeColor: AppColors.primary,
+                    onChanged: (val) {
+                      _updatePrefs(prefs.copyWith(biometricEnabled: val));
+                    },
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
+                    title: const Text('App Lock on Background', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Require MPIN when returning to app', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    value: prefs.appLockEnabled,
+                    activeColor: AppColors.primary,
+                    onChanged: (val) {
+                      _updatePrefs(prefs.copyWith(appLockEnabled: val));
+                    },
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 3. Notification Preferences
+            const Text('Notifications & Alerts', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -131,70 +253,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   SwitchListTile(
                     secondary: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
-                    title: const Text('Push Notifications', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    value: _pushNotifications,
-                    onChanged: (val) {
-                      setState(() {
-                        _pushNotifications = val;
-                      });
-                    },
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    title: const Text('Payment Alerts', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Instant alerts for sent & received money', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    value: prefs.paymentNotif,
+                    activeColor: AppColors.primary,
+                    onChanged: (val) => _updatePrefs(prefs.copyWith(paymentNotif: val)),
                   ),
                   const Divider(height: 1, color: AppColors.divider),
                   SwitchListTile(
-                    secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
-                    title: const Text('Biometric Login / FaceID', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    value: _biometricLock,
-                    onChanged: (val) {
-                      setState(() {
-                        _biometricLock = val;
-                      });
-                      _updatePreferences();
-                    },
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    secondary: const Icon(Icons.bolt_outlined, color: AppColors.primary),
+                    title: const Text('Recharge & Bill Reminders', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Due date alerts for bills & mobile packs', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    value: prefs.billsNotif,
+                    activeColor: AppColors.primary,
+                    onChanged: (val) => _updatePrefs(prefs.copyWith(billsNotif: val)),
                   ),
                   const Divider(height: 1, color: AppColors.divider),
-                  ListTile(
-                    leading: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
-                    title: const Text('Privacy Center', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Privacy settings are configured.')),
-                      );
-                    },
+                  SwitchListTile(
+                    secondary: const Icon(Icons.local_offer_outlined, color: AppColors.primary),
+                    title: const Text('Promotions & Cashback', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Weekly deals, scratch cards and discounts', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    value: prefs.offersNotif,
+                    activeColor: AppColors.primary,
+                    onChanged: (val) => _updatePrefs(prefs.copyWith(offersNotif: val)),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s32),
-            const Text(
-              'App Information',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-            ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 4. Preferences (Language & Theme)
+            const Text('App Preferences', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
-                    title: const Text('About Payout', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    leading: const Icon(Icons.language_rounded, color: AppColors.primary),
+                    title: const Text('App Language', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    trailing: DropdownButton<String>(
+                      value: prefs.language,
+                      underline: const SizedBox(),
+                      items: const [
+                        DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                        DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          _updatePrefs(prefs.copyWith(language: val));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Language set to $val')),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 5. Support & Legal
+            const Text('Support & Legal', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: AppSpacing.s12),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  _buildNavTile(
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & Customer Support',
+                    subtitle: 'FAQs, ticket status, contact info',
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AboutScreen()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SupportScreen()));
+                    },
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  _buildNavTile(
+                    icon: Icons.info_outline_rounded,
+                    title: 'About Payout',
+                    subtitle: 'Version, licenses, legal',
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
                     },
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.s40),
+            const SizedBox(height: AppSpacing.s24),
+
+            // 6. Logout Tile
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.logout_rounded, color: AppColors.error),
+                title: const Text('Logout', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
+                onTap: _showLogoutDialog,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s32),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNavTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.primary),
+      title: Text(title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
+      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.textSecondary),
+      onTap: onTap,
     );
   }
 }

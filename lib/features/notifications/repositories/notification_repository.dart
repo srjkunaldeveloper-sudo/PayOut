@@ -8,19 +8,28 @@ abstract class NotificationRepository {
   Future<bool> markAllRead();
   Future<bool> deleteNotification(String id);
   Future<int> getUnreadCount();
+  Future<bool> addNotification(NotificationModel notification);
 }
 
 class MockNotificationRepository implements NotificationRepository {
   @override
   Future<List<NotificationModel>> getNotifications() async {
-    // TODO: Connect push notifications history feed endpoint
-    await Future.delayed(const Duration(milliseconds: 500));
+    // TODO(api): GET /notifications
+    await Future.delayed(const Duration(milliseconds: 400));
     return List.from(DummyNotificationData.dummyNotifications);
   }
 
   @override
+  Future<bool> addNotification(NotificationModel notification) async {
+    // TODO(api): POST /notifications
+    await Future.delayed(const Duration(milliseconds: 100));
+    DummyNotificationData.dummyNotifications.insert(0, notification);
+    return true;
+  }
+
+  @override
   Future<bool> markAsRead(String id) async {
-    // TODO: Connect update status endpoint
+    // TODO(api): PATCH /notifications/{id}/read
     await Future.delayed(const Duration(milliseconds: 200));
     NotificationLogger.logNotificationRead(id);
     final idx = DummyNotificationData.dummyNotifications.indexWhere((n) => n.id == id);
@@ -34,7 +43,7 @@ class MockNotificationRepository implements NotificationRepository {
 
   @override
   Future<bool> markAllRead() async {
-    // TODO: Connect bulk status read gateway
+    // TODO(api): PATCH /notifications/read-all
     await Future.delayed(const Duration(milliseconds: 300));
     NotificationLogger.logAllNotificationsRead();
     for (int i = 0; i < DummyNotificationData.dummyNotifications.length; i++) {
@@ -45,7 +54,7 @@ class MockNotificationRepository implements NotificationRepository {
 
   @override
   Future<bool> deleteNotification(String id) async {
-    // TODO: Connect delete notification endpoint
+    // TODO(api): DELETE /notifications/{id}
     await Future.delayed(const Duration(milliseconds: 200));
     NotificationLogger.logNotificationDeleted(id);
     DummyNotificationData.dummyNotifications.removeWhere((n) => n.id == id);
@@ -54,7 +63,7 @@ class MockNotificationRepository implements NotificationRepository {
 
   @override
   Future<int> getUnreadCount() async {
-    // TODO: Connect unread count quick fetch
+    // TODO(api): GET /notifications/unread-count
     await Future.delayed(const Duration(milliseconds: 100));
     return DummyNotificationData.dummyNotifications.where((n) => !n.isRead).length;
   }

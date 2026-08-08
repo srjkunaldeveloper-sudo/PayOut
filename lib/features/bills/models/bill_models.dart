@@ -33,6 +33,10 @@ class BillModel {
   final double amount;
   final String dueDate;
   final String status; // DUE, PAID, OVERDUE
+  final String consumerName;
+  final String billNumber;
+  final String billDate;
+  final double lateFee;
 
   const BillModel({
     required this.id,
@@ -41,6 +45,10 @@ class BillModel {
     required this.amount,
     required this.dueDate,
     required this.status,
+    required this.consumerName,
+    required this.billNumber,
+    required this.billDate,
+    required this.lateFee,
   });
 
   BillModel copyWith({
@@ -50,6 +58,10 @@ class BillModel {
     double? amount,
     String? dueDate,
     String? status,
+    String? consumerName,
+    String? billNumber,
+    String? billDate,
+    double? lateFee,
   }) {
     return BillModel(
       id: id ?? this.id,
@@ -58,6 +70,10 @@ class BillModel {
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
+      consumerName: consumerName ?? this.consumerName,
+      billNumber: billNumber ?? this.billNumber,
+      billDate: billDate ?? this.billDate,
+      lateFee: lateFee ?? this.lateFee,
     );
   }
 
@@ -69,6 +85,10 @@ class BillModel {
       'amount': amount,
       'dueDate': dueDate,
       'status': status,
+      'consumerName': consumerName,
+      'billNumber': billNumber,
+      'billDate': billDate,
+      'lateFee': lateFee,
     };
   }
 
@@ -80,6 +100,10 @@ class BillModel {
       amount: (json['amount'] as num).toDouble(),
       dueDate: json['dueDate'] as String,
       status: json['status'] as String,
+      consumerName: json['consumerName'] as String? ?? 'Rahul Sharma',
+      billNumber: json['billNumber'] as String? ?? 'BILL-999999',
+      billDate: json['billDate'] as String? ?? 'Aug 01, 2026',
+      lateFee: (json['lateFee'] as num? ?? 0.0).toDouble(),
     );
   }
 }

@@ -7,6 +7,9 @@ import 'package:payout/features/bills/models/bill_models.dart';
 import 'package:payout/features/bills/repositories/bill_repository.dart';
 import 'package:payout/features/bills/services/bill_service.dart';
 
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/features/bills/presentation/bill_details_screen.dart';
+
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
 
@@ -15,7 +18,7 @@ class BillsScreen extends StatefulWidget {
 }
 
 class _BillsScreenState extends State<BillsScreen> {
-  final BillRepository _billRepository = MockBillRepository();
+  final BillRepository _billRepository = MockBillRepository(MockTransactionRepository());
 
   List<BillModel> _dueBills = [];
   bool _isLoading = true;
@@ -23,10 +26,10 @@ class _BillsScreenState extends State<BillsScreen> {
   final List<Map<String, dynamic>> _categories = [
     {'name': 'Electricity', 'icon': Icons.lightbulb_rounded, 'color': AppColors.warning, 'status': 'Pending'},
     {'name': 'Water', 'icon': Icons.water_drop_rounded, 'color': AppColors.primary, 'status': 'No Due'},
-    {'name': 'Gas Cylinder', 'icon': Icons.local_fire_department_rounded, 'color': AppColors.error, 'status': 'Book now'},
+    {'name': 'DTH', 'icon': Icons.tv_rounded, 'color': Colors.purple, 'status': 'Expiring soon'},
+    {'name': 'LPG', 'icon': Icons.local_fire_department_rounded, 'color': AppColors.error, 'status': 'Book now'},
     {'name': 'Broadband', 'icon': Icons.wifi_rounded, 'color': AppColors.success, 'status': 'No Due'},
-    {'name': 'DTH Link', 'icon': Icons.tv_rounded, 'color': Colors.purple, 'status': 'Expiring soon'},
-    {'name': 'FASTag Pay', 'icon': Icons.tag_rounded, 'color': Colors.teal, 'status': 'Low balance'},
+    {'name': 'Mobile Postpaid', 'icon': Icons.phone_android_rounded, 'color': Colors.indigo, 'status': 'View bill'},
   ];
 
   @override
@@ -158,8 +161,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ConsumerNumberScreen(
-                            categoryName: bill.billerName.split(' ')[0],
+                          builder: (context) => BillDetailsScreen(
+                            bill: bill,
                           ),
                         ),
                       );

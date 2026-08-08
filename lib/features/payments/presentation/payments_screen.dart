@@ -11,6 +11,9 @@ import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 import 'package:payout/features/payments/presentation/receipt_screen.dart';
 import 'package:payout/features/payments/services/payments_logger.dart';
 
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
+
 class PaymentsScreen extends StatefulWidget {
   const PaymentsScreen({super.key});
 
@@ -19,7 +22,10 @@ class PaymentsScreen extends StatefulWidget {
 }
 
 class _PaymentsScreenState extends State<PaymentsScreen> {
-  final PaymentsRepository _paymentsRepository = MockPaymentsRepository();
+  final PaymentsRepository _paymentsRepository = MockPaymentsRepository(
+    MockTransactionRepository(),
+    MockNotificationRepository(),
+  );
 
   List<BeneficiaryModel> _beneficiaries = [];
   List<RecentPaymentModel> _recentPayments = [];

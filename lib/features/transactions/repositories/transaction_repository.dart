@@ -8,9 +8,18 @@ abstract class TransactionRepository {
   Future<List<TransactionModel>> filterTransactions(TransactionFilterModel filters);
   Future<ReceiptModel> getReceipt(String txnId);
   Future<bool> exportStatement(String month, String format);
+  Future<bool> addTransaction(TransactionModel transaction);
 }
 
 class MockTransactionRepository implements TransactionRepository {
+  @override
+  Future<bool> addTransaction(TransactionModel transaction) async {
+    // TODO: Connect secure transaction logging database endpoint
+    await Future.delayed(const Duration(milliseconds: 100));
+    DummyTransactionData.dummyTransactions.insert(0, transaction);
+    return true;
+  }
+
   @override
   Future<List<TransactionModel>> getTransactions() async {
     // TODO: Connect transactions history database endpoint

@@ -6,6 +6,9 @@ import 'package:payout/features/payments/presentation/payment_success_screen.dar
 import 'package:payout/features/payments/presentation/payment_pending_screen.dart';
 import 'package:payout/features/payments/presentation/payment_failed_screen.dart';
 
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
+
 class PaymentProcessingScreen extends StatefulWidget {
   final String recipientName;
   final String recipientDetail;
@@ -29,7 +32,10 @@ class PaymentProcessingScreen extends StatefulWidget {
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
-  final PaymentsRepository _paymentsRepository = MockPaymentsRepository();
+  final PaymentsRepository _paymentsRepository = MockPaymentsRepository(
+    MockTransactionRepository(),
+    MockNotificationRepository(),
+  );
 
   @override
   void initState() {

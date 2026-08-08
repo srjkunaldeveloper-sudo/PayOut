@@ -44,6 +44,8 @@ class TransferRequestModel {
   final double amount;
   final String remarks;
   final String methodId;
+  final String? category;
+  final String? recipientType;
 
   const TransferRequestModel({
     required this.recipientName,
@@ -51,6 +53,8 @@ class TransferRequestModel {
     required this.amount,
     required this.remarks,
     required this.methodId,
+    this.category,
+    this.recipientType,
   });
 }
 

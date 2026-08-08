@@ -2,7 +2,10 @@ import 'dart:math';
 import 'package:payout/features/payments/models/payments_models.dart';
 import 'package:payout/features/payments/dummy/dummy_payments_data.dart';
 import 'package:payout/features/payments/services/payments_logger.dart';
-
+import 'package:payout/features/transactions/models/transaction_models.dart' show TransactionModel;
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/features/notifications/models/notification_models.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
 
 abstract class PaymentsRepository {
   Future<List<BeneficiaryModel>> getBeneficiaries();
@@ -17,6 +20,11 @@ abstract class PaymentsRepository {
 }
 
 class MockPaymentsRepository implements PaymentsRepository {
+  final TransactionRepository _transactionRepository;
+  final NotificationRepository _notificationRepository;
+
+  MockPaymentsRepository(this._transactionRepository, this._notificationRepository);
+
   @override
   Future<List<BeneficiaryModel>> getBeneficiaries() async {
     // TODO(api): GET /beneficiaries
@@ -62,14 +70,32 @@ class MockPaymentsRepository implements PaymentsRepository {
   Future<TransferResponseModel> sendMoney(TransferRequestModel request) async {
     // TODO(api): POST /payments
     PaymentsLogger.logPaymentProcessing(request.amount);
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     final randomId = 'PAY-${100 + Random().nextInt(900)}';
     final randomUTR = 'UTR${100000 + Random().nextInt(900000)}${100000 + Random().nextInt(900000)}';
+    final category = request.category ?? (request.recipientType == 'Merchant' ? 'QR Payment' : 'UPI Transfer');
+    final methodLabel = request.methodId == 'wallet' ? 'Payout Wallet' : 'Bank Account';
 
     // DEMO TEST SCENARIOS ONLY (as documented in Phase 4 requirements):
     if (request.amount == 100.0) {
       PaymentsLogger.logPaymentFailed('Demo mode: simulated transaction failure');
+      
+      // Dispatch failure notification
+      await _notificationRepository.addNotification(
+        NotificationModel(
+          id: 'NOT-${DateTime.now().millisecondsSinceEpoch}',
+          title: 'Payment Failed',
+          description: 'Payment of ₹${request.amount.toStringAsFixed(0)} to ${request.recipientName} failed.',
+          category: 'Payment',
+          time: 'Just now',
+          isRead: false,
+          actionRoute: 'transaction_details',
+          relatedEntityId: randomId,
+          relatedTransactionId: randomId,
+        ),
+      );
+
       return TransferResponseModel(
         success: false,
         transactionId: randomId,
@@ -81,6 +107,38 @@ class MockPaymentsRepository implements PaymentsRepository {
 
     if (request.amount == 200.0) {
       PaymentsLogger.log('Demo mode: simulated transaction pending');
+
+      // Create transaction record
+      final tx = TransactionModel(
+        id: randomId,
+        title: request.recipientName,
+        upiId: request.upiId,
+        type: 'DEBIT',
+        category: category,
+        amount: request.amount,
+        date: 'Today, Just Now',
+        status: 'PENDING',
+        paymentMethod: methodLabel,
+        utr: randomUTR,
+        referenceNumber: 'REF${Random().nextInt(900000) + 100000}',
+      );
+      await _transactionRepository.addTransaction(tx);
+
+      // Dispatch pending notification
+      await _notificationRepository.addNotification(
+        NotificationModel(
+          id: 'NOT-${DateTime.now().millisecondsSinceEpoch}',
+          title: 'Payment Processing',
+          description: 'Your payment of ₹${request.amount.toStringAsFixed(0)} to ${request.recipientName} is still processing.',
+          category: 'Payment',
+          time: 'Just now',
+          isRead: false,
+          actionRoute: 'transaction_details',
+          relatedEntityId: randomId,
+          relatedTransactionId: randomId,
+        ),
+      );
+
       return TransferResponseModel(
         success: false,
         transactionId: randomId,
@@ -90,6 +148,7 @@ class MockPaymentsRepository implements PaymentsRepository {
       );
     }
 
+    // Success outcome
     final newPayment = RecentPaymentModel(
       id: randomId,
       recipientName: request.recipientName,
@@ -100,6 +159,37 @@ class MockPaymentsRepository implements PaymentsRepository {
     );
     DummyPaymentsData.dummyRecentPayments.insert(0, newPayment);
     PaymentsLogger.logPaymentSuccess(randomId, randomUTR);
+
+    // Create transaction record
+    final tx = TransactionModel(
+      id: randomId,
+      title: request.recipientName,
+      upiId: request.upiId,
+      type: 'DEBIT',
+      category: category,
+      amount: request.amount,
+      date: 'Today, Just Now',
+      status: 'SUCCESS',
+      paymentMethod: methodLabel,
+      utr: randomUTR,
+      referenceNumber: 'REF${Random().nextInt(900000) + 100000}',
+    );
+    await _transactionRepository.addTransaction(tx);
+
+    // Dispatch success notification
+    await _notificationRepository.addNotification(
+      NotificationModel(
+        id: 'NOT-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Payment Successful',
+        description: 'Payment of ₹${request.amount.toStringAsFixed(0)} to ${request.recipientName} was successful.',
+        category: 'Payment',
+        time: 'Just now',
+        isRead: false,
+        actionRoute: 'transaction_details',
+        relatedEntityId: randomId,
+        relatedTransactionId: randomId,
+      ),
+    );
 
     return TransferResponseModel(
       success: true,

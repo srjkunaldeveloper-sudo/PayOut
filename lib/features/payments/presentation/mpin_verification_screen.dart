@@ -13,6 +13,7 @@ class PaymentMPINVerificationScreen extends StatefulWidget {
   final double amount;
   final String note;
   final String methodId;
+  final VoidCallback? onSuccess;
 
   const PaymentMPINVerificationScreen({
     super.key,
@@ -22,6 +23,7 @@ class PaymentMPINVerificationScreen extends StatefulWidget {
     required this.amount,
     required this.note,
     required this.methodId,
+    this.onSuccess,
   });
 
   @override
@@ -71,6 +73,10 @@ class _PaymentMPINVerificationScreenState extends State<PaymentMPINVerificationS
 
   void _verifyAndProceed() {
     if (_pin == _correctMpin) {
+      if (widget.onSuccess != null) {
+        widget.onSuccess!();
+        return;
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

@@ -1,44 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/app_button.dart';
-import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bills/models/bill_models.dart';
 import 'package:payout/features/bills/presentation/review_bill_screen.dart';
 
 class BillDetailsScreen extends StatelessWidget {
-  final String categoryName;
-  final String providerName;
-  final String consumerNumber;
+  final BillModel bill;
 
   const BillDetailsScreen({
     super.key,
-    required this.categoryName,
-    required this.providerName,
-    required this.consumerNumber,
+    required this.bill,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Generate mock bills based on category
-    double amount = 45.80;
-    String dueDate = 'Aug 24, 2026';
-
-    if (categoryName == 'Electricity') {
-      amount = 84.60;
-      dueDate = 'Aug 18, 2026';
-    } else if (categoryName == 'Water') {
-      amount = 22.00;
-      dueDate = 'Aug 20, 2026';
-    } else if (categoryName == 'Gas') {
-      amount = 32.50;
-      dueDate = 'Aug 22, 2026';
-    }
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Bill Details'),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +39,7 @@ class BillDetailsScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      '\$${amount.toStringAsFixed(2)}',
+                      '₹${bill.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 36.0,
@@ -75,7 +56,7 @@ class BillDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'DUE BY $dueDate',
+                        'DUE BY ${bill.dueDate}',
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,
@@ -102,79 +83,31 @@ class BillDetailsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Provider',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          providerName,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Consumer ID',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        Text(
-                          consumerNumber,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Account Name',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-                        ),
-                        const Text(
-                          'Alex Morgan',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildDetailRow('Provider / Biller', bill.billerName),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Consumer ID', bill.consumerNumber),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Consumer Name', bill.consumerName),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Bill Number', bill.billNumber),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Bill Date', bill.billDate),
+                    const Divider(color: AppColors.divider),
+                    _buildDetailRow('Late Fee', '₹${bill.lateFee.toStringAsFixed(2)}'),
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s40),
               SizedBox(
                 width: double.infinity,
-                child: AppButton(
-                  text: 'Proceed to Pay',
+                child: PrimaryButton(
+                  text: 'Continue to Pay',
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ReviewBillScreen(
-                          categoryName: categoryName,
-                          providerName: providerName,
-                          consumerNumber: consumerNumber,
-                          amount: amount,
+                          bill: bill,
                         ),
                       ),
                     );
@@ -185,6 +118,19 @@ class BillDetailsScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
+          Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+        ],
       ),
     );
   }

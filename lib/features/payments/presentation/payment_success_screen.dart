@@ -5,6 +5,8 @@ import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/receipt_screen.dart';
 import 'package:payout/features/payments/repositories/payments_repository.dart';
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/features/notifications/repositories/notification_repository.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final String recipientName;
@@ -172,7 +174,10 @@ class PaymentSuccessScreen extends StatelessWidget {
                       text: 'View Receipt',
                       iconLeft: Icons.receipt_long_rounded,
                       onPressed: () async {
-                        final repo = MockPaymentsRepository();
+                        final repo = MockPaymentsRepository(
+                          MockTransactionRepository(),
+                          MockNotificationRepository(),
+                        );
                         final receipt = await repo.getReceipt(txnId);
                         if (context.mounted) {
                           Navigator.push(

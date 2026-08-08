@@ -3,31 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bills/models/bill_models.dart';
 import 'package:payout/features/payments/models/payments_models.dart';
 import 'package:payout/features/payments/presentation/receipt_screen.dart';
 
-class RechargeSuccessScreen extends StatelessWidget {
-  final String mobileNumber;
-  final String operatorName;
-  final double amount;
-  final String planData;
-  final String planValidity;
+class BillSuccessScreen extends StatelessWidget {
+  final BillModel bill;
   final String transactionId;
   final String paymentMethod;
 
-  const RechargeSuccessScreen({
+  const BillSuccessScreen({
     super.key,
-    required this.mobileNumber,
-    required this.operatorName,
-    required this.amount,
-    required this.planData,
-    required this.planValidity,
+    required this.bill,
     required this.transactionId,
     required this.paymentMethod,
   });
 
   @override
   Widget build(BuildContext context) {
+    final totalAmount = bill.amount + bill.lateFee;
     final now = DateTime.now();
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     final month = months[now.month - 1];
@@ -37,11 +31,6 @@ class RechargeSuccessScreen extends StatelessWidget {
     final ampm = now.hour >= 12 ? 'PM' : 'AM';
     final minute = now.minute.toString().padLeft(2, '0');
     final formattedDate = '$month $day, $year • $hourInt:$minute $ampm';
-
-    // Mask mobile number for display security (e.g. +91 ******1234)
-    final String maskedMobile = mobileNumber.length == 10
-        ? '+91 ******${mobileNumber.substring(6)}'
-        : mobileNumber;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -69,7 +58,7 @@ class RechargeSuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     const Text(
-                      'Recharge Successful!',
+                      'Bill Payment Successful!',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 22.0,
@@ -79,7 +68,7 @@ class RechargeSuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s8),
                     Text(
-                      '$operatorName Recharge',
+                      bill.billerName,
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14.0,
@@ -88,7 +77,7 @@ class RechargeSuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s24),
                     Text(
-                      '₹${amount.toStringAsFixed(2)}',
+                      '₹${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 38.0,
@@ -104,13 +93,11 @@ class RechargeSuccessScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.s20),
                 child: Column(
                   children: [
-                    _buildDetailRow('Mobile Number', maskedMobile),
+                    _buildDetailRow('Consumer Name', bill.consumerName),
                     const Divider(color: AppColors.divider),
-                    _buildDetailRow('Operator', operatorName),
+                    _buildDetailRow('Consumer ID', bill.consumerNumber),
                     const Divider(color: AppColors.divider),
-                    _buildDetailRow('Plan Data', planData),
-                    const Divider(color: AppColors.divider),
-                    _buildDetailRow('Validity', planValidity),
+                    _buildDetailRow('Bill Number', bill.billNumber),
                     const Divider(color: AppColors.divider),
                     _buildDetailRow('Transaction ID', transactionId),
                     const Divider(color: AppColors.divider),
@@ -128,13 +115,13 @@ class RechargeSuccessScreen extends StatelessWidget {
                       txnId: transactionId,
                       utrNumber: 'UTR${DateTime.now().millisecondsSinceEpoch}',
                       refNumber: 'REF${Random().nextInt(900000) + 100000}',
-                      amount: amount,
+                      amount: totalAmount,
                       date: formattedDate,
                       method: paymentMethod == 'wallet' ? 'Payout Wallet' : 'Bank Account',
-                      receiverName: '$operatorName Recharge',
-                      receiverUpi: '$mobileNumber@$operatorName'.toLowerCase(),
+                      receiverName: bill.billerName,
+                      receiverUpi: '${bill.consumerNumber}@utility',
                       status: 'SUCCESS',
-                      notes: 'Recharge successful for mobile $maskedMobile',
+                      notes: 'Electricity bill paid for consumer ${bill.consumerName}',
                     );
                     Navigator.push(
                       context,

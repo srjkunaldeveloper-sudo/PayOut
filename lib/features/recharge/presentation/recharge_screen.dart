@@ -6,6 +6,8 @@ import 'package:payout/features/recharge/presentation/operator_selection_screen.
 import 'package:payout/features/recharge/models/recharge_models.dart';
 import 'package:payout/features/recharge/repositories/recharge_repository.dart';
 
+import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({super.key});
 
@@ -14,7 +16,7 @@ class RechargeScreen extends StatefulWidget {
 }
 
 class _RechargeScreenState extends State<RechargeScreen> {
-  final RechargeRepository _rechargeRepository = MockRechargeRepository();
+  final RechargeRepository _rechargeRepository = MockRechargeRepository(MockTransactionRepository());
   final TextEditingController _phoneController = TextEditingController();
 
   bool _isValid = false;
@@ -54,7 +56,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   void _validateInput(String val) {
     setState(() {
-      _isValid = val.length >= 10;
+      _isValid = val.length == 10 && RegExp(r'^[0-9]+$').hasMatch(val);
     });
   }
 
