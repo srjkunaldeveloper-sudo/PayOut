@@ -155,13 +155,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final topTransactions = _homeService.getTopTransactions(dashboard.recentTransactions);
     final hasUnread = _homeService.shouldShowNotificationBadge(dashboard.unreadNotificationCount);
 
-    final List<Map<String, dynamic>> quickActions = [
-      {'label': 'Pay', 'icon': Icons.payment_rounded, 'screen': const PaymentsScreen()},
-      {'label': 'Scan QR', 'icon': Icons.qr_code_scanner_rounded, 'screen': const ScanQRScreen()},
-      {'label': 'Send Money', 'icon': Icons.send_rounded, 'screen': const PaymentsScreen()},
-      {'label': 'Add Money', 'icon': Icons.add_circle_outline_rounded, 'screen': const WalletScreen()},
-      {'label': 'Recharge', 'icon': Icons.bolt_rounded, 'screen': const RechargeScreen()},
-      {'label': 'Bills', 'icon': Icons.receipt_long_rounded, 'screen': const BillsScreen()},
+    // Google Pay style 4 primary quick actions
+    final List<Map<String, dynamic>> primaryQuickActions = [
+      {'label': 'Scan any\nQR code', 'icon': Icons.qr_code_scanner_rounded, 'screen': const ScanQRScreen()},
+      {'label': 'Pay\nanyone', 'icon': Icons.send_rounded, 'screen': const PaymentsScreen()},
+      {'label': 'Bank\ntransfer', 'icon': Icons.account_balance_rounded, 'screen': const BankAccountsScreen()},
+      {'label': 'Mobile\nrecharge', 'icon': Icons.phone_android_rounded, 'screen': const RechargeScreen()},
+    ];
+
+    // Google Pay style smaller secondary pill actions
+    final List<Map<String, dynamic>> secondaryQuickActions = [
+      {'label': 'Add Money', 'icon': Icons.add_rounded, 'screen': const WalletScreen()},
+      {'label': 'Pay Bills', 'icon': Icons.receipt_long_rounded, 'screen': const BillsScreen()},
+      {'label': 'Rewards', 'icon': Icons.stars_rounded, 'screen': const RewardsScreen()},
     ];
 
     final List<Map<String, dynamic>> services = [
@@ -184,6 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
       {'name': 'Hotels', 'icon': Icons.hotel_rounded, 'screen': const HotelSearchScreen(), 'color': Colors.orange},
       {'name': 'Movies', 'icon': Icons.movie_creation_rounded, 'screen': const MovieSearchScreen(), 'color': Colors.red},
     ];
+
+    final List<String> recentContacts = ['Rahul Sharma', 'Priya Verma', 'Amit Kumar', 'Neha Singh'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -320,7 +328,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              // Total = Available + Pending
                               Text(
                                 '₹${(wallet.balance + 2130.0).toStringAsFixed(2)}',
                                 style: AppTypography.headlineLarge.copyWith(
@@ -398,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
                                 side: const BorderSide(color: AppColors.primary),
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
@@ -412,19 +419,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Text(
                                 'Add Money',
-                                style: AppTypography.bodyMedium.copyWith(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodySmall.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 11.0,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
                                 ),
@@ -437,18 +447,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Text(
                                 'Send Money',
-                                style: AppTypography.bodyMedium.copyWith(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodySmall.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 11.0,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
                                 side: const BorderSide(color: AppColors.divider),
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
@@ -462,9 +475,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Text(
                                 'Withdraw',
-                                style: AppTypography.bodyMedium.copyWith(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.bodySmall.copyWith(
                                   color: AppColors.textPrimary,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 11.0,
                                 ),
                               ),
                             ),
@@ -476,14 +492,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: AppSpacing.s24),
 
-                // 4. Quick Actions
+                // 4. Primary Quick Actions (Google Pay style 4 columns)
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: quickActions.length,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.78,
-                  children: quickActions.map((act) {
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.74,
+                  children: primaryQuickActions.map((act) {
                     return GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -494,24 +511,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         children: [
                           Container(
-                            width: 52,
-                            height: 52,
+                            width: 56,
+                            height: 56,
                             decoration: BoxDecoration(
                               color: AppColors.primary,
-                              borderRadius: const BorderRadius.all(Radius.circular(16)),
+                              borderRadius: const BorderRadius.all(Radius.circular(18)),
                               boxShadow: AppShadow.small,
                             ),
-                            child: Icon(act['icon'] as IconData, color: Colors.white, size: 24),
+                            child: Icon(act['icon'] as IconData, color: Colors.white, size: 26),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             act['label'] as String,
                             style: AppTypography.bodySmall.copyWith(
+                              fontSize: 11.0,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
                             textAlign: TextAlign.center,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -519,11 +537,123 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }).toList(),
                 ),
+                const SizedBox(height: AppSpacing.s20),
+
+                // Secondary Quick Actions (Pills row)
+                SizedBox(
+                  height: 36,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: secondaryQuickActions.length,
+                    itemBuilder: (context, index) {
+                      final act = secondaryQuickActions[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10.0),
+                        child: ActionChip(
+                          avatar: Icon(act['icon'] as IconData, size: 16, color: AppColors.primary),
+                          label: Text(
+                            act['label'] as String,
+                            style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          backgroundColor: AppColors.primaryLight.withOpacity(0.4),
+                          shape: const StadiumBorder(),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => act['screen'] as Widget),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s32),
 
-                // 5. Ecosystem Services Grid
+                // 5. People Section (Recent contacts)
                 const Text(
-                  'Services Ecosystem',
+                  'People',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s12),
+                SizedBox(
+                  height: 92,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recentContacts.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == recentContacts.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const GlobalSearchScreen()),
+                              );
+                            },
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.divider),
+                                  ),
+                                  child: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary, size: 28),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'More',
+                                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      final name = recentContacts[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const PaymentsScreen()),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              CustomAvatar(
+                                name: name,
+                                size: 56,
+                                backgroundColor: AppColors.primaryLight,
+                                textColor: AppColors.primary,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                name.split(' ')[0],
+                                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s24),
+
+                // 6. Ecosystem Services Grid
+                const Text(
+                  'Bills & recharges',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15.0,
@@ -581,7 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: AppSpacing.s32),
 
-                // 6. Travel Discovery Section
+                // 7. Travel Discovery Section
                 const Text(
                   'Travel Discovery',
                   style: TextStyle(
@@ -675,7 +805,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: AppSpacing.s32),
 
-                // 7. Financial Promotions
+                // 8. Financial Promotions
                 const Text(
                   'Financial Ecosystem Promotions',
                   style: TextStyle(
@@ -754,7 +884,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: AppSpacing.s32),
 
-                // 8. Offers & Scratch Cards
+                // 9. Offers & Scratch Cards
                 const Text(
                   'Rewards & Offers',
                   style: TextStyle(
@@ -831,7 +961,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 const SizedBox(height: AppSpacing.s32),
 
-                // 9. Recent Activity / Transactions
+                // 10. Recent Activity / Transactions
                 SectionHeader(
                   title: 'Recent Transactions',
                   actionText: 'View All',

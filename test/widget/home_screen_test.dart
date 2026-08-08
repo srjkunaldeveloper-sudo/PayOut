@@ -21,17 +21,16 @@ void main() {
     expect(find.text('Good Morning,'), findsOneWidget);
     expect(find.text('Rahul Sharma'), findsOneWidget);
 
-    // Verify Wallet Cards Total Balance (1250.75 Available + 2130 Pending = 3380.75)
+    // Verify Wallet Cards Total Balance
     expect(find.text('Total Balance'), findsOneWidget);
     expect(find.text('Available Balance'), findsOneWidget);
 
-    // Verify Quick Actions Panel
-    expect(find.text('Pay'), findsOneWidget);
-    expect(find.text('Scan QR'), findsOneWidget);
-    expect(find.text('Recharge'), findsAtLeast(1));
+    // Verify Google Pay Quick Actions Panel
+    expect(find.text('Pay\nanyone'), findsOneWidget);
+    expect(find.text('Scan any\nQR code'), findsOneWidget);
 
     // Verify Ecosystem grid
-    expect(find.text('Services Ecosystem'), findsOneWidget);
+    expect(find.text('Bills & recharges'), findsOneWidget);
 
     // Verify view all actions trigger
     expect(find.text('View All'), findsOneWidget);
