@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/states/auth_state.dart';
 import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/otp_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,6 +31,24 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final uri = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open link: $urlString')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open link: $urlString')),
+        );
+      }
+    }
   }
 
   void _checkValidation(String value) {
@@ -193,12 +213,38 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const Spacer(),
               Center(
-                child: Text(
-                  'By proceeding, you agree to Payout\'s Terms & Privacy Policy.',
+                child: RichText(
                   textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontSize: 11.0,
-                    color: AppColors.textSecondary,
+                  text: TextSpan(
+                    text: 'By continuing, you agree to our ',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontSize: 12.0,
+                      color: AppColors.textSecondary,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => _launchURL('https://www.srjupipaymentsnbfcbank.com/privacy-policy.html'),
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Terms & Conditions',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => _launchURL('https://www.srjupipaymentsnbfcbank.com/terms-conditions.html'),
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
                   ),
                 ),
               ),
