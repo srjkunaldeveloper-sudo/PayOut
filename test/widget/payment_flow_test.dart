@@ -3,23 +3,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:payout/features/payments/presentation/payment_pending_screen.dart';
 
 void main() {
-  testWidgets('PaymentPendingScreen renders and starts payment pipeline', (WidgetTester tester) async {
+  testWidgets('PaymentPendingScreen renders and checks status', (WidgetTester tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: PaymentPendingScreen(
           recipientName: 'HDFC Bank',
-          recipientDetail: 'hdfc@okaxis',
-          recipientType: 'UPI',
-          amount: 2222.0,
+          recipientDetail: 'Checking •••• 5849',
+          amount: 200.0,
+          transactionId: 'PAY-12345',
           note: 'Rent payment',
         ),
       ),
     );
 
-    expect(find.text('Processing Payment...'), findsOneWidget);
-    expect(find.text('₹2222.00'), findsOneWidget);
+    expect(find.text('Payment Pending'), findsOneWidget);
+    expect(find.text('₹200.00'), findsOneWidget);
+    expect(find.text('Check Status'), findsOneWidget);
 
-    // Wait for the mock timer to resolve (1.5 seconds)
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.tap(find.text('Check Status'), warnIfMissed: false);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
   });
 }

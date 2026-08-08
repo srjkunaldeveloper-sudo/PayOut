@@ -5,14 +5,18 @@ import 'package:payout/core/widgets/widgets.dart';
 
 class PaymentFailedScreen extends StatelessWidget {
   final String recipientName;
+  final String recipientDetail;
   final double amount;
   final String errorMessage;
+  final VoidCallback? onRetry;
 
   const PaymentFailedScreen({
     super.key,
     required this.recipientName,
+    required this.recipientDetail,
     required this.amount,
     required this.errorMessage,
+    this.onRetry,
   });
 
   @override
@@ -21,11 +25,11 @@ class PaymentFailedScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Payment Status', showLeading: false),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.s24),
           child: Column(
             children: [
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s24),
               Center(
                 child: Column(
                   children: [
@@ -61,6 +65,15 @@ class PaymentFailedScreen extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: AppSpacing.s12),
+                    Text(
+                      'To: $recipientName ($recipientDetail)',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12.0,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.s24),
                     Text(
                       '₹${amount.toStringAsFixed(2)}',
@@ -74,28 +87,42 @@ class PaymentFailedScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: AppSpacing.s40),
+              if (onRetry != null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    text: 'Retry Payment',
+                    onPressed: onRetry!,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s12),
+              ],
               SizedBox(
                 width: double.infinity,
-                child: PrimaryButton(
-                  text: 'Close',
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: const BorderSide(color: AppColors.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                   onPressed: () {
-                    Navigator.popUntil(context, (route) => route.isFirst);
+                    // Go back to entry
+                    Navigator.pop(context);
                   },
+                  child: const Text(
+                    'Change Payment Method',
+                    style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.s12),
               SizedBox(
                 width: double.infinity,
                 child: SecondaryButton(
-                  text: 'Contact Support',
+                  text: 'Go Home',
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Support ticket created. We will get back to you shortly.'),
-                        backgroundColor: AppColors.primary,
-                      ),
-                    );
+                    Navigator.popUntil(context, (route) => route.isFirst);
                   },
                 ),
               ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bank_accounts/services/bank_account_service.dart';
+import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
 import 'package:payout/features/payments/presentation/review_payment_screen.dart';
 import 'package:payout/features/payments/validators/payments_validator.dart';
 
@@ -22,13 +24,35 @@ class AmountEntryScreen extends StatefulWidget {
 }
 
 class _AmountEntryScreenState extends State<AmountEntryScreen> {
+  final BankAccountService _bankAccountService = BankAccountService();
+
   String _amountStr = '';
   final TextEditingController _noteController = TextEditingController();
+
+  // Payment Method Selection State
+  String _methodId = 'wallet';
+  String _methodLabel = 'Payout Wallet';
+  List<LinkedBankAccountModel> _linkedBanks = [];
+  bool _isLoadingBanks = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBanks();
+  }
 
   @override
   void dispose() {
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadBanks() async {
+    final banks = await _bankAccountService.getLinkedAccounts();
+    setState(() {
+      _linkedBanks = banks;
+      _isLoadingBanks = false;
+    });
   }
 
   void _onKeyPress(String val) {
@@ -60,6 +84,86 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
         _amountStr = _amountStr.substring(0, _amountStr.length - 1);
       });
     }
+  }
+
+  void _showPaymentMethodSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: AppSpacing.s24,
+            left: AppSpacing.s24,
+            right: AppSpacing.s24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Choose Payment Method',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: AppSpacing.s8),
+              const Text(
+                'Select the source account for this transaction.',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.s20),
+              // Payout Wallet option
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary),
+                ),
+                title: const Text('Payout Wallet', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Instant, direct balance transfer', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                trailing: _methodId == 'wallet' ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                onTap: () {
+                  setState(() {
+                    _methodId = 'wallet';
+                    _methodLabel = 'Payout Wallet';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(color: AppColors.divider),
+              // Linked Bank options
+              ..._linkedBanks.map((bank) {
+                final isSelected = _methodId == bank.id;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.account_balance_rounded, color: AppColors.primary),
+                  ),
+                  title: Text(bank.bankName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                  subtitle: Text('Savings ${bank.maskedAccountNumber}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+                  onTap: () {
+                    setState(() {
+                      _methodId = bank.id;
+                      _methodLabel = '${bank.bankName} ${bank.maskedAccountNumber}';
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+              const SizedBox(height: AppSpacing.s24),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildKey(String value) {
@@ -197,6 +301,36 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.s20),
+                    // Payment Method selector pill
+                    GestureDetector(
+                      onTap: _showPaymentMethodSelector,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.account_balance_wallet_rounded, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              _methodLabel,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 12.0,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -271,6 +405,8 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                                     recipientType: widget.recipientType,
                                     amount: parsedAmount,
                                     note: _noteController.text,
+                                    methodId: _methodId,
+                                    methodLabel: _methodLabel,
                                   ),
                                 ),
                               );

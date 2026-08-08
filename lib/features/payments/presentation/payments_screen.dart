@@ -23,9 +23,11 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
   List<BeneficiaryModel> _beneficiaries = [];
   List<RecentPaymentModel> _recentPayments = [];
-  List<PaymentMethodModel> _paymentMethods = [];
   bool _isLoading = true;
   String _searchQuery = '';
+
+  // Selector mode: 'contacts', 'upi', 'bank'
+  String _payToMode = 'contacts';
 
   @override
   void initState() {
@@ -40,13 +42,11 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     });
     final beneficiaries = await _paymentsRepository.getBeneficiaries();
     final recentPayments = await _paymentsRepository.getRecentPayments();
-    final methods = await _paymentsRepository.getPaymentMethods();
 
     if (mounted) {
       setState(() {
         _beneficiaries = beneficiaries;
         _recentPayments = recentPayments;
-        _paymentMethods = methods;
         _isLoading = false;
       });
     }
@@ -64,101 +64,407 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     }
   }
 
-  void _showPaymentMethodSelector() {
+  // --- Dialog / Bottom Sheets ---
+
+  // Pay via UPI ID Dialog
+  void _showUpiPaymentSheet() {
+    final formKey = GlobalKey<FormState>();
+    final upiController = TextEditingController();
+    bool isResolving = false;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.bottomSheet)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s16,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: AppColors.divider,
-                    borderRadius: BorderRadius.all(Radius.circular(AppRadius.circle)),
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: AppSpacing.s24,
+                left: AppSpacing.s24,
+                right: AppSpacing.s24,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Pay via UPI ID',
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: AppSpacing.s8),
+                    const Text(
+                      'Enter payee VPA (UPI ID) e.g. rahul@upi',
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: AppSpacing.s20),
+                    TextFormField(
+                      controller: upiController,
+                      decoration: const InputDecoration(
+                        labelText: 'UPI ID',
+                        hintText: 'e.g. username@upi',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'UPI ID is required';
+                        if (!value.contains('@') || value.length < 5) return 'Invalid VPA format';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PrimaryButton(
+                        text: isResolving ? 'Resolving VPA...' : 'Verify & Continue',
+                        onPressed: isResolving
+                            ? null
+                            : () async {
+                                if (formKey.currentState?.validate() ?? false) {
+                                  setSheetState(() {
+                                    isResolving = true;
+                                  });
+                                  final upi = upiController.text.trim();
+                                  final isVerified = await _paymentsRepository.verifyUPI(upi);
+                                  setSheetState(() {
+                                    isResolving = false;
+                                  });
+
+                                  if (!mounted) return;
+                                  if (isVerified) {
+                                    Navigator.pop(context); // Close sheet
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AmountEntryScreen(
+                                          recipientName: 'Verified Payee (${upi.split('@')[0]})',
+                                          recipientDetail: upi,
+                                          recipientType: 'UPI',
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('UPI ID resolution failed. Please try a different VPA.'),
+                                        backgroundColor: AppColors.error,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Pay via Bank Account Details Form
+  void _showBankPaymentSheet() {
+    final formKey = GlobalKey<FormState>();
+    final holderController = TextEditingController();
+    final numberController = TextEditingController();
+    final confirmController = TextEditingController();
+    final ifscController = TextEditingController();
+    String selectedBank = 'HDFC Bank';
+    bool isVerifying = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: AppSpacing.s24,
+                left: AppSpacing.s24,
+                right: AppSpacing.s24,
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pay via Bank Account',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: AppSpacing.s8),
+                      const Text(
+                        'Enter payee bank details to transfer funds directly.',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: AppSpacing.s16),
+                      DropdownButtonFormField<String>(
+                        value: selectedBank,
+                        decoration: const InputDecoration(labelText: 'Bank'),
+                        items: ['SBI', 'HDFC Bank', 'ICICI Bank', 'Axis Bank']
+                            .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) selectedBank = val;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: holderController,
+                        decoration: const InputDecoration(labelText: 'Account Holder Name', hintText: 'Enter name'),
+                        validator: (value) => value == null || value.trim().isEmpty ? 'Name is required' : null,
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: numberController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Account Number', hintText: 'Enter number'),
+                        validator: (value) => value == null || value.trim().isEmpty ? 'Number is required' : null,
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: confirmController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Confirm Account Number', hintText: 'Re-enter number'),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) return 'Confirmation is required';
+                          if (value != numberController.text) return 'Account numbers do not match';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: ifscController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: const InputDecoration(labelText: 'IFSC Code', hintText: 'e.g. HDFC0000124'),
+                        validator: (value) => value == null || value.trim().isEmpty ? 'IFSC is required' : null,
+                      ),
+                      const SizedBox(height: AppSpacing.s20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: PrimaryButton(
+                          text: isVerifying ? 'Verifying Account...' : 'Continue',
+                          onPressed: isVerifying
+                              ? null
+                              : () async {
+                                  if (formKey.currentState?.validate() ?? false) {
+                                    setSheetState(() {
+                                      isVerifying = true;
+                                    });
+                                    // Simulated Verification Latency
+                                    await Future.delayed(const Duration(milliseconds: 1000));
+                                    setSheetState(() {
+                                      isVerifying = false;
+                                    });
+
+                                    if (!mounted) return;
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AmountEntryScreen(
+                                          recipientName: holderController.text.trim(),
+                                          recipientDetail: 'Savings •••• ${numberController.text.substring(numberController.text.length - 4)}',
+                                          recipientType: 'Bank',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.s24),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.s16),
-              Text(
-                'Choose Payment Method',
-                style: AppTypography.headlineSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Add Beneficiary sheet
+  void _showAddBeneficiarySheet() {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    final upiController = TextEditingController();
+    final phoneController = TextEditingController();
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: AppSpacing.s24,
+                left: AppSpacing.s24,
+                right: AppSpacing.s24,
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Add Beneficiary',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: AppSpacing.s8),
+                      const Text(
+                        'Save new recipient credentials for direct future transfers.',
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: AppSpacing.s16),
+                      TextFormField(
+                        controller: nameController,
+                        decoration: const InputDecoration(labelText: 'Full Name', hintText: 'Enter name'),
+                        validator: (value) => value == null || value.trim().isEmpty ? 'Name is required' : null,
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: upiController,
+                        decoration: const InputDecoration(labelText: 'UPI ID', hintText: 'username@upi'),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) return 'UPI ID is required';
+                          if (!value.contains('@')) return 'Invalid format';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.s12),
+                      TextFormField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(labelText: 'Phone Number', hintText: 'e.g. 9999999999'),
+                        validator: (value) => value == null || value.trim().length < 10 ? 'Enter valid phone number' : null,
+                      ),
+                      const SizedBox(height: AppSpacing.s20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: PrimaryButton(
+                          text: isSaving ? 'Saving...' : 'Add Recipient',
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (formKey.currentState?.validate() ?? false) {
+                                    setSheetState(() {
+                                      isSaving = true;
+                                    });
+
+                                    final b = BeneficiaryModel(
+                                      id: 'B-NEW-${DateTime.now().millisecondsSinceEpoch}',
+                                      name: nameController.text.trim(),
+                                      upiId: upiController.text.trim(),
+                                      phone: phoneController.text.trim(),
+                                      isFavourite: false,
+                                      isVerified: true,
+                                    );
+
+                                    final saved = await _paymentsRepository.addBeneficiary(b);
+                                    setSheetState(() {
+                                      isSaving = false;
+                                    });
+
+                                    if (!mounted) return;
+                                    if (saved) {
+                                      Navigator.pop(context);
+                                      _loadData(); // Reload list
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('${b.name} added as beneficiary.'),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.s24),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Select your primary account for sending money.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _paymentMethods.length,
-                separatorBuilder: (context, index) => const Divider(color: AppColors.divider),
-                itemBuilder: (context, index) {
-                  final method = _paymentMethods[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        method.type == 'Wallet'
-                            ? Icons.account_balance_wallet_rounded
-                            : method.type == 'Bank Account'
-                                ? Icons.account_balance_rounded
-                                : Icons.payment_rounded,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    title: Text(
-                      method.label,
-                      style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    subtitle: Text(
-                      method.isVerified ? 'Verified Account' : 'Unverified',
-                      style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
-                    ),
-                    trailing: method.isDefault
-                        ? const Icon(Icons.check_circle_rounded, color: AppColors.success)
-                        : null,
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${method.label} set as primary method.'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
+            );
+          },
         );
+      },
+    );
+  }
+
+  Widget _buildPayToModeSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildModeChip('contacts', 'Contacts', Icons.contacts_rounded),
+        const SizedBox(width: 8),
+        _buildModeChip('upi', 'UPI ID', Icons.alternate_email_rounded),
+        const SizedBox(width: 8),
+        _buildModeChip('bank', 'Bank Account', Icons.account_balance_rounded),
+      ],
+    );
+  }
+
+  Widget _buildModeChip(String id, String label, IconData icon) {
+    final isSelected = _payToMode == id;
+    return ChoiceChip(
+      avatar: Icon(icon, size: 14, color: isSelected ? Colors.white : AppColors.primary),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: isSelected ? Colors.white : AppColors.primary,
+        ),
+      ),
+      selected: isSelected,
+      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.primaryLight.withOpacity(0.4),
+      onSelected: (val) {
+        if (val) {
+          setState(() {
+            _payToMode = id;
+          });
+          if (id == 'upi') {
+            _showUpiPaymentSheet();
+            setState(() {
+              _payToMode = 'contacts';
+            });
+          } else if (id == 'bank') {
+            _showBankPaymentSheet();
+            setState(() {
+              _payToMode = 'contacts';
+            });
+          }
+        }
       },
     );
   }
@@ -178,11 +484,11 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
     final List<Map<String, dynamic>> shortcuts = [
       {'label': 'Scan QR', 'icon': AppIcons.scanQR, 'screen': const ScanQRScreen(), 'color': AppColors.primary},
-      {'label': 'Methods', 'icon': Icons.account_balance_wallet_rounded, 'action': _showPaymentMethodSelector, 'color': AppColors.success},
-      {'label': 'To Bank', 'icon': AppIcons.bank, 'screen': const BankAccountsScreen(), 'color': Colors.indigo},
+      {'label': 'Link Bank', 'icon': Icons.account_balance_rounded, 'screen': const BankAccountsScreen(), 'color': Colors.indigo},
+      {'label': 'Add Recipient', 'icon': Icons.person_add_rounded, 'action': _showAddBeneficiarySheet, 'color': AppColors.success},
       {'label': 'Self Trans', 'icon': Icons.swap_horiz_rounded, 'action': () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Self-Transfer flow selected.')),
+          const SnackBar(content: Text('Self-Transfer selected.')),
         );
       }, 'color': Colors.purple},
     ];
@@ -202,12 +508,16 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 0. Custom Pill Search Bar
+            // 0. Search Bar
             CustomSearchBar(
-              hintText: 'Search contacts, UPI IDs, or numbers',
+              hintText: 'Search contacts or UPI IDs',
               onChanged: _handleSearch,
             ),
             const SizedBox(height: AppSpacing.s20),
+
+            // Mode Selector
+            _buildPayToModeSelector(),
+            const SizedBox(height: AppSpacing.s24),
 
             if (_searchQuery.isNotEmpty) ...[
               const Text(
@@ -307,26 +617,12 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                         ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.circle),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      ),
-                      child: const Text(
-                        'Top Up',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                    ),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
 
-              // 2. Hero Scan Guide Banner
+              // 2. Hero Scan Banner
               AppCard(
                 color: AppColors.primary,
                 borderRadius: AppRadius.xxl,
@@ -367,7 +663,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Instant scans for all merchant/user code types.',
+                            'Instant scans for all merchant/user codes.',
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 12.0,
@@ -387,7 +683,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ),
               const SizedBox(height: AppSpacing.s32),
 
-              // 3. Quick Circular Shortcuts
+              // 3. Circular shortcuts
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: shortcuts.map((item) {
@@ -430,9 +726,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ),
               const SizedBox(height: AppSpacing.s32),
 
-              // 4. Recent Payees
+              // 4. Saved Beneficiaries / Contacts list
               const Text(
-                'Recent Payees',
+                'Pay a Contact',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15.0,
@@ -547,7 +843,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ),
               const SizedBox(height: AppSpacing.s24),
 
-              // 5. Utility Bills Payment Categories
+              // 5. Utility categories
               const Text(
                 'Utility Bills & Recharges',
                 style: TextStyle(
@@ -594,6 +890,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ),
               const SizedBox(height: AppSpacing.s24),
 
+              // Recent Transfers
               const Text(
                 'Recent Transfers',
                 style: TextStyle(

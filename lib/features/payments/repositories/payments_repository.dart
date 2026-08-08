@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:payout/features/payments/models/payments_models.dart';
 import 'package:payout/features/payments/dummy/dummy_payments_data.dart';
 import 'package:payout/features/payments/services/payments_logger.dart';
-import 'package:payout/core/config/app_config.dart';
+
 
 abstract class PaymentsRepository {
   Future<List<BeneficiaryModel>> getBeneficiaries();
@@ -19,14 +19,14 @@ abstract class PaymentsRepository {
 class MockPaymentsRepository implements PaymentsRepository {
   @override
   Future<List<BeneficiaryModel>> getBeneficiaries() async {
-    // TODO: Connect beneficiaries retrieval API endpoint
+    // TODO(api): GET /beneficiaries
     await Future.delayed(const Duration(milliseconds: 500));
     return List.from(DummyPaymentsData.dummyBeneficiaries);
   }
 
   @override
   Future<List<BeneficiaryModel>> searchBeneficiaries(String query) async {
-    // TODO: Connect contact indexing API endpoint
+    // TODO(api): GET /beneficiaries/search
     await Future.delayed(const Duration(milliseconds: 300));
     PaymentsLogger.logSearchBeneficiary(query);
     if (query.isEmpty) {
@@ -39,46 +39,55 @@ class MockPaymentsRepository implements PaymentsRepository {
 
   @override
   Future<List<RecentPaymentModel>> getRecentPayments() async {
-    // TODO: Connect payment ledger log API endpoint
+    // TODO(api): GET /payments/recent
     await Future.delayed(const Duration(milliseconds: 400));
     return List.from(DummyPaymentsData.dummyRecentPayments);
   }
 
   @override
   Future<List<PaymentMethodModel>> getPaymentMethods() async {
-    // TODO: Connect payment instruments catalog API endpoint
+    // TODO(api): GET /payments/methods
     await Future.delayed(const Duration(milliseconds: 300));
     return List.from(DummyPaymentsData.dummyPaymentMethods);
   }
 
   @override
   Future<bool> verifyUPI(String upi) async {
-    // TODO: Connect VPA resolution API endpoint
+    // TODO(api): POST /payments/resolve-upi
     await Future.delayed(const Duration(milliseconds: 600));
     return upi.contains('@') && upi.length > 5;
   }
 
   @override
   Future<TransferResponseModel> sendMoney(TransferRequestModel request) async {
-    // TODO: Connect payment transaction gateway execution API endpoint
+    // TODO(api): POST /payments
     PaymentsLogger.logPaymentProcessing(request.amount);
     await Future.delayed(const Duration(milliseconds: 1500));
 
     final randomId = 'PAY-${100 + Random().nextInt(900)}';
     final randomUTR = 'UTR${100000 + Random().nextInt(900000)}${100000 + Random().nextInt(900000)}';
 
-    // Simulate failure dynamically for demo purposes (e.g. amount == 9999)
-    if (request.amount == 9999.0) {
-      if (!AppConfig.isDemoMode || request.amount == 9999.0) {
-        PaymentsLogger.logPaymentFailed('Simulated failure code 9999');
-        return TransferResponseModel(
-          success: false,
-          transactionId: randomId,
-          utrNumber: randomUTR,
-          status: 'FAILED',
-          date: 'Today, Just Now',
-        );
-      }
+    // DEMO TEST SCENARIOS ONLY (as documented in Phase 4 requirements):
+    if (request.amount == 100.0) {
+      PaymentsLogger.logPaymentFailed('Demo mode: simulated transaction failure');
+      return TransferResponseModel(
+        success: false,
+        transactionId: randomId,
+        utrNumber: '',
+        status: 'FAILED',
+        date: 'Today, Just Now',
+      );
+    }
+
+    if (request.amount == 200.0) {
+      PaymentsLogger.log('Demo mode: simulated transaction pending');
+      return TransferResponseModel(
+        success: false,
+        transactionId: randomId,
+        utrNumber: randomUTR,
+        status: 'PENDING',
+        date: 'Today, Just Now',
+      );
     }
 
     final newPayment = RecentPaymentModel(
@@ -103,7 +112,7 @@ class MockPaymentsRepository implements PaymentsRepository {
 
   @override
   Future<ReceiptModel> getReceipt(String transactionId) async {
-    // TODO: Connect receipt validation API endpoint
+    // TODO(api): GET /payments/{id}/receipt
     await Future.delayed(const Duration(milliseconds: 500));
     final matchingTx = DummyPaymentsData.dummyRecentPayments.firstWhere(
       (tx) => tx.id == transactionId,
@@ -133,7 +142,7 @@ class MockPaymentsRepository implements PaymentsRepository {
 
   @override
   Future<bool> addBeneficiary(BeneficiaryModel beneficiary) async {
-    // TODO: Connect add beneficiary API endpoint
+    // TODO(api): POST /beneficiaries
     await Future.delayed(const Duration(milliseconds: 400));
     DummyPaymentsData.dummyBeneficiaries.insert(0, beneficiary);
     return true;
@@ -141,7 +150,7 @@ class MockPaymentsRepository implements PaymentsRepository {
 
   @override
   Future<bool> deleteBeneficiary(String beneficiaryId) async {
-    // TODO: Connect delete beneficiary API endpoint
+    // TODO(api): DELETE /beneficiaries/{id}
     await Future.delayed(const Duration(milliseconds: 400));
     DummyPaymentsData.dummyBeneficiaries.removeWhere((b) => b.id == beneficiaryId);
     return true;

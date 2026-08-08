@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
+import 'package:payout/features/bank_accounts/services/bank_account_service.dart';
+import 'package:payout/features/bank_accounts/presentation/link_bank_flow.dart';
 import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
 
 class BankAccountsScreen extends StatefulWidget {
@@ -12,91 +15,52 @@ class BankAccountsScreen extends StatefulWidget {
 }
 
 class _BankAccountsScreenState extends State<BankAccountsScreen> {
-  final List<Map<String, String>> _banks = [
-    {'name': 'HDFC Bank', 'acc': 'Checking •••• 5849', 'icon': 'H', 'primary': 'true'},
-    {'name': 'ICICI Bank', 'acc': 'Savings •••• 9201', 'icon': 'I', 'primary': 'false'},
-  ];
+  final BankAccountService _bankAccountService = BankAccountService();
+  List<LinkedBankAccountModel> _linkedAccounts = [];
+  bool _isLoading = true;
 
-  void _showAddBankSheet() {
-    String? bankName;
-    String? accountNumber;
+  @override
+  void initState() {
+    super.initState();
+    _loadLinkedAccounts();
+  }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Link Bank Account',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20.0),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Enter checking account credentials to connect your bank via Payout.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              AppTextField(
-                labelText: 'Bank Name',
-                hintText: 'e.g. HDFC Bank',
-                onChanged: (val) => bankName = val,
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              const AppTextField(
-                keyboardType: TextInputType.number,
-                labelText: 'IFSC Code',
-                hintText: 'e.g. HDFC0000124',
-              ),
-              const SizedBox(height: AppSpacing.s12),
-              AppTextField(
-                onChanged: (val) => accountNumber = val,
-                keyboardType: TextInputType.number,
-                labelText: 'Account Number',
-                hintText: 'e.g. 50100241258',
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              PrimaryButton(
-                text: 'Link Account',
-                onPressed: () {
-                  if (bankName != null && bankName!.isNotEmpty) {
-                    setState(() {
-                      _banks.add({
-                        'name': bankName!,
-                        'acc': 'Savings •••• ${accountNumber != null && accountNumber!.length > 4 ? accountNumber!.substring(accountNumber!.length - 4) : '9999'}',
-                        'icon': bankName![0].toUpperCase(),
-                        'primary': 'false',
-                      });
-                    });
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$bankName account linked successfully.'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                  }
-                },
-              ),
-              const SizedBox(height: AppSpacing.s24),
-            ],
-          ),
-        );
-      },
+  Future<void> _loadLinkedAccounts() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final accounts = await _bankAccountService.getLinkedAccounts();
+    if (mounted) {
+      setState(() {
+        _linkedAccounts = accounts;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _unlinkAccount(String accountId) async {
+    final ok = await _bankAccountService.unlinkAccount(accountId);
+    if (ok) {
+      _loadLinkedAccounts();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bank account unlinked successfully.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  void _navigateToLinkBank() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LinkBankFlow()),
     );
+
+    if (result == true) {
+      _loadLinkedAccounts();
+    }
   }
 
   @override
@@ -104,128 +68,136 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Bank Accounts'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Linked Bank Accounts',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            ..._banks.map((bank) {
-              final isPrimary = bank['primary'] == 'true';
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                child: AppCard(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AmountEntryScreen(
-                          recipientName: bank['name']!,
-                          recipientDetail: bank['acc']!,
-                          recipientType: 'Bank',
-                        ),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Linked Bank Accounts',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s16),
+                  if (_linkedAccounts.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
                         child: Text(
-                          bank['icon']!,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                            fontSize: 18,
-                          ),
+                          'No linked bank accounts. Click below to add.',
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.s16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  bank['name']!,
+                    )
+                  else
+                    ..._linkedAccounts.map((bank) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                        child: AppCard(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AmountEntryScreen(
+                                  recipientName: bank.bankName,
+                                  recipientDetail: bank.maskedAccountNumber,
+                                  recipientType: 'Bank',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primaryContainer,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  bank.bankName.substring(0, 1),
                                   style: const TextStyle(
                                     fontFamily: 'Inter',
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14.0,
+                                    color: AppColors.primary,
+                                    fontSize: 18,
                                   ),
                                 ),
-                                if (isPrimary) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.success.withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(AppRadius.xs),
+                              ),
+                              const SizedBox(width: AppSpacing.s16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          bank.bankName,
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.0,
+                                          ),
+                                        ),
+                                        if (bank.isDefault) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.success.withOpacity(0.08),
+                                              borderRadius: BorderRadius.circular(AppRadius.xs),
+                                            ),
+                                            child: const Text(
+                                              'PRIMARY',
+                                              style: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.success,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                    child: const Text(
-                                      'PRIMARY',
-                                      style: TextStyle(
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Savings ${bank.maskedAccountNumber}',
+                                      style: const TextStyle(
                                         fontFamily: 'Inter',
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.success,
+                                        fontSize: 12.0,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              bank['acc']!,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12.0,
-                                color: AppColors.textSecondary,
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline_rounded, color: AppColors.error, size: 20),
+                                onPressed: () => _unlinkAccount(bank.id),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline_rounded, color: AppColors.error, size: 20),
-                        onPressed: () {
-                          setState(() {
-                            _banks.removeWhere((b) => b['name'] == bank['name']);
-                          });
-                        },
-                      ),
-                    ],
+                      );
+                    }).toList(),
+                  const SizedBox(height: AppSpacing.s24),
+                  OutlinedButtonV2(
+                    text: 'Add New Bank Account',
+                    iconLeft: Icons.add_rounded,
+                    onPressed: _navigateToLinkBank,
                   ),
-                ),
-              );
-            }).toList(),
-            const SizedBox(height: AppSpacing.s24),
-            OutlinedButtonV2(
-              text: 'Add New Bank Account',
-              iconLeft: Icons.add_rounded,
-              onPressed: _showAddBankSheet,
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
