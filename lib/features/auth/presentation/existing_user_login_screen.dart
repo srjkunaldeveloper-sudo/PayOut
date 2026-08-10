@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/di/app_dependencies.dart';
+import 'package:payout/features/auth/models/auth_models.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
 import 'package:payout/features/auth/presentation/mpin_screen.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/user/dummy/dummy_user_data.dart';
 
-class CreatePasswordScreen extends StatefulWidget {
+class ExistingUserLoginScreen extends StatefulWidget {
   final AuthRepository? authRepository;
 
-  const CreatePasswordScreen({super.key, this.authRepository});
+  const ExistingUserLoginScreen({super.key, this.authRepository});
 
   @override
-  State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
+  State<ExistingUserLoginScreen> createState() => _ExistingUserLoginScreenState();
 }
 
-class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
+class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
-  final FocusNode _confirmPasswordFocusNode = FocusNode();
 
   late final AuthRepository _authRepository;
 
   bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
+  bool _isEmailFocused = false;
   bool _isPasswordFocused = false;
-  bool _isConfirmPasswordFocused = false;
   bool _isLoading = false;
 
   @override
@@ -33,48 +35,74 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     super.initState();
     _authRepository = widget.authRepository ?? AppDependencies.instance.authRepository;
 
-    _passwordFocusNode.addListener(() {
+    _emailFocusNode.addListener(() {
       setState(() {
-        _isPasswordFocused = _passwordFocusNode.hasFocus;
+        _isEmailFocused = _emailFocusNode.hasFocus;
       });
     });
 
-    _confirmPasswordFocusNode.addListener(() {
+    _passwordFocusNode.addListener(() {
       setState(() {
-        _isConfirmPasswordFocused = _confirmPasswordFocusNode.hasFocus;
+        _isPasswordFocused = _passwordFocusNode.hasFocus;
       });
     });
   }
 
   @override
   void dispose() {
+    _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
-  bool get _hasMinLength => AuthValidator.hasMinLength(_passwordController.text);
-  bool get _hasUppercase => AuthValidator.hasUppercase(_passwordController.text);
-  bool get _hasNumber => AuthValidator.hasNumber(_passwordController.text);
+  bool get _isEmailValid => AuthValidator.validateEmail(_emailController.text).isValid;
+  bool get _isPasswordValid => _passwordController.text.trim().isNotEmpty;
+  bool get _canSubmit => _isEmailValid && _isPasswordValid && !_isLoading;
 
-  bool get _isPasswordValid => _hasMinLength && _hasUppercase && _hasNumber;
-  bool get _passwordsMatch =>
-      _passwordController.text.isNotEmpty &&
-      _passwordController.text == _confirmPasswordController.text;
+  String _formatNameFromEmail(String email) {
+    final namePart = email.split('@').first;
+    final parts = namePart.replaceAll(RegExp(r'[\._\-]'), ' ').split(' ');
+    final formatted = parts
+        .where((p) => p.isNotEmpty)
+        .map((p) => p[0].toUpperCase() + (p.length > 1 ? p.substring(1).toLowerCase() : ''))
+        .join(' ');
+    return formatted.isNotEmpty ? formatted : 'Payout User';
+  }
 
-  bool get _canSubmit => _isPasswordValid && _passwordsMatch && !_isLoading;
-
-  Future<void> _handleContinue() async {
+  Future<void> _handleLogin() async {
     if (!_canSubmit) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    // Simulate secure credential setup via auth architecture
-    await Future.delayed(const Duration(milliseconds: 400));
+    // Simulate secure authentication verification
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    final email = _emailController.text.trim();
+    final displayName = _formatNameFromEmail(email);
+
+    // Initialize session with authenticating user's data
+    final user = UserModel(
+      id: 'USR-${email.hashCode.abs() % 100000}',
+      name: displayName,
+      phone: DummyUserData.currentUser.phone,
+      email: email,
+    );
+
+    await SessionManager.instance.initSession(
+      'TOKEN-ACCESS-${email.hashCode}',
+      'TOKEN-REFRESH-${email.hashCode}',
+      user,
+    );
+
+    // Update active profile data dynamically
+    DummyUserData.currentUser = DummyUserData.currentUser.copyWith(
+      name: displayName,
+      email: email,
+    );
 
     if (!mounted) return;
 
@@ -82,43 +110,97 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       _isLoading = false;
     });
 
-    Navigator.of(context).pushReplacement(
+    // Navigate directly to MPIN verification mode
+    Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MPINScreen(authRepository: _authRepository),
+        builder: (context) => MPINScreen(
+          authRepository: _authRepository,
+          isVerificationMode: true,
+        ),
       ),
     );
   }
 
-  Widget _buildRequirementItem(String text, bool isSatisfied) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        children: [
-          Icon(
-            isSatisfied ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-            color: isSatisfied ? const Color(0xFF059669) : const Color(0xFF94A3B8),
-            size: 16,
+  void _handleForgotPassword() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.lock_reset_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Reset Password',
+                style: TextStyle(
+                  fontFamily: 'Geist Sans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F1F1F),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'A secure password reset link will be sent to ${_emailController.text.isNotEmpty ? _emailController.text.trim() : 'your registered email'}.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Geist Sans',
+                  fontSize: 14,
+                  color: const Color(0xFF1F1F1F).withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 24),
+              PremiumCTAButton(
+                text: 'Send Reset Link',
+                isLoading: false,
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password reset instructions sent successfully.'),
+                      backgroundColor: Color(0xFF059669),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              fontFamily: 'Geist Sans',
-              fontSize: 12.5,
-              fontWeight: isSatisfied ? FontWeight.w600 : FontWeight.normal,
-              color: isSatisfied ? const Color(0xFF059669) : const Color(0xFF64748B),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final showMismatchError = _confirmPasswordController.text.isNotEmpty &&
-        _passwordController.text != _confirmPasswordController.text;
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -170,17 +252,39 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                           ),
                         const SizedBox(height: 20),
 
-                        // Header Title
+                        // Title Header
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 100),
-                          child: const Text(
-                            'Create Password',
-                            style: TextStyle(
-                              fontFamily: 'Geist Sans',
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF1F1F1F),
-                            ),
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text(
+                                'Welcome ',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1F1F1F),
+                                ),
+                              ),
+                              ShaderMask(
+                                shaderCallback: (bounds) => const LinearGradient(
+                                  colors: [
+                                    Color(0xFF3F37C9),
+                                    Color(0xFF4895EF),
+                                  ],
+                                ).createShader(Offset.zero & bounds.size),
+                                child: const Text(
+                                  'Back',
+                                  style: TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -189,7 +293,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 150),
                           child: Text(
-                            'Create a strong password to secure your account.',
+                            'Login to continue to your Payout account.',
                             style: TextStyle(
                               fontFamily: 'Geist Sans',
                               fontSize: 14,
@@ -200,9 +304,101 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         ),
                         const SizedBox(height: 28),
 
-                        // 1. Password Field
+                        // 1. Email Address Field
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 200),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Email Address',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                height: 58,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: _isEmailFocused
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFFE2E8F0),
+                                    width: _isEmailFocused ? 1.5 : 1.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _isEmailFocused
+                                          ? const Color(0xFF2563EB).withValues(alpha: 0.08)
+                                          : const Color(0xFF002E6E).withValues(alpha: 0.02),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.mail_outline_rounded,
+                                        color: Color(0xFF3F37C9),
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextField(
+                                        focusNode: _emailFocusNode,
+                                        controller: _emailController,
+                                        keyboardType: TextInputType.emailAddress,
+                                        onChanged: (_) => setState(() {}),
+                                        style: const TextStyle(
+                                          fontFamily: 'Geist Sans',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15.5,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: 'name@example.com',
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Geist Sans',
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 14.5,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          disabledBorder: InputBorder.none,
+                                          contentPadding: EdgeInsets.symmetric(vertical: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // 2. Password Field
+                        FadeUpEntrance(
+                          delay: const Duration(milliseconds: 250),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -304,171 +500,37 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
-
-                        // Password Requirements Checklist
-                        FadeUpEntrance(
-                          delay: const Duration(milliseconds: 220),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Password must contain:',
-                                  style: TextStyle(
-                                    fontFamily: 'Geist Sans',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildRequirementItem('8+ characters', _hasMinLength),
-                                _buildRequirementItem('One uppercase letter', _hasUppercase),
-                                _buildRequirementItem('One number', _hasNumber),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-
-                        // 2. Confirm Password Field
-                        FadeUpEntrance(
-                          delay: const Duration(milliseconds: 250),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Confirm Password',
-                                style: TextStyle(
-                                  fontFamily: 'Geist Sans',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1E293B),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                height: 58,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: showMismatchError
-                                        ? const Color(0xFFEF4444)
-                                        : _isConfirmPasswordFocused
-                                            ? const Color(0xFF2563EB)
-                                            : const Color(0xFFE2E8F0),
-                                    width: (_isConfirmPasswordFocused || showMismatchError) ? 1.5 : 1.0,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: showMismatchError
-                                          ? const Color(0xFFEF4444).withValues(alpha: 0.06)
-                                          : _isConfirmPasswordFocused
-                                              ? const Color(0xFF2563EB).withValues(alpha: 0.08)
-                                              : const Color(0xFF002E6E).withValues(alpha: 0.02),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 38,
-                                      height: 38,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: const Icon(
-                                        Icons.lock_outline_rounded,
-                                        color: Color(0xFF3F37C9),
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: TextField(
-                                        focusNode: _confirmPasswordFocusNode,
-                                        controller: _confirmPasswordController,
-                                        obscureText: !_isConfirmPasswordVisible,
-                                        onChanged: (_) => setState(() {}),
-                                        style: const TextStyle(
-                                          fontFamily: 'Geist Sans',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15.5,
-                                          color: Color(0xFF0F172A),
-                                        ),
-                                        decoration: const InputDecoration(
-                                          hintText: 'Re-enter your password',
-                                          hintStyle: TextStyle(
-                                            fontFamily: 'Geist Sans',
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 14.5,
-                                            color: Color(0xFF94A3B8),
-                                          ),
-                                          border: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                          disabledBorder: InputBorder.none,
-                                          contentPadding: EdgeInsets.symmetric(vertical: 16),
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        _isConfirmPasswordVisible
-                                            ? Icons.visibility_off_outlined
-                                            : Icons.visibility_outlined,
-                                        color: const Color(0xFF64748B),
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (showMismatchError) ...[
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'Passwords do not match',
-                                  style: TextStyle(
-                                    fontFamily: 'Geist Sans',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
 
                         const Spacer(),
                         const SizedBox(height: 24),
 
-                        // Continue Button
+                        // Login Button
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 300),
                           child: PremiumCTAButton(
-                            text: 'Continue',
+                            text: 'Login',
                             isLoading: _isLoading,
-                            onPressed: _canSubmit ? _handleContinue : null,
+                            onPressed: _canSubmit ? _handleLogin : null,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Forgot Password Link
+                        FadeUpEntrance(
+                          delay: const Duration(milliseconds: 350),
+                          child: Center(
+                            child: TextButton(
+                              onPressed: _handleForgotPassword,
+                              child: const Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2563EB),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),

@@ -7,11 +7,17 @@ import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/states/auth_state.dart';
 import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/biometric_screen.dart';
+import 'package:payout/features/dashboard/presentation/dashboard_shell.dart';
 
 class MPINScreen extends StatefulWidget {
   final AuthRepository? authRepository;
+  final bool isVerificationMode;
 
-  const MPINScreen({super.key, this.authRepository});
+  const MPINScreen({
+    super.key,
+    this.authRepository,
+    this.isVerificationMode = false,
+  });
 
   @override
   State<MPINScreen> createState() => _MPINScreenState();
@@ -42,6 +48,37 @@ class _MPINScreenState extends State<MPINScreen> {
       if (_pin.length == AuthConstants.mpinLength) {
         Future.delayed(const Duration(milliseconds: 300), () async {
           if (!mounted) return;
+
+          if (widget.isVerificationMode) {
+            final validationResult = AuthValidator.validateMPIN(_pin);
+            if (validationResult.isValid) {
+              setState(() {
+                _state = const AuthState(status: AuthStatus.loading);
+              });
+
+              await Future.delayed(const Duration(milliseconds: 500));
+
+              if (!mounted) return;
+
+              setState(() {
+                _state = const AuthState(status: AuthStatus.success);
+              });
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const DashboardShell()),
+                (route) => false,
+              );
+            } else {
+              setState(() {
+                _pin = '';
+                _state = AuthState(
+                  status: AuthStatus.failure,
+                  errorMessage: validationResult.errorMessage ?? 'Invalid MPIN.',
+                );
+              });
+            }
+            return;
+          }
 
           if (!_isConfirmStage) {
             // First stage validation
@@ -258,13 +295,17 @@ class _MPINScreenState extends State<MPINScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Title with dynamic confirm/set stage and gradient word highlight
+                // Title with dynamic confirm/set/verification stage and gradient word highlight
                 Wrap(
                   alignment: WrapAlignment.center,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      _isConfirmStage ? 'Confirm security ' : 'Set security ',
+                      widget.isVerificationMode
+                          ? 'Enter 6-Digit '
+                          : _isConfirmStage
+                              ? 'Confirm security '
+                              : 'Set security ',
                       style: const TextStyle(
                         fontFamily: 'Geist Sans',
                         fontSize: 28,
@@ -295,9 +336,11 @@ class _MPINScreenState extends State<MPINScreen> {
 
                 // Subtitle
                 Text(
-                  _isConfirmStage 
-                      ? 'Re-enter your ${AuthConstants.mpinLength}-digit PIN to confirm.'
-                      : 'Create a secure ${AuthConstants.mpinLength}-digit PIN for instant access.',
+                  widget.isVerificationMode
+                      ? 'Enter your MPIN to continue securely.'
+                      : _isConfirmStage 
+                          ? 'Re-enter your ${AuthConstants.mpinLength}-digit PIN to confirm.'
+                          : 'Create a secure ${AuthConstants.mpinLength}-digit PIN for instant access.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Geist Sans',

@@ -9,6 +9,7 @@ import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/states/auth_state.dart';
 import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
 import 'package:payout/features/auth/presentation/otp_screen.dart';
+import 'package:payout/features/auth/presentation/existing_user_login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -248,168 +249,210 @@ class _LoginScreenState extends State<LoginScreen> {
                         // 1. Email Input
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 180),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _isEmailFocused ? const Color(0xFF00B9F1) : const Color(0xFFE2E8F0),
-                                width: _isEmailFocused ? 1.5 : 1.0,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _isEmailFocused
-                                      ? const Color(0xFF00B9F1).withOpacity(0.06)
-                                      : const Color(0xFF002E6E).withOpacity(0.01),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 12),
-                                Icon(
-                                  Icons.mail_outline_rounded,
-                                  color: const Color(0xFF1F1F1F).withOpacity(0.35),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextField(
-                                    focusNode: _emailFocusNode,
-                                    controller: _emailController,
-                                    onChanged: _checkValidation,
-                                    keyboardType: TextInputType.emailAddress,
-                                    enabled: !showLoading,
-                                    style: const TextStyle(
-                                      fontFamily: 'Geist Sans',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: Color(0xFF1F1F1F),
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter your email',
-                                      hintStyle: TextStyle(
-                                        fontFamily: 'Geist Sans',
-                                        fontWeight: FontWeight.normal,
-                                        fontSize: 14,
-                                        color: const Color(0xFF1F1F1F).withOpacity(0.35),
-                                      ),
-                                      border: InputBorder.none,
-                                      enabledBorder: InputBorder.none,
-                                      focusedBorder: InputBorder.none,
-                                      disabledBorder: InputBorder.none,
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // 2. Separated Phone Inputs
-                        FadeUpEntrance(
-                          delay: const Duration(milliseconds: 200),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Left country code block
-                              Container(
-                                height: 56,
-                                width: 72,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: const Color(0xFFE2E8F0),
-                                    width: 1.0,
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  AuthConstants.countryCode,
-                                  style: const TextStyle(
-                                    fontFamily: 'Geist Sans',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Color(0xFF1F1F1F),
-                                  ),
+                              const Text(
+                                'Email Address',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              // Right phone text field block
-                              Expanded(
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: _isPhoneFocused ? const Color(0xFF00B9F1) : const Color(0xFFE2E8F0),
-                                      width: _isPhoneFocused ? 1.5 : 1.0,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _isPhoneFocused
-                                            ? const Color(0xFF00B9F1).withOpacity(0.06)
-                                            : const Color(0xFF002E6E).withOpacity(0.01),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                              const SizedBox(height: 8),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                height: 58,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: _isEmailFocused
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFFE2E8F0),
+                                    width: _isEmailFocused ? 1.5 : 1.0,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      const SizedBox(width: 12),
-                                      Icon(
-                                        Icons.phone_outlined,
-                                        color: const Color(0xFF1F1F1F).withOpacity(0.35),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _isEmailFocused
+                                          ? const Color(0xFF2563EB).withValues(alpha: 0.08)
+                                          : const Color(0xFF002E6E).withValues(alpha: 0.02),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Icon(
+                                        Icons.mail_outline_rounded,
+                                        color: Color(0xFF3F37C9),
                                         size: 20,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: TextField(
-                                          focusNode: _phoneFocusNode,
-                                          controller: _phoneController,
-                                          onChanged: _checkValidation,
-                                          keyboardType: TextInputType.phone,
-                                          enabled: !showLoading,
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.digitsOnly,
-                                            LengthLimitingTextInputFormatter(AuthConstants.mobileLength),
-                                          ],
-                                          style: const TextStyle(
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextField(
+                                        focusNode: _emailFocusNode,
+                                        controller: _emailController,
+                                        onChanged: _checkValidation,
+                                        keyboardType: TextInputType.emailAddress,
+                                        enabled: !showLoading,
+                                        style: const TextStyle(
+                                          fontFamily: 'Geist Sans',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15.5,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: 'name@example.com',
+                                          hintStyle: TextStyle(
                                             fontFamily: 'Geist Sans',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 16,
-                                            color: Color(0xFF1F1F1F),
-                                            letterSpacing: 1.0,
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 14.5,
+                                            color: Color(0xFF94A3B8),
                                           ),
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter ${AuthConstants.mobileLength}-digit number',
-                                            hintStyle: TextStyle(
-                                              fontFamily: 'Geist Sans',
-                                              fontWeight: FontWeight.normal,
-                                              fontSize: 14,
-                                              color: const Color(0xFF1F1F1F).withOpacity(0.35),
-                                              letterSpacing: 0,
-                                            ),
-                                            border: InputBorder.none,
-                                            enabledBorder: InputBorder.none,
-                                            focusedBorder: InputBorder.none,
-                                            disabledBorder: InputBorder.none,
-                                            contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                                          ),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          disabledBorder: InputBorder.none,
+                                          contentPadding: EdgeInsets.symmetric(vertical: 16),
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 2. Mobile Number Input
+                        FadeUpEntrance(
+                          delay: const Duration(milliseconds: 200),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Mobile Number',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                height: 58,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: _isPhoneFocused
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFFE2E8F0),
+                                    width: _isPhoneFocused ? 1.5 : 1.0,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _isPhoneFocused
+                                          ? const Color(0xFF2563EB).withValues(alpha: 0.08)
+                                          : const Color(0xFF002E6E).withValues(alpha: 0.02),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  children: [
+                                    // Integrated Country Code Block
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('🇮🇳', style: TextStyle(fontSize: 13)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            AuthConstants.countryCode,
+                                            style: const TextStyle(
+                                              fontFamily: 'Geist Sans',
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 14,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      width: 1,
+                                      height: 24,
+                                      color: const Color(0xFFE2E8F0),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(
+                                      Icons.phone_outlined,
+                                      color: Color(0xFF94A3B8),
+                                      size: 19,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextField(
+                                        focusNode: _phoneFocusNode,
+                                        controller: _phoneController,
+                                        onChanged: _checkValidation,
+                                        keyboardType: TextInputType.phone,
+                                        enabled: !showLoading,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(AuthConstants.mobileLength),
+                                        ],
+                                        style: const TextStyle(
+                                          fontFamily: 'Geist Sans',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15.5,
+                                          color: Color(0xFF0F172A),
+                                          letterSpacing: 1.0,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText: 'Enter ${AuthConstants.mobileLength}-digit number',
+                                          hintStyle: const TextStyle(
+                                            fontFamily: 'Geist Sans',
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 14,
+                                            color: Color(0xFF94A3B8),
+                                            letterSpacing: 0,
+                                          ),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          disabledBorder: InputBorder.none,
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -470,6 +513,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             text: 'Send Verification Code',
                             isLoading: showLoading,
                             onPressed: _isValid && !showLoading ? _requestOTP : null,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Already have an account? Login
+                        FadeUpEntrance(
+                          delay: const Duration(milliseconds: 350),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: RichText(
+                                text: TextSpan(
+                                  text: 'Already have an account? ',
+                                  style: TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF1F1F1F).withValues(alpha: 0.6),
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Login',
+                                      style: const TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        color: Color(0xFF2563EB),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ExistingUserLoginScreen(
+                                                authRepository: _authRepository,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
