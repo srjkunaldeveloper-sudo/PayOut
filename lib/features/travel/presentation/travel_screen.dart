@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/travel/presentation/bus_flow.dart';
 import 'package:payout/features/travel/presentation/flight_flow.dart';
 import 'package:payout/features/travel/presentation/hotel_flow.dart';
-import 'package:payout/features/travel/presentation/movie_flow.dart';
 import 'package:payout/features/travel/presentation/my_bookings_screen.dart';
 import 'package:payout/features/travel/presentation/train_flow.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -19,58 +14,10 @@ class TravelScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repository = travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    final repository = travelRepository ?? AppDependencies.instance.travelRepository;
+    final canPop = Navigator.of(context).canPop();
 
-    final List<Map<String, dynamic>> categories = [
-      {
-        'name': 'Flights',
-        'desc': 'Domestic & Int\'l',
-        'icon': Icons.flight_takeoff_rounded,
-        'color': AppColors.primary,
-        'screen': FlightSearchScreen(travelRepository: repository),
-      },
-      {
-        'name': 'Trains',
-        'desc': 'IRCTC Booking',
-        'icon': Icons.train_rounded,
-        'color': Colors.indigo,
-        'screen': TrainSearchScreen(travelRepository: repository),
-      },
-      {
-        'name': 'Buses',
-        'desc': 'AC & Sleeper',
-        'icon': Icons.directions_bus_filled_rounded,
-        'color': AppColors.success,
-        'screen': BusSearchScreen(travelRepository: repository),
-      },
-      {
-        'name': 'Hotels',
-        'desc': 'Luxury & Stays',
-        'icon': Icons.hotel_rounded,
-        'color': Colors.orange,
-        'screen': HotelSearchScreen(travelRepository: repository),
-      },
-      {
-        'name': 'Movies',
-        'desc': 'District Cinemas',
-        'icon': Icons.movie_creation_rounded,
-        'color': Colors.red,
-        'screen': MovieHomeScreen(travelRepository: repository),
-      },
-      {
-        'name': 'My Bookings',
-        'desc': 'Tickets & PNR',
-        'icon': Icons.airplane_ticket_rounded,
-        'color': Colors.teal,
-        'screen': MyBookingsScreen(travelRepository: repository),
-      },
-    ];
-
-    final List<Map<String, String>> popularDestinations = [
+    final List<Map<String, dynamic>> popularDestinations = const [
       {'city': 'Goa', 'desc': 'Sun-kissed beaches & resorts', 'price': 'From ₹3,450'},
       {'city': 'Manali', 'desc': 'Scenic mountains & snow trails', 'price': 'From ₹1,250'},
       {'city': 'Jaipur', 'desc': 'Heritage forts & palaces', 'price': 'From ₹650'},
@@ -78,193 +25,257 @@ class TravelScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        title: 'Travel & Entertainment',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.confirmation_number_outlined, color: AppColors.primary),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MyBookingsScreen(travelRepository: repository)),
-              );
-            },
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Travel',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 40)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hero Visual Banner
-              AppCard(
-                color: AppColors.primary,
-                borderRadius: AppRadius.xxl,
-                padding: const EdgeInsets.all(AppSpacing.s20),
+              // Travel Header / Intro
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Travel smarter',
+                    style: TextStyle(
+                      fontFamily: 'Geist Sans',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF3F37C9),
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Book flights, trains, buses & hotels',
+                    style: TextStyle(
+                      fontFamily: 'Geist Sans',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F1F1F),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Booking Services Grouped Card
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Where are you traveling next?',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Search flights, IRCTC trains, buses, stays & cinema tickets',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12.0,
-                        color: AppColors.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.s16),
-                    InkWell(
+                    _buildTravelItem(
+                      icon: Icons.flight_takeoff_rounded,
+                      title: 'Flights',
+                      subtitle: 'Book domestic & international',
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => FlightSearchScreen(travelRepository: repository)),
+                          MaterialPageRoute(
+                            builder: (context) => FlightSearchScreen(travelRepository: repository),
+                          ),
                         );
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s16, vertical: AppSpacing.s12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(AppRadius.circle),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Search flights, trains, hotels, movies...',
-                                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13.0),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    _buildTravelItem(
+                      icon: Icons.train_rounded,
+                      title: 'Trains',
+                      subtitle: 'Book train tickets',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TrainSearchScreen(travelRepository: repository),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    _buildTravelItem(
+                      icon: Icons.directions_bus_filled_rounded,
+                      title: 'Bus',
+                      subtitle: 'Book AC, Volvo & more',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BusSearchScreen(travelRepository: repository),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    _buildTravelItem(
+                      icon: Icons.hotel_rounded,
+                      title: 'Hotels',
+                      subtitle: 'Stay, offers & discounts',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HotelSearchScreen(travelRepository: repository),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    _buildTravelItem(
+                      icon: Icons.airplane_ticket_rounded,
+                      title: 'My Bookings',
+                      subtitle: 'Tickets & PNR Status',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyBookingsScreen(travelRepository: repository),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.s24),
-
-              // Categories Grid
-              const Text(
-                'Explore Categories',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              const SizedBox(height: AppSpacing.s12),
-
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: categories.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.85,
-                ),
-                itemBuilder: (context, index) {
-                  final cat = categories[index];
-                  final color = cat['color'] as Color;
-
-                  return InkWell(
-                    onTap: () {
-                      if (cat['screen'] != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => cat['screen'] as Widget),
-                        );
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    child: AppCard(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s6, vertical: AppSpacing.s8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.s8),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(cat['icon'] as IconData, color: color, size: 22),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            cat['name'] as String,
-                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            cat['desc'] as String,
-                            style: const TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.textSecondary),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.s24),
+              const SizedBox(height: 28),
 
               // Offers & Deals Card
-              AppCard(
-                color: AppColors.primaryContainer.withValues(alpha: 0.4),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
+                ),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.local_offer_rounded, color: Colors.white, size: 24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.local_offer_rounded, color: Colors.white, size: 20),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Flat 12% OFF on Domestic Flights', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                          Text(
+                            'Flat 12% OFF on Domestic Flights',
+                            style: TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Color(0xFF047857),
+                            ),
+                          ),
                           SizedBox(height: 2),
-                          Text('Use code PAYOUTFLY on checkout • Zero convenience fee', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          Text(
+                            'Use code PAYOUTFLY on checkout • Zero convenience fee',
+                            style: TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontSize: 11,
+                              color: Color(0xFF047857),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.s24),
+              const SizedBox(height: 28),
 
-              // Popular Destinations Section
+              // Popular Getaways Section
               const Text(
                 'Popular Getaways',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                style: TextStyle(
+                  fontFamily: 'Geist Sans',
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F1F1F),
+                ),
               ),
-              const SizedBox(height: AppSpacing.s12),
+              const SizedBox(height: 12),
 
               ...popularDestinations.map((dest) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                  child: AppCard(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -274,19 +285,36 @@ class TravelScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.place_rounded, color: AppColors.primary, size: 20),
+                                child: const Icon(Icons.place_rounded, color: Color(0xFF3F37C9), size: 20),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(dest['city']!, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text(
+                                      dest['city']!,
+                                      style: const TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: Color(0xFF1F1F1F),
+                                      ),
+                                    ),
                                     const SizedBox(height: 2),
-                                    Text(dest['desc']!, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    Text(
+                                      dest['desc']!,
+                                      style: const TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontSize: 11.5,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -296,16 +324,81 @@ class TravelScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           dest['price']!,
-                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                          style: const TextStyle(
+                            fontFamily: 'Geist Sans',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Color(0xFF3F37C9),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 );
               }),
-              const SizedBox(height: AppSpacing.s16),
+              const SizedBox(height: 16),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTravelItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: const Color(0xFF3F37C9), size: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'Geist Sans',
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F1F1F),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontFamily: 'Geist Sans',
+                      fontSize: 11.5,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Color(0xFF3F37C9),
+              size: 13,
+            ),
+          ],
         ),
       ),
     );

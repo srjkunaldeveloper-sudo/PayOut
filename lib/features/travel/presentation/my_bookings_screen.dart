@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
 import 'package:payout/features/travel/shared/services/travel_service.dart';
@@ -33,11 +32,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) setState(() {});
@@ -113,7 +108,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                 children: [
                   Text(
                     '${booking.category} Booking Details',
-                    style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -124,7 +119,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                     child: Text(
                       booking.status,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: booking.status == 'CONFIRMED' ? AppColors.success : AppColors.error,
@@ -175,7 +170,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                       side: const BorderSide(color: AppColors.error),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     ),
-                    child: const Text('Cancel Booking', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.error)),
+                    child: const Text('Cancel Booking', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, color: AppColors.error)),
                   ),
                 ),
               ],
@@ -219,13 +214,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 22),
                   SizedBox(width: 8),
-                  Text('Confirm Cancellation', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text('Confirm Cancellation', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                 ],
               ),
               const SizedBox(height: 6),
               const Text(
                 'Review cancellation fee and estimated refund before confirming.',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
@@ -248,7 +243,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                 ),
                 child: const Text(
                   'Note: This is a demo refund estimate. In production, eligible refunds are credited to the original payment source within 3-5 business days.',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                 ),
               ),
               const SizedBox(height: AppSpacing.s20),
@@ -288,7 +283,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               fontSize: isTotal ? 13.0 : 12.0,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
@@ -297,7 +292,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
           Text(
             value,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               fontSize: isTotal ? 14.0 : 12.0,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
               color: isTotal ? AppColors.primary : AppColors.textPrimary,
@@ -327,7 +322,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                     padding: const EdgeInsets.only(right: 8.0),
                     child: FilterChip(
                       selected: isSelected,
-                      label: Text(cat, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                      label: Text(cat, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                       selectedColor: AppColors.primaryContainer,
                       onSelected: (val) => setState(() => _selectedCategory = cat),
                     ),
@@ -380,7 +375,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
             const SizedBox(height: 12),
             Text(
               'No ${tabIndex == 0 ? 'upcoming' : tabIndex == 1 ? 'completed' : 'cancelled'} bookings found',
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textSecondary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -418,7 +413,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                           const SizedBox(width: 8),
                           Text(
                             booking.category.toUpperCase(),
-                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 11, color: AppColors.primary),
+                            style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 11, color: AppColors.primary),
                           ),
                         ],
                       ),
@@ -430,7 +425,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                         ),
                         child: Text(
                           booking.status,
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
+                          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
                         ),
                       ),
                     ],
@@ -438,12 +433,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                   const SizedBox(height: 8),
                   Text(
                     booking.title,
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     booking.subtitle,
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -451,11 +446,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
                     children: [
                       Text(
                         booking.travelDate,
-                        style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                       ),
                       Text(
                         '₹${booking.totalAmount.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
                       ),
                     ],
                   ),

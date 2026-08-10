@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
+import 'package:payout/core/widgets/mpin/mpin_widgets.dart';
 import 'package:payout/features/auth/constants/auth_constants.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
@@ -10,20 +9,28 @@ import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart
 import 'package:payout/features/auth/presentation/biometric_screen.dart';
 
 class MPINScreen extends StatefulWidget {
-  const MPINScreen({super.key});
+  final AuthRepository? authRepository;
+
+  const MPINScreen({super.key, this.authRepository});
 
   @override
   State<MPINScreen> createState() => _MPINScreenState();
 }
 
 class _MPINScreenState extends State<MPINScreen> {
-  final AuthRepository _authRepository = MockAuthRepository();
+  late final AuthRepository _authRepository;
 
   String _pin = '';
   bool _isConfirmStage = false;
   String _firstPin = '';
   
   AuthState _state = const AuthState(status: AuthStatus.idle);
+
+  @override
+  void initState() {
+    super.initState();
+    _authRepository = widget.authRepository ?? AppDependencies.instance.authRepository;
+  }
 
   void _onKeyPress(String val) {
     if (_pin.length < AuthConstants.mpinLength) {
@@ -108,166 +115,234 @@ class _MPINScreenState extends State<MPINScreen> {
     }
   }
 
-  Widget _buildKey(String value) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(AppSpacing.s4),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _onKeyPress(value),
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            child: Container(
-              height: 56,
-              alignment: Alignment.center,
-              child: Text(
-                value,
-                style: AppTypography.titleLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final showLoading = _state.status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: ''),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24, vertical: AppSpacing.s12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: AppSpacing.s16),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.lock_outline_rounded,
-                    color: AppColors.primary,
-                    size: 24,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s24),
-              Text(
-                _isConfirmStage ? 'Confirm security MPIN' : 'Set security MPIN',
-                style: AppTypography.displaySmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  fontSize: 24.0,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              Text(
-                _isConfirmStage 
-                    ? 'Re-enter your ${AuthConstants.mpinLength}-digit PIN to confirm.'
-                    : 'Create a secure ${AuthConstants.mpinLength}-digit PIN for instant access.',
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s32),
-
-              if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
-                AuthErrorWidget(
-                  title: 'PIN Match Error',
-                  description: _state.errorMessage!,
-                  onDismiss: () {
-                    setState(() {
-                      _state = const AuthState(status: AuthStatus.idle);
-                    });
-                  },
-                ),
-                const SizedBox(height: AppSpacing.s24),
-              ],
-              
-              if (showLoading)
-                const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                )
-              else
-                // Indicators
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: MpinBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 8),
+                // Top navigation back button
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(AuthConstants.mpinLength, (index) {
-                    final isFilled = index < _pin.length;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.s8),
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: isFilled ? AppColors.primary : Colors.transparent,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isFilled ? AppColors.primary : AppColors.divider,
-                          width: 2.0,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1.0,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Color(0xFF1F1F1F),
+                          size: 18,
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                  ],
                 ),
-              
-              const Spacer(),
-              
-              // Keypad
-              Column(
-                children: [
-                  Row(
-                    children: [_buildKey('1'), _buildKey('2'), _buildKey('3')],
-                  ),
-                  Row(
-                    children: [_buildKey('4'), _buildKey('5'), _buildKey('6')],
-                  ),
-                  Row(
-                    children: [_buildKey('7'), _buildKey('8'), _buildKey('9')],
-                  ),
-                  Row(
+                const SizedBox(height: 12),
+                
+                // Centered concentric security/lock visual
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      const Expanded(child: SizedBox()),
-                      _buildKey('0'),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.all(AppSpacing.s4),
-                          child: InkWell(
-                            onTap: _onBackspace,
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            child: Container(
-                              height: 56,
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.backspace_outlined,
-                                color: AppColors.textSecondary,
-                                size: 20,
-                              ),
-                            ),
+                      // Concentric Orbit 1 (large outer)
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00B9F1).withValues(alpha: 0.08),
+                            width: 1.0,
                           ),
+                        ),
+                      ),
+                      // Concentric Orbit 2 (middle)
+                      Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                            width: 1.0,
+                          ),
+                        ),
+                      ),
+                      // Tiny Orbit dots
+                      Positioned(
+                        top: 20,
+                        left: 15,
+                        child: Container(
+                          width: 4,
+                          height: 4,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF4CC9F0),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 15,
+                        right: 12,
+                        child: Container(
+                          width: 5,
+                          height: 5,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF3F37C9),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 50,
+                        right: 4,
+                        child: Container(
+                          width: 3.5,
+                          height: 3.5,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF4895EF),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      // Central Gradient Circle with Lock Icon
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF3F37C9),
+                              Color(0xFF4895EF),
+                              Color(0xFF4CC9F0),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF3F37C9).withValues(alpha: 0.24),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.lock_rounded,
+                          color: Colors.white,
+                          size: 26,
                         ),
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 16),
+
+                // Title with dynamic confirm/set stage and gradient word highlight
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      _isConfirmStage ? 'Confirm security ' : 'Set security ',
+                      style: const TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          Color(0xFF3F37C9),
+                          Color(0xFF4895EF),
+                        ],
+                      ).createShader(Offset.zero & bounds.size),
+                      child: const Text(
+                        'MPIN',
+                        style: TextStyle(
+                          fontFamily: 'Geist Sans',
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+
+                // Subtitle
+                Text(
+                  _isConfirmStage 
+                      ? 'Re-enter your ${AuthConstants.mpinLength}-digit PIN to confirm.'
+                      : 'Create a secure ${AuthConstants.mpinLength}-digit PIN for instant access.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Geist Sans',
+                    fontSize: 14,
+                    color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Auth Error widget if creation failed
+                if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
+                  AuthErrorWidget(
+                    title: 'PIN Match Error',
+                    description: _state.errorMessage!,
+                    onDismiss: () {
+                      setState(() {
+                        _state = const AuthState(status: AuthStatus.idle);
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
                 ],
-              ),
-              const SizedBox(height: AppSpacing.s16),
-            ],
+
+                // MPIN Indicators
+                PremiumMpinIndicator(
+                  pinLength: _pin.length,
+                  maxLength: AuthConstants.mpinLength,
+                  isLoading: showLoading,
+                ),
+                
+                const Spacer(),
+
+                // Numeric Keypad
+                PremiumMpinKeypad(
+                  onKeyPress: _onKeyPress,
+                  onBackspace: _onBackspace,
+                ),
+
+                const Spacer(),
+
+                // Security Footer
+                const MpinSecurityFooter(),
+              ],
+            ),
           ),
         ),
       ),

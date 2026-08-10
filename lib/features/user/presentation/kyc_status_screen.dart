@@ -2,19 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/user/presentation/kyc_flow_screen.dart';
 
 class KYCStatusScreen extends StatefulWidget {
-  const KYCStatusScreen({super.key});
+  final UserRepository? userRepository;
+
+  const KYCStatusScreen({super.key, this.userRepository});
 
   @override
   State<KYCStatusScreen> createState() => _KYCStatusScreenState();
 }
 
 class _KYCStatusScreenState extends State<KYCStatusScreen> {
-  final UserRepository _userRepository = MockUserRepository();
+  late final UserRepository _userRepository;
 
   KYCModel? _kyc;
   bool _isLoading = true;
@@ -23,6 +26,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
   @override
   void initState() {
     super.initState();
+    _userRepository = widget.userRepository ?? AppDependencies.instance.userRepository;
     _loadKYCStatus();
   }
 
@@ -112,7 +116,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
                               Text(
                                 isVerified ? 'KYC Verified' : (isPending ? 'Verification Under Review' : 'Action Required'),
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16.0,
                                   color: AppColors.textPrimary,
@@ -124,7 +128,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
                                     ? 'Verified on ${kyc.verifiedDate ?? '12 March 2024'}'
                                     : (isPending ? 'Estimated completion: 2 hours' : 'Please submit valid documentation.'),
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 11.0,
                                   color: AppColors.textSecondary,
                                 ),
@@ -149,7 +153,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
                             Expanded(
                               child: Text(
                                 kyc.rejectionReason!,
-                                style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.error),
+                                style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.error),
                               ),
                             ),
                           ],
@@ -162,7 +166,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
               const SizedBox(height: AppSpacing.s24),
 
               // 2. Verification Checklist
-              const Text('Verification Stages', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Verification Stages', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s12),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -203,7 +207,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
               const SizedBox(height: AppSpacing.s24),
 
               // 3. Unlocked Benefits
-              const Text('Unlocked Account Benefits', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Unlocked Account Benefits', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s12),
               AppCard(
                 child: Column(
@@ -284,13 +288,13 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
       title: Text(
         title,
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist Sans',
           fontWeight: FontWeight.w600,
           fontSize: 13,
           color: isCompleted ? AppColors.textPrimary : AppColors.textSecondary,
         ),
       ),
-      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
     );
   }
 
@@ -301,8 +305,8 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
         children: [
           Icon(icon, color: AppColors.primary, size: 20),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary))),
-          Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary)),
+          Expanded(child: Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary))),
+          Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary)),
         ],
       ),
     );

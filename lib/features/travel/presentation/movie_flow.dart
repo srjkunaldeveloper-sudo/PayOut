@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -41,11 +40,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
     _fetchMovies();
   }
 
@@ -79,9 +74,9 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                 child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Select Your City', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Select Your City', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Theatres and showtimes will be customized for your city.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Theatres and showtimes will be customized for your city.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               Wrap(
                 spacing: 8,
@@ -89,7 +84,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                 children: _cities.map((city) {
                   final isSelected = _selectedCity == city;
                   return ChoiceChip(
-                    label: Text(city, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                    label: Text(city, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                     selected: isSelected,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) {
@@ -127,7 +122,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
             icon: const Icon(Icons.location_on_rounded, size: 16, color: AppColors.primary),
             label: Text(
               _selectedCity,
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
             ),
           ),
         ],
@@ -141,14 +136,14 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
               child: Row(
                 children: [
                   ChoiceChip(
-                    label: const Text('Now Showing', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text('Now Showing', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold)),
                     selected: _nowShowing,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _nowShowing = true),
                   ),
                   const SizedBox(width: 8),
                   ChoiceChip(
-                    label: const Text('Coming Soon', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text('Coming Soon', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold)),
                     selected: !_nowShowing,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _nowShowing = false),
@@ -166,7 +161,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                   ..._languages.map((l) => Padding(
                         padding: const EdgeInsets.only(right: 6.0),
                         child: FilterChip(
-                          label: Text(l, style: const TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                          label: Text(l, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                           selected: _selectedLanguage == l,
                           selectedColor: AppColors.primaryContainer,
                           onSelected: (val) => setState(() => _selectedLanguage = l),
@@ -176,7 +171,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                   ..._genres.map((g) => Padding(
                         padding: const EdgeInsets.only(right: 6.0),
                         child: FilterChip(
-                          label: Text(g, style: const TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                          label: Text(g, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                           selected: _selectedGenre == g,
                           selectedColor: AppColors.primaryContainer,
                           onSelected: (val) => setState(() => _selectedGenre = g),
@@ -192,7 +187,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : filtered.isEmpty
-                      ? const Center(child: Text('No movies matching criteria', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                      ? const Center(child: Text('No movies matching criteria', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                       : ListView.builder(
                           padding: const EdgeInsets.all(AppSpacing.s20),
                           itemCount: filtered.length,
@@ -237,12 +232,12 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                                               children: [
                                                 Text(
                                                   movie.title,
-                                                  style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                                                  style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
                                                 ),
                                                 const SizedBox(height: 3),
                                                 Text(
                                                   '${movie.language} • ${movie.genre}',
-                                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                                                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                                                 ),
                                                 const SizedBox(height: 4),
                                                 Row(
@@ -251,19 +246,19 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                                                     const SizedBox(width: 3),
                                                     Text(
                                                       '${movie.rating} / 10',
-                                                      style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
+                                                      style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12),
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Text(
                                                       '(${movie.votes} votes)',
-                                                      style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                                                      style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                                                     ),
                                                   ],
                                                 ),
                                                 const SizedBox(height: 6),
                                                 Text(
                                                   '${movie.duration} • Released: ${movie.releaseDate}',
-                                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                                                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                                                 ),
                                               ],
                                             ),
@@ -287,7 +282,7 @@ class _MovieHomeScreenState extends State<MovieHomeScreen> {
                                                         color: AppColors.divider.withValues(alpha: 0.5),
                                                         borderRadius: BorderRadius.circular(4),
                                                       ),
-                                                      child: Text(fmt, style: const TextStyle(fontFamily: 'Inter', fontSize: 9, fontWeight: FontWeight.bold)),
+                                                      child: Text(fmt, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 9, fontWeight: FontWeight.bold)),
                                                     ))
                                                 .toList(),
                                           ),
@@ -371,21 +366,21 @@ class MovieDetailScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(movie.title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(movie.title, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 4),
-                          Text('${movie.language} • ${movie.genre}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          Text('${movie.language} • ${movie.genre}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                           const SizedBox(height: 6),
                           Row(
                             children: [
                               const Icon(Icons.star_rounded, size: 18, color: Colors.amber),
                               const SizedBox(width: 4),
-                              Text('${movie.rating}/10', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                              Text('${movie.rating}/10', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                               const SizedBox(width: 6),
-                              Text('(${movie.votes} votes)', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                              Text('(${movie.votes} votes)', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                             ],
                           ),
                           const SizedBox(height: 6),
-                          Text('${movie.duration} • ${movie.releaseDate}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          Text('${movie.duration} • ${movie.releaseDate}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                         ],
                       ),
                     ),
@@ -395,7 +390,7 @@ class MovieDetailScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.s20),
 
               // Available Formats
-              const Text('Available Formats', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Available Formats', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
               Wrap(
                 spacing: 8,
@@ -406,30 +401,30 @@ class MovieDetailScreen extends StatelessWidget {
                             color: AppColors.primaryContainer,
                             borderRadius: BorderRadius.circular(AppRadius.xs),
                           ),
-                          child: Text(f, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                          child: Text(f, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
                         ))
                     .toList(),
               ),
               const SizedBox(height: AppSpacing.s20),
 
               // Synopsis
-              const Text('Synopsis', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Synopsis', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s6),
               Text(
                 movie.synopsis.isNotEmpty ? movie.synopsis : 'Experience the cinematic spectacle on the grand screen with enhanced IMAX laser projection and immersive Dolby Atmos spatial acoustics.',
-                style: const TextStyle(fontFamily: 'Inter', fontSize: 12, height: 1.5, color: AppColors.textSecondary),
+                style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, height: 1.5, color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.s20),
 
               // Cast
-              const Text('Starring Cast', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Starring Cast', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: movie.cast
                     .map((actor) => Chip(
-                          label: Text(actor, style: const TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                          label: Text(actor, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                           backgroundColor: Colors.white,
                           side: const BorderSide(color: AppColors.divider),
                         ))
@@ -541,7 +536,7 @@ class _MovieShowtimeSelectionScreenState extends State<MovieShowtimeSelectionScr
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ChoiceChip(
-                      label: Text(d, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                      label: Text(d, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                       selected: isSelected,
                       selectedColor: AppColors.primaryContainer,
                       onSelected: (val) {
@@ -560,7 +555,7 @@ class _MovieShowtimeSelectionScreenState extends State<MovieShowtimeSelectionScr
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _theatres.isEmpty
-                      ? const Center(child: Text('No theatres available in this city', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                      ? const Center(child: Text('No theatres available in this city', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                       : ListView.builder(
                           padding: const EdgeInsets.all(AppSpacing.s20),
                           itemCount: _theatres.length,
@@ -577,13 +572,13 @@ class _MovieShowtimeSelectionScreenState extends State<MovieShowtimeSelectionScr
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
-                                          child: Text(theatre.name, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                                          child: Text(theatre.name, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                                         ),
-                                        Text(theatre.distance, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                        Text(theatre.distance, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                       ],
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(theatre.location, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                    Text(theatre.location, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                     const SizedBox(height: 12),
 
                                     // Showtimes Chips
@@ -615,9 +610,9 @@ class _MovieShowtimeSelectionScreenState extends State<MovieShowtimeSelectionScr
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(show.time, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                                                Text(show.time, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                                                 const SizedBox(height: 2),
-                                                Text('${show.format} • ₹${show.pricePerSeat.toInt()}', style: const TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.textSecondary)),
+                                                Text('${show.format} • ₹${show.pricePerSeat.toInt()}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 9, color: AppColors.textSecondary)),
                                               ],
                                             ),
                                           ),
@@ -725,8 +720,8 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(widget.theatre.name, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
-                  Text('${widget.date}, ${widget.show.time}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                  Text(widget.theatre.name, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text('${widget.date}, ${widget.show.time}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                 ],
               ),
             ),
@@ -752,7 +747,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                           const SizedBox(height: 6),
                           const Text(
                             'SCREEN THIS WAY',
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 9, letterSpacing: 2, color: AppColors.textSecondary),
+                            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 9, letterSpacing: 2, color: AppColors.textSecondary),
                           ),
                           const SizedBox(height: AppSpacing.s24),
 
@@ -770,7 +765,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                                     width: 20,
                                     child: Text(
                                       rowLetter,
-                                      style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                                      style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
                                     ),
                                   ),
                                   ...rowSeats.map((seat) {
@@ -803,7 +798,7 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                                           child: Text(
                                             seat.number.toString(),
                                             style: TextStyle(
-                                              fontFamily: 'Inter',
+                                              fontFamily: 'Geist Sans',
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
                                               color: isSelected ? Colors.white : (seat.isAvailable ? AppColors.textPrimary : Colors.grey.shade600),
@@ -840,11 +835,11 @@ class _CinemaSeatSelectionScreenState extends State<CinemaSeatSelectionScreen> {
                     children: [
                       Text(
                         _selectedSeats.isEmpty ? 'Select Seats' : 'Seats: ${_selectedSeats.map((s) => s.id).join(', ')}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       Text(
                         '₹${total.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -983,8 +978,8 @@ class _MovieTicketReviewScreenState extends State<MovieTicketReviewScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
-          Text(value, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(value, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
         ],
       ),
     );
@@ -1011,11 +1006,11 @@ class _MovieTicketReviewScreenState extends State<MovieTicketReviewScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.movie.title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(widget.movie.title, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                       const SizedBox(height: 2),
-                      Text('${widget.theatre.name} • ${widget.show.format}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                      Text('${widget.theatre.name} • ${widget.show.format}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                       const SizedBox(height: 2),
-                      Text('${widget.date}, ${widget.show.time} • Seats: $seatIds', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                      Text('${widget.date}, ${widget.show.time} • Seats: $seatIds', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
                       const Divider(color: AppColors.divider),
                       const SizedBox(height: 8),
@@ -1032,7 +1027,7 @@ class _MovieTicketReviewScreenState extends State<MovieTicketReviewScreen> {
                 const SizedBox(height: AppSpacing.s20),
 
                 // Contact Details Form
-                const Text('Contact Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Contact Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(

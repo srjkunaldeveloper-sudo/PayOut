@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -39,11 +38,7 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
   }
 
   @override
@@ -100,53 +95,185 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Train Reservation'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Train Reservation',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 40)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppCard(
+                // Search Inputs Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
-                      AppTextField(
-                        controller: _fromController,
-                        labelText: 'From Station',
-                        hintText: 'e.g. New Delhi (NDLS)',
-                        prefix: const Icon(Icons.train_rounded, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin station is required' : null,
+                      Stack(
+                        alignment: Alignment.centerRight,
+                        children: [
+                          Column(
+                            children: [
+                              AppTextField(
+                                controller: _fromController,
+                                labelText: 'From Station',
+                                hintText: 'e.g. New Delhi (NDLS)',
+                                prefix: const Icon(Icons.train_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin station is required' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              AppTextField(
+                                controller: _toController,
+                                labelText: 'To Station',
+                                hintText: 'e.g. Mumbai Central (MMCT)',
+                                prefix: const Icon(Icons.location_on_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination station is required' : null,
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            right: 12,
+                            top: 42,
+                            child: GestureDetector(
+                              onTap: () {
+                                final temp = _fromController.text;
+                                _fromController.text = _toController.text;
+                                _toController.text = temp;
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: const Icon(
+                                  Icons.swap_vert_rounded,
+                                  color: Color(0xFF3F37C9),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.s12),
-                      AppTextField(
-                        controller: _toController,
-                        labelText: 'To Station',
-                        hintText: 'e.g. Mumbai Central (MMCT)',
-                        prefix: const Icon(Icons.location_on_outlined, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination station is required' : null,
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
                       // Journey Date
                       InkWell(
                         onTap: () => _selectDate(context),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: 'Date of Journey',
-                            prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: Text(
-                            '${_journeyDate.day}/${_journeyDate.month}/${_journeyDate.year}',
-                            style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Date of Journey',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_journeyDate.day}/${_journeyDate.month}/${_journeyDate.year}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Geist Sans',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
                       // Passengers & Class
                       Row(
@@ -156,12 +283,25 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                               initialValue: _passengers,
                               items: List.generate(
                                 6,
-                                (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1} Pax', style: const TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1} Pax', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)),
+                                ),
                               ),
                               onChanged: (val) => setState(() => _passengers = val ?? 1),
                               decoration: InputDecoration(
                                 labelText: 'Passengers',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -170,12 +310,25 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                             child: DropdownButtonFormField<String>(
                               initialValue: _selectedClass,
                               items: _classes
-                                  .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontFamily: 'Inter', fontSize: 13))))
+                                  .map((c) => DropdownMenuItem(
+                                        value: c,
+                                        child: Text(c, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)),
+                                      ))
                                   .toList(),
                               onChanged: (val) => setState(() => _selectedClass = val ?? 'All Classes'),
                               decoration: InputDecoration(
                                 labelText: 'Quota / Class',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -184,15 +337,14 @@ class _TrainSearchScreenState extends State<TrainSearchScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s24),
+                const SizedBox(height: 28),
 
                 // Search CTA
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                    text: 'Search Trains',
-                    onPressed: _submitSearch,
-                  ),
+                PrimaryButton(
+                  text: 'Search Trains',
+                  height: 56,
+                  iconRight: Icons.arrow_forward_rounded,
+                  onPressed: _submitSearch,
                 ),
               ],
             ),
@@ -268,7 +420,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 6.0),
                     child: ChoiceChip(
-                      label: Text(c, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                      label: Text(c, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                       selected: isSelected,
                       selectedColor: AppColors.primaryContainer,
                       onSelected: (val) => setState(() => _selectedClassFilter = c),
@@ -283,7 +435,7 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : filtered.isEmpty
-                      ? const Center(child: Text('No trains found on this route', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                      ? const Center(child: Text('No trains found on this route', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                       : ListView.builder(
                           padding: const EdgeInsets.all(AppSpacing.s20),
                           itemCount: filtered.length,
@@ -313,9 +465,9 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(train.trainName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(train.trainName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                       const SizedBox(height: 2),
-                      Text('Train #${train.trainNumber} • Runs: ${train.runningDays.join(', ')}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      Text('Train #${train.trainNumber} • Runs: ${train.runningDays.join(', ')}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -328,16 +480,16 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(train.departureTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(train.from, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    Text(train.departureTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(train.from, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 ),
-                Text(train.duration, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                Text(train.duration, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(train.arrivalTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(train.to, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    Text(train.arrivalTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(train.to, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 ),
               ],
@@ -385,15 +537,15 @@ class _TrainResultsScreenState extends State<TrainResultsScreen> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(cls.className, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+                            Text(cls.className, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
                             const SizedBox(width: 6),
-                            Text('₹${cls.fare.toInt()}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                            Text('₹${cls.fare.toInt()}', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                           ],
                         ),
                         const SizedBox(height: 2),
                         Text(
                           cls.status,
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
+                          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
                         ),
                       ],
                     ),
@@ -477,9 +629,9 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Train Reservation', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Train Reservation', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Authorize train reservation via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Authorize train reservation via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -575,13 +727,13 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
             ),
           ),
         ],
@@ -610,14 +762,14 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.train.trainName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(widget.train.trainName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 2),
-                          Text('Class ${widget.selectedClass.className} • ${widget.selectedClass.status}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                          Text('Class ${widget.selectedClass.className} • ${widget.selectedClass.status}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                       Text(
                         '₹${widget.totalFare.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -625,7 +777,7 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
                 const SizedBox(height: AppSpacing.s20),
 
                 // Passenger Form
-                const Text('Passenger Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Passenger Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(
@@ -660,9 +812,9 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
                       child: DropdownButtonFormField<String>(
                         initialValue: _gender,
                         items: const [
-                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                         ],
                         onChanged: (val) => setState(() => _gender = val ?? 'Male'),
                         decoration: InputDecoration(
@@ -677,7 +829,7 @@ class _TrainPassengerAndReviewScreenState extends State<TrainPassengerAndReviewS
 
                 DropdownButtonFormField<String>(
                   initialValue: _berthPreference,
-                  items: _berths.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontFamily: 'Inter', fontSize: 13)))).toList(),
+                  items: _berths.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)))).toList(),
                   onChanged: (val) => setState(() => _berthPreference = val ?? 'No Preference'),
                   decoration: InputDecoration(
                     labelText: 'Berth Preference',

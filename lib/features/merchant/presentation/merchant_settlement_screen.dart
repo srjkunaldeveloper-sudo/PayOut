@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
 import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 import 'package:payout/features/merchant/repositories/merchant_repository.dart';
@@ -35,8 +36,8 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
   @override
   void initState() {
     super.initState();
-    _merchantRepo = widget.merchantRepository ?? MockMerchantRepository();
-    _bankAccountRepo = widget.bankAccountRepository ?? MockBankAccountRepository();
+    _merchantRepo = widget.merchantRepository ?? AppDependencies.instance.merchantRepository;
+    _bankAccountRepo = widget.bankAccountRepository ?? AppDependencies.instance.bankAccountRepository;
     _loadSettlementData();
   }
 
@@ -111,9 +112,9 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s16),
-                const Text('Review Settlement Request', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text('Review Settlement Request', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 4),
-                const Text('Transfer outstanding merchant sales to your bank account.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                const Text('Transfer outstanding merchant sales to your bank account.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                 const SizedBox(height: AppSpacing.s16),
                 AppCard(
                   padding: const EdgeInsets.all(AppSpacing.s16),
@@ -191,13 +192,13 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13 : 12, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13 : 12, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 15 : 12, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 15 : 12, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -234,17 +235,17 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                           children: [
                             const Text(
                               'Available Settlement Balance',
-                              style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.primaryLight),
+                              style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.primaryLight),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               '₹${balance.toStringAsFixed(2)}',
-                              style: const TextStyle(fontFamily: 'Inter', fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                             const SizedBox(height: 8),
                             const Text(
                               'Funds collected via Store QR & Customer Payments ready for transfer.',
-                              style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                              style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.primaryLight),
                             ),
                           ],
                         ),
@@ -254,7 +255,7 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                       // Destination Bank Account
                       const Text(
                         'Destination Bank Account',
-                        style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                       const SizedBox(height: AppSpacing.s12),
                       if (_bankAccounts.isEmpty)
@@ -264,7 +265,7 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                               Icon(Icons.account_balance_rounded, color: AppColors.primary),
                               SizedBox(width: 12),
                               Expanded(
-                                child: Text('No linked bank account found. Link an account to settle.', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                                child: Text('No linked bank account found. Link an account to settle.', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                               ),
                             ],
                           ),
@@ -296,7 +297,7 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                                         alignment: Alignment.center,
                                         child: Text(
                                           bank.bankName.isNotEmpty ? bank.bankName[0] : 'B',
-                                          style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                                          style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, color: AppColors.primary),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -304,9 +305,9 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(bank.bankName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                                            Text(bank.bankName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                                             const SizedBox(height: 2),
-                                            Text('IFSC: ${bank.ifsc} • ${bank.maskedAccountNumber}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                            Text('IFSC: ${bank.ifsc} • ${bank.maskedAccountNumber}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                           ],
                                         ),
                                       ),
@@ -326,7 +327,7 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
                       // Settlement Amount
                       const Text(
                         'Settlement Amount',
-                        style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                       const SizedBox(height: AppSpacing.s12),
                       TextFormField(
@@ -377,7 +378,7 @@ class _MerchantSettlementScreenState extends State<MerchantSettlementScreen> {
 
   Widget _buildQuickAmountChip(String label, double amount) {
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+      label: Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
       backgroundColor: AppColors.primaryLight.withValues(alpha: 0.5),
       onPressed: () => _onQuickAmountSelected(amount),
     );

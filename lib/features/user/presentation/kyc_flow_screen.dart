@@ -2,21 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/user/validators/user_validator.dart';
 
 class KYCFlowScreen extends StatefulWidget {
-  const KYCFlowScreen({super.key});
+  final UserRepository? userRepository;
+  final BankAccountRepository? bankAccountRepository;
+
+  const KYCFlowScreen({
+    super.key,
+    this.userRepository,
+    this.bankAccountRepository,
+  });
 
   @override
   State<KYCFlowScreen> createState() => _KYCFlowScreenState();
 }
 
 class _KYCFlowScreenState extends State<KYCFlowScreen> {
-  final UserRepository _userRepository = MockUserRepository();
-  final BankAccountRepository _bankAccountRepository = MockBankAccountRepository();
+  late final UserRepository _userRepository;
+  late final BankAccountRepository _bankAccountRepository;
 
   int _currentStep = 0;
   bool _isSubmitting = false;
@@ -42,6 +50,8 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
   @override
   void initState() {
     super.initState();
+    _userRepository = widget.userRepository ?? AppDependencies.instance.userRepository;
+    _bankAccountRepository = widget.bankAccountRepository ?? AppDependencies.instance.bankAccountRepository;
     _loadInitialData();
   }
 
@@ -173,7 +183,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
               const Text(
                 'KYC Verified Successfully!',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -184,7 +194,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
                 'Your identity has been authenticated. You now have full access to higher transaction limits and withdrawal services.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -231,9 +241,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
                     children: [
                       Text(
                         'Step ${_currentStep + 1} of 5: ${stepTitles[_currentStep]}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                       ),
-                      Text('${((_currentStep + 1) / 5 * 100).toInt()}%', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary)),
+                      Text('${((_currentStep + 1) / 5 * 100).toInt()}%', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textSecondary)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -313,9 +323,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Enter Personal Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Enter Personal Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 4),
-        const Text('As per official government identification records.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        const Text('As per official government identification records.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s20),
         AppTextField(
           controller: _nameController,
@@ -347,9 +357,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Permanent Account Number (PAN)', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Permanent Account Number (PAN)', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 4),
-        const Text('Mandatory for all financial and banking operations in India.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        const Text('Mandatory for all financial and banking operations in India.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s20),
         AppTextField(
           controller: _panController,
@@ -367,7 +377,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
               Expanded(
                 child: Text(
                   'Your PAN card will be verified against the Income Tax database instantly.',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textPrimary),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textPrimary),
                 ),
               ),
             ],
@@ -384,13 +394,13 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Proof of Identity', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Select Proof of Identity', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 4),
-        const Text('Choose one valid government issued identity proof.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        const Text('Choose one valid government issued identity proof.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s16),
         DropdownButtonFormField<String>(
           value: _selectedDocType,
-          items: docs.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontFamily: 'Inter', fontSize: 13)))).toList(),
+          items: docs.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)))).toList(),
           onChanged: (val) {
             if (val != null) {
               setState(() {
@@ -411,7 +421,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
           prefix: const Icon(Icons.badge_outlined, size: 20),
         ),
         const SizedBox(height: AppSpacing.s20),
-        const Text('Document Photos (Demo Simulation)', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+        const Text('Document Photos (Demo Simulation)', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
         const SizedBox(height: AppSpacing.s12),
         Row(
           children: [
@@ -447,8 +457,8 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
           children: [
             Icon(isSelected ? Icons.check_circle_rounded : Icons.upload_file_rounded, color: isSelected ? AppColors.success : AppColors.textSecondary, size: 28),
             const SizedBox(height: 6),
-            Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold)),
-            Text(isSelected ? 'Uploaded ✓' : 'Tap to select', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: isSelected ? AppColors.success : AppColors.textSecondary)),
+            Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(isSelected ? 'Uploaded ✓' : 'Tap to select', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: isSelected ? AppColors.success : AppColors.textSecondary)),
           ],
         ),
       ),
@@ -460,9 +470,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Bank Account Verification', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Bank Account Verification', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 4),
-        const Text('Penny drop verification ensures seamless wallet withdrawals.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        const Text('Penny drop verification ensures seamless wallet withdrawals.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s20),
         AppCard(
           child: Row(
@@ -480,9 +490,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_verifiedBank, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(_verifiedBank, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(height: 2),
-                    const Text('Penny Drop Verified ✓', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.success, fontWeight: FontWeight.bold)),
+                    const Text('Penny Drop Verified ✓', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.success, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -500,9 +510,9 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Review Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Review Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 4),
-        const Text('Please check your details carefully before final submission.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        const Text('Please check your details carefully before final submission.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s20),
         AppCard(
           child: Column(
@@ -529,12 +539,12 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 12)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
             ),
           ),
         ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:payout/core/di/app_dependencies.dart';
+import 'package:payout/core/error/error_message_mapper.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
@@ -7,25 +9,28 @@ import 'package:payout/features/wallet/validators/wallet_validator.dart';
 import 'package:payout/features/wallet/models/wallet_models.dart';
 import 'package:payout/features/wallet/repositories/wallet_repository.dart';
 import 'package:payout/features/wallet/services/wallet_logger.dart';
-import 'package:payout/features/wallet/dummy/dummy_wallet_data.dart';
 
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key});
+  final WalletRepository? walletRepository;
+
+  const WalletScreen({super.key, this.walletRepository});
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  final WalletRepository _walletRepository = MockWalletRepository();
+  late final WalletRepository _walletRepository;
 
   WalletModel? _walletModel;
   List<WalletTransactionModel> _transactions = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _walletRepository = widget.walletRepository ?? AppDependencies.instance.walletRepository;
     _loadWalletData();
     WalletLogger.logWalletOpened();
   }
@@ -33,15 +38,25 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _loadWalletData() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
-    final wallet = await _walletRepository.getWallet();
-    final txns = await _walletRepository.getTransactions();
-    if (mounted) {
-      setState(() {
-        _walletModel = wallet;
-        _transactions = txns;
-        _isLoading = false;
-      });
+    try {
+      final wallet = await _walletRepository.getWallet();
+      final txns = await _walletRepository.getTransactions();
+      if (mounted) {
+        setState(() {
+          _walletModel = wallet;
+          _transactions = txns;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = ErrorMessageMapper.map(e, fallback: 'Unable to load wallet details.');
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -78,7 +93,7 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
               const SizedBox(height: AppSpacing.s16),
               Text(
-                'Add money to wallet',
+                'Top-up Wallet',
                 style: AppTypography.headlineSmall.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -86,60 +101,45 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
               const SizedBox(height: AppSpacing.s8),
               Text(
-                'Enter the amount to add from your linked account. (Limit: ${WalletConstants.currencySymbol}${WalletConstants.minimumAddMoney} - ${WalletConstants.currencySymbol}${WalletConstants.maximumAddMoney})',
-                style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                'Select or enter amount to add to your Payout Wallet.',
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.s24),
-              TextField(
+              TextFormField(
                 keyboardType: TextInputType.number,
-                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Amount (₹)',
+                  hintText: 'e.g. 500',
+                  prefixIcon: Icon(Icons.currency_rupee, color: AppColors.primary),
+                ),
                 onChanged: (val) {
                   addedAmount = double.tryParse(val);
                 },
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-                decoration: const InputDecoration(
-                  prefixText: '₹ ',
-                  hintText: '0.00',
-                ),
+              ),
+              const SizedBox(height: AppSpacing.s16),
+              Wrap(
+                spacing: AppSpacing.s8,
+                children: WalletConstants.defaultQuickAmounts.map((amt) {
+                  return ActionChip(
+                    label: Text('+₹$amt'),
+                    backgroundColor: AppColors.surface,
+                    onPressed: () {
+                      addedAmount = amt.toDouble();
+                      Navigator.pop(context);
+                      _executeTopUp(amt.toDouble());
+                    },
+                  );
+                }).toList(),
               ),
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Add Funds',
-                  onPressed: () async {
-                    final amount = addedAmount ?? 0.0;
-                    final validation = WalletValidator.validateAddMoney(amount);
-                    final messenger = ScaffoldMessenger.of(context);
-
-                    if (validation.isValid) {
+                  text: 'Proceed to Pay',
+                  onPressed: () {
+                    if (addedAmount != null) {
                       Navigator.pop(context);
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      
-                      final success = await _walletRepository.addMoney(amount);
-                      if (success) {
-                        await _loadWalletData();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text('₹${amount.toStringAsFixed(2)} added to your wallet.'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                      }
-                    } else {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(validation.errorMessage ?? 'Invalid amount entered.'),
-                          backgroundColor: AppColors.error,
-                        ),
-                      );
+                      _executeTopUp(addedAmount!);
                     }
                   },
                 ),
@@ -150,6 +150,31 @@ class _WalletScreenState extends State<WalletScreen> {
         );
       },
     );
+  }
+
+  void _executeTopUp(double amount) async {
+    final validation = WalletValidator.validateAddMoney(amount);
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (validation.isValid) {
+      final success = await _walletRepository.addMoney(amount);
+      if (mounted && success) {
+        _loadWalletData();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Successfully added ₹${amount.toStringAsFixed(0)} to Wallet!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(validation.errorMessage ?? 'Invalid top-up amount.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   void _showWithdrawBottomSheet() {
@@ -185,58 +210,49 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
               const SizedBox(height: AppSpacing.s16),
               Text(
-                'Withdraw money to bank',
+                'Withdraw to Bank',
                 style: AppTypography.headlineSmall.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: AppSpacing.s8),
-              const Text(
-                'Transfer wallet funds back to your linked checking account.',
-                style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+              Text(
+                'Transfer balance securely to your primary linked bank account.',
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.s24),
-              TextField(
+              TextFormField(
                 keyboardType: TextInputType.number,
-                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Withdraw Amount (₹)',
+                  hintText: 'e.g. 1000',
+                  prefixIcon: Icon(Icons.account_balance, color: AppColors.primary),
+                ),
                 onChanged: (val) {
                   withdrawAmount = double.tryParse(val);
                 },
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-                decoration: const InputDecoration(
-                  prefixText: '₹ ',
-                  hintText: '0.00',
-                ),
               ),
               const SizedBox(height: AppSpacing.s24),
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                  text: 'Withdraw Funds',
+                  text: 'Withdraw Now',
                   onPressed: () async {
-                    final amount = withdrawAmount ?? 0.0;
-                    final currentBalance = _walletModel?.balance ?? 0.0;
-                    final validation = WalletValidator.validateWithdraw(amount, currentBalance);
                     final messenger = ScaffoldMessenger.of(context);
+                    final validation = WalletValidator.validateWithdraw(
+                      withdrawAmount ?? 0,
+                      _walletModel?.balance ?? 0,
+                    );
 
                     if (validation.isValid) {
-                      Navigator.pop(context);
-                      setState(() {
-                        _isLoading = true;
-                      });
-
-                      final success = await _walletRepository.withdrawMoney(amount);
-                      if (success) {
-                        await _loadWalletData();
+                      final success = await _walletRepository.withdrawMoney(withdrawAmount!);
+                      if (mounted && success) {
+                        Navigator.pop(context);
+                        _loadWalletData();
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text('₹${amount.toStringAsFixed(2)} transferred to bank account.'),
+                            content: Text('Transferred ₹${withdrawAmount!.toStringAsFixed(0)} to Bank!'),
                             backgroundColor: AppColors.success,
                           ),
                         );
@@ -273,7 +289,20 @@ class _WalletScreenState extends State<WalletScreen> {
       );
     }
 
-    final wallet = _walletModel ?? DummyWalletData.dummyWallet;
+    if (_errorMessage != null || _walletModel == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: const CustomAppBar(title: 'Wallet Balance'),
+        body: SafeArea(
+          child: ErrorState(
+            description: _errorMessage ?? 'Unable to load wallet balance.',
+            onRetry: _loadWalletData,
+          ),
+        ),
+      );
+    }
+
+    final wallet = _walletModel!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -309,7 +338,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           const Text(
                             'Cashback',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
@@ -317,7 +346,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           Text(
                             '₹${wallet.cashbackEarned.toStringAsFixed(0)} earned',
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 12.0,
                               color: AppColors.textSecondary,
                             ),
@@ -338,7 +367,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           Text(
                             'Active Offers',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
@@ -346,7 +375,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           Text(
                             '8 perks nearby',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 12.0,
                               color: AppColors.textSecondary,
                             ),
@@ -361,7 +390,7 @@ class _WalletScreenState extends State<WalletScreen> {
               const Text(
                 'Wallet History',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 18.0,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -369,13 +398,12 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
               const SizedBox(height: AppSpacing.s16),
               if (_transactions.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
-                    child: Text(
-                      'No transactions yet.',
-                      style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary),
-                    ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: EmptyState(
+                    title: 'No Transactions',
+                    description: 'Your recent wallet top-up and withdrawal activity will appear here.',
+                    icon: Icons.receipt_long_rounded,
                   ),
                 )
               else

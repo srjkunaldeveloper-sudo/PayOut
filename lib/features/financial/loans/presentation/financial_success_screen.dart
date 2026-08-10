@@ -57,7 +57,7 @@ class FinancialSuccessScreen extends StatelessWidget {
                     Text(
                       statusTitle,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -68,7 +68,7 @@ class FinancialSuccessScreen extends StatelessWidget {
                     Text(
                       statusSubtitle,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 13.0,
                         color: AppColors.textSecondary,
                       ),
@@ -79,7 +79,7 @@ class FinancialSuccessScreen extends StatelessWidget {
                       Text(
                         '₹${application.requestedAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 32.0,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
@@ -89,7 +89,7 @@ class FinancialSuccessScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       const Text(
                         'Sanctioned Amount',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
                   ],
@@ -145,13 +145,13 @@ class FinancialSuccessScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 12)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
                 color: valueColor ?? AppColors.textPrimary,

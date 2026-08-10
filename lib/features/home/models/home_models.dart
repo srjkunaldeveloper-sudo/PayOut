@@ -9,6 +9,8 @@ class HomeDashboardModel {
   final List<TransactionModel> recentTransactions;
   final int unreadNotificationCount;
   final List<CouponModel> offers;
+  final List<Map<String, String>> popularDestinations;
+  final List<Map<String, String>> financialPromotions;
 
   const HomeDashboardModel({
     required this.user,
@@ -16,6 +18,8 @@ class HomeDashboardModel {
     required this.recentTransactions,
     required this.unreadNotificationCount,
     required this.offers,
+    required this.popularDestinations,
+    required this.financialPromotions,
   });
 
   HomeDashboardModel copyWith({
@@ -24,6 +28,8 @@ class HomeDashboardModel {
     List<TransactionModel>? recentTransactions,
     int? unreadNotificationCount,
     List<CouponModel>? offers,
+    List<Map<String, String>>? popularDestinations,
+    List<Map<String, String>>? financialPromotions,
   }) {
     return HomeDashboardModel(
       user: user ?? this.user,
@@ -31,6 +37,8 @@ class HomeDashboardModel {
       recentTransactions: recentTransactions ?? this.recentTransactions,
       unreadNotificationCount: unreadNotificationCount ?? this.unreadNotificationCount,
       offers: offers ?? this.offers,
+      popularDestinations: popularDestinations ?? this.popularDestinations,
+      financialPromotions: financialPromotions ?? this.financialPromotions,
     );
   }
 }

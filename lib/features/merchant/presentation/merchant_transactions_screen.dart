@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/merchant/models/merchant_models.dart';
 import 'package:payout/features/merchant/repositories/merchant_repository.dart';
 import 'package:payout/features/merchant/services/merchant_service.dart';
@@ -33,7 +34,7 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
   @override
   void initState() {
     super.initState();
-    _merchantRepo = widget.merchantRepository ?? MockMerchantRepository();
+    _merchantRepo = widget.merchantRepository ?? AppDependencies.instance.merchantRepository;
     _loadTransactions();
   }
 
@@ -89,9 +90,9 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Transaction Details', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Transaction Details', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              Text('Customer payment record #${txn.id}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              Text('Customer payment record #${txn.id}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 padding: const EdgeInsets.all(AppSpacing.s16),
@@ -127,14 +128,14 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontSize: isAmount ? 14 : 12,
                 fontWeight: isAmount ? FontWeight.bold : FontWeight.w600,
                 color: statusColor ?? (isAmount ? AppColors.primary : AppColors.textPrimary),
@@ -200,7 +201,7 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(st, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                          label: Text(st, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                           selected: isSelected,
                           selectedColor: AppColors.primary,
                           labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary),
@@ -228,7 +229,7 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(method, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                          label: Text(method, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                           selected: isSelected,
                           selectedColor: AppColors.primaryLight,
                           labelStyle: TextStyle(color: isSelected ? AppColors.primary : AppColors.textSecondary),
@@ -256,9 +257,9 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                             children: const [
                               Icon(Icons.receipt_long_rounded, size: 48, color: AppColors.textSecondary),
                               SizedBox(height: 12),
-                              Text('No transactions found', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text('No transactions found', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                               SizedBox(height: 4),
-                              Text('Try adjusting your search or filters', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                              Text('Try adjusting your search or filters', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                             ],
                           ),
                         )
@@ -296,21 +297,21 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                                                 children: [
                                                   Text(
                                                     txn.customerName,
-                                                    style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                                                    style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     '${txn.paymentMethod} • ${txn.dateTime}',
-                                                    style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                                                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     'UTR: ${txn.utr}',
-                                                    style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                                                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
@@ -326,7 +327,7 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                                         children: [
                                           Text(
                                             '+₹${txn.amount.toStringAsFixed(2)}',
-                                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.success),
+                                            style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.success),
                                           ),
                                           const SizedBox(height: 4),
                                           Container(
@@ -337,7 +338,7 @@ class _MerchantTransactionsScreenState extends State<MerchantTransactionsScreen>
                                             ),
                                             child: Text(
                                               txn.status,
-                                              style: TextStyle(fontFamily: 'Inter', fontSize: 9, fontWeight: FontWeight.bold, color: statusColor),
+                                              style: TextStyle(fontFamily: 'Geist Sans', fontSize: 9, fontWeight: FontWeight.bold, color: statusColor),
                                             ),
                                           ),
                                         ],

@@ -53,7 +53,7 @@ class RechargeFailedScreen extends StatelessWidget {
                     const Text(
                       'Recharge Failed',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -63,7 +63,7 @@ class RechargeFailedScreen extends StatelessWidget {
                     Text(
                       errorMessage,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -73,7 +73,7 @@ class RechargeFailedScreen extends StatelessWidget {
                     Text(
                       'To: $maskedMobile ($operatorName)',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 12.0,
                         color: AppColors.textSecondary,
                       ),
@@ -82,7 +82,7 @@ class RechargeFailedScreen extends StatelessWidget {
                     Text(
                       '₹${amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -115,7 +115,7 @@ class RechargeFailedScreen extends StatelessWidget {
                   },
                   child: const Text(
                     'Change Payment Method',
-                    style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                 ),
               ),

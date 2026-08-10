@@ -60,7 +60,7 @@ class BillSuccessScreen extends StatelessWidget {
                     const Text(
                       'Bill Payment Successful!',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -70,7 +70,7 @@ class BillSuccessScreen extends StatelessWidget {
                     Text(
                       bill.billerName,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -79,7 +79,7 @@ class BillSuccessScreen extends StatelessWidget {
                     Text(
                       '₹${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -155,8 +155,8 @@ class BillSuccessScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-          Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13)),
+          Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
         ],
       ),
     );

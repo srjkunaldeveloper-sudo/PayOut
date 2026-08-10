@@ -4,7 +4,7 @@ import 'package:payout/core/theme/app_colors.dart';
 class AppTypography {
   // Display styles
   static const TextStyle displayLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 32.0,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -12,7 +12,7 @@ class AppTypography {
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 28.0,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -20,7 +20,7 @@ class AppTypography {
   );
 
   static const TextStyle displaySmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 24.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -29,7 +29,7 @@ class AppTypography {
 
   // Headline styles
   static const TextStyle headlineLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 22.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -37,7 +37,7 @@ class AppTypography {
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 20.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -45,7 +45,7 @@ class AppTypography {
   );
 
   static const TextStyle headlineSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 18.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -54,7 +54,7 @@ class AppTypography {
 
   // Title styles
   static const TextStyle titleLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 16.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -62,7 +62,7 @@ class AppTypography {
   );
 
   static const TextStyle titleMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 14.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -70,7 +70,7 @@ class AppTypography {
   );
 
   static const TextStyle titleSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 12.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
@@ -79,7 +79,7 @@ class AppTypography {
 
   // Body styles
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 16.0,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
@@ -87,7 +87,7 @@ class AppTypography {
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 14.0,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
@@ -95,7 +95,7 @@ class AppTypography {
   );
 
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 12.0,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
@@ -104,7 +104,7 @@ class AppTypography {
 
   // Label styles
   static const TextStyle labelLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 14.0,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
@@ -112,7 +112,7 @@ class AppTypography {
   );
 
   static const TextStyle labelMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 12.0,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
@@ -120,7 +120,7 @@ class AppTypography {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 11.0,
     fontWeight: FontWeight.w500,
     color: AppColors.textSecondary,
@@ -129,7 +129,7 @@ class AppTypography {
 
   // Specialized Financial Typography
   static const TextStyle amountLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 32.0,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
@@ -137,7 +137,7 @@ class AppTypography {
   );
 
   static const TextStyle amountMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 24.0,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
@@ -145,7 +145,7 @@ class AppTypography {
   );
 
   static const TextStyle amountSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Geist Sans',
     fontSize: 16.0,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,

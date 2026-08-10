@@ -35,7 +35,7 @@ class AppTheme {
         surfaceContainerLow: AppColors.surface,
         outline: AppColors.divider,
       ),
-      fontFamily: 'Inter',
+      fontFamily: 'Geist Sans',
       scaffoldBackgroundColor: AppColors.background,
       dividerColor: AppColors.divider,
       cardTheme: CardThemeData(
@@ -70,7 +70,7 @@ class AppTheme {
         centerTitle: false,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist Sans',
           fontSize: 20.0,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -100,12 +100,12 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.error, width: 1.0),
         ),
         labelStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist Sans',
           fontSize: 14.0,
           color: AppColors.textSecondary,
         ),
         hintStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist Sans',
           fontSize: 14.0,
           color: AppColors.textSecondary,
         ),

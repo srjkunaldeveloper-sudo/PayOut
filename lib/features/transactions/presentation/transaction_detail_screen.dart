@@ -57,7 +57,7 @@ class TransactionDetailScreen extends StatelessWidget {
                     Text(
                       statusTitle,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -67,7 +67,7 @@ class TransactionDetailScreen extends StatelessWidget {
                     Text(
                       '₹${transaction.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 32.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -151,12 +151,12 @@ class TransactionDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
             ),
           ),
         ],

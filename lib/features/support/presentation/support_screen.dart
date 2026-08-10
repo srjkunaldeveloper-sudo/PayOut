@@ -74,7 +74,7 @@ class _SupportScreenState extends State<SupportScreen> {
             // Instant Contact Options
             const Text(
               'Direct Helpdesk',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
             Row(
@@ -90,7 +90,7 @@ class _SupportScreenState extends State<SupportScreen> {
                       children: const [
                         Icon(Icons.chat_bubble_outline_rounded, color: Colors.green, size: 28),
                         SizedBox(height: 8),
-                        Text('WhatsApp', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text('WhatsApp', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -107,7 +107,7 @@ class _SupportScreenState extends State<SupportScreen> {
                       children: const [
                         Icon(Icons.phone_in_talk_rounded, color: AppColors.primary, size: 28),
                         SizedBox(height: 8),
-                        Text('Call Toll-Free', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text('Call Toll-Free', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -118,7 +118,7 @@ class _SupportScreenState extends State<SupportScreen> {
             // FAQs Expandable accordion list
             const Text(
               'Frequently Asked Questions',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
@@ -133,7 +133,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         title: Text(
                           faq['q']!,
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 13.0,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -146,7 +146,7 @@ class _SupportScreenState extends State<SupportScreen> {
                       child: Text(
                         faq['a']!,
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 12.0,
                           color: AppColors.textSecondary,
                           height: 1.4,
@@ -161,7 +161,7 @@ class _SupportScreenState extends State<SupportScreen> {
             // Raise Ticket Form
             const Text(
               'Raise Support Ticket',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
@@ -211,7 +211,7 @@ class _SupportScreenState extends State<SupportScreen> {
                   Expanded(
                     child: Text(
                       'Track Complaint Status',
-                      style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),

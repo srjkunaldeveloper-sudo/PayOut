@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/payments/presentation/amount_entry_screen.dart';
-import 'package:payout/features/qr/dummy/dummy_qr_data.dart';
 import 'package:payout/features/qr/models/qr_models.dart';
 import 'package:payout/features/qr/repositories/qr_repository.dart';
 
 class ScanQRScreen extends StatefulWidget {
-  const ScanQRScreen({super.key});
+  final QrRepository? qrRepository;
+
+  const ScanQRScreen({super.key, this.qrRepository});
 
   @override
   State<ScanQRScreen> createState() => _ScanQRScreenState();
 }
 
 class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderStateMixin {
-  final QrRepository _qrRepository = MockQrRepository();
+  late final QrRepository _qrRepository;
   
   bool _isFlashOn = false;
   late AnimationController _animationController;
@@ -26,6 +28,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    _qrRepository = widget.qrRepository ?? AppDependencies.instance.qrRepository;
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -34,7 +37,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
     _scanAnimation = Tween<double>(begin: 0.0, end: 240.0).animate(_animationController);
     
     // Auto-resolve SRJ Foods for seamless initial demo experience
-    _resolvePayload(DummyQrData.validMerchantPayload);
+    _resolvePayload('upi://pay?pa=srjfoods@upi&pn=SRJ%20Foods&mc=5812');
   }
 
   @override
@@ -100,7 +103,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                 Text(
                   title,
                   style: const TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -111,7 +114,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   message,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
@@ -169,7 +172,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                 const Text(
                   'Select Demo QR Scenario',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -181,7 +184,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   'srjfoods@upi • Food & Dining',
                   () {
                     Navigator.pop(context);
-                    _resolvePayload(DummyQrData.validMerchantPayload);
+                    _resolvePayload('upi://pay?pa=srjfoods@upi&pn=SRJ%20Foods&mc=5812');
                   },
                   key: const Key('demo_merchant'),
                 ),
@@ -190,7 +193,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   'rahul@upi • Personal UPI',
                   () {
                     Navigator.pop(context);
-                    _resolvePayload(DummyQrData.validPersonalPayload);
+                    _resolvePayload('upi://pay?pa=rahul@upi&pn=Rahul%20Sharma');
                   },
                   key: const Key('demo_personal'),
                 ),
@@ -199,7 +202,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   'Simulate invalid signature',
                   () {
                     Navigator.pop(context);
-                    _resolvePayload(DummyQrData.invalidPayload);
+                    _resolvePayload('INVALID_QR_SAMPLE');
                   },
                   key: const Key('demo_invalid'),
                 ),
@@ -208,7 +211,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   'Simulate expired merchant QR',
                   () {
                     Navigator.pop(context);
-                    _resolvePayload(DummyQrData.expiredPayload);
+                    _resolvePayload('EXPIRED_QR_SAMPLE');
                   },
                   key: const Key('demo_expired'),
                 ),
@@ -217,7 +220,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                   'Simulate non-UPI format',
                   () {
                     Navigator.pop(context);
-                    _resolvePayload(DummyQrData.unsupportedPayload);
+                    _resolvePayload('UNSUPPORTED_QR_SAMPLE');
                   },
                   key: const Key('demo_unsupported'),
                 ),
@@ -236,8 +239,8 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
       child: ListTile(
         key: key,
         contentPadding: EdgeInsets.zero,
-        title: Text(title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-        subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+        title: Text(title, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textSecondary),
         onTap: onTap,
       ),
@@ -274,7 +277,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
         title: const Text(
           'Scan QR Code',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -350,7 +353,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                 const Text(
                   'Align QR code inside the frame to scan',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 13.0,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
@@ -421,7 +424,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                               Text(
                                 result.name,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15.0,
                                   color: AppColors.textPrimary,
@@ -431,7 +434,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                               Text(
                                 '${result.upiId} • ${result.category}',
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 11.0,
                                   color: AppColors.textSecondary,
                                 ),
@@ -449,7 +452,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                             child: const Text(
                               'Verified',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.success,

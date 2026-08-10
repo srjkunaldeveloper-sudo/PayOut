@@ -34,7 +34,7 @@ class SectionHeader extends StatelessWidget {
               child: Text(
                 actionText!,
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 14.0,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,

@@ -50,7 +50,7 @@ class CustomBadge extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist Sans',
           fontSize: 10.0,
           fontWeight: FontWeight.w700,
           color: getTextColor(),

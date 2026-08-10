@@ -71,7 +71,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
               const SizedBox(height: AppSpacing.s24),
               const Text(
                 'Select Payment Source',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
               const SizedBox(height: AppSpacing.s16),
               ListTile(
@@ -81,8 +81,8 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                   decoration: const BoxDecoration(color: AppColors.primaryContainer, shape: BoxShape.circle),
                   child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
                 ),
-                title: const Text('Payout Wallet', style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.bold)),
-                subtitle: const Text('Available Balance: ₹5,000.00', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                title: const Text('Payout Wallet', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Available Balance: ₹5,000.00', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                 trailing: _selectedMethodId == 'wallet' ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
                 onTap: () {
                   setState(() {
@@ -108,8 +108,8 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                       decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
                       child: const Icon(Icons.account_balance_rounded, color: AppColors.primary, size: 20),
                     ),
-                    title: Text(bank.bankName, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.bold)),
-                    subtitle: Text('Checking •••• $suffix', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                    title: Text(bank.bankName, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.bold)),
+                    subtitle: Text('Checking •••• $suffix', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                     trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
                     onTap: () {
                       setState(() {
@@ -174,7 +174,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
               const Text(
                 'Payment Details',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -203,7 +203,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                               Text(
                                 widget.bill.billerName,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15.0,
                                 ),
@@ -211,7 +211,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                               Text(
                                 'Cons. ID: ${widget.bill.consumerNumber}',
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 12.0,
                                   color: AppColors.textSecondary,
                                 ),
@@ -246,7 +246,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                         const Text(
                           'Total Payable',
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 14.0,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -255,7 +255,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                         Text(
                           '₹${totalAmount.toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
@@ -270,7 +270,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
               const Text(
                 'Payment Method',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -301,7 +301,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                           Text(
                             _selectedMethodLabel,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -309,7 +309,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
                           const Text(
                             'Tap to change source',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
@@ -344,7 +344,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             fontSize: 13.0,
             color: AppColors.textSecondary,
           ),
@@ -352,7 +352,7 @@ class _ReviewBillScreenState extends State<ReviewBillScreen> {
         Text(
           value,
           style: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             fontSize: 13.0,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/financial/loans/presentation/financial_success_screen.dart';
 import 'package:payout/features/financial/shared/models/financial_models.dart';
 import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
@@ -11,15 +12,22 @@ import 'package:payout/features/user/presentation/kyc_flow_screen.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 
 class LoansScreen extends StatefulWidget {
-  const LoansScreen({super.key});
+  final FinancialRepository? financialRepository;
+  final UserRepository? userRepository;
+
+  const LoansScreen({
+    super.key,
+    this.financialRepository,
+    this.userRepository,
+  });
 
   @override
   State<LoansScreen> createState() => _LoansScreenState();
 }
 
 class _LoansScreenState extends State<LoansScreen> {
-  final FinancialRepository _financialRepository = MockFinancialRepository();
-  final UserRepository _userRepository = MockUserRepository();
+  late final FinancialRepository _financialRepository;
+  late final UserRepository _userRepository;
 
   List<LoanModel> _loans = [];
   bool _isLoading = true;
@@ -28,6 +36,8 @@ class _LoansScreenState extends State<LoansScreen> {
   @override
   void initState() {
     super.initState();
+    _financialRepository = widget.financialRepository ?? AppDependencies.instance.financialRepository;
+    _userRepository = widget.userRepository ?? AppDependencies.instance.userRepository;
     _loadLoans();
   }
 
@@ -80,7 +90,7 @@ class _LoansScreenState extends State<LoansScreen> {
                       children: [
                         const Text(
                           'Pre-Approved Credit Line',
-                          style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 12),
+                          style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 12),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -88,7 +98,7 @@ class _LoansScreenState extends State<LoansScreen> {
                             color: Colors.white24,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('Instant Disbursal', style: TextStyle(fontFamily: 'Inter', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          child: const Text('Instant Disbursal', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -96,7 +106,7 @@ class _LoansScreenState extends State<LoansScreen> {
                     const Text(
                       '₹5,00,000',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -105,7 +115,7 @@ class _LoansScreenState extends State<LoansScreen> {
                     const SizedBox(height: 4),
                     const Text(
                       'Low interest rates starting from 8.95% p.a. • Zero paperwork',
-                      style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 11),
+                      style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -135,7 +145,7 @@ class _LoansScreenState extends State<LoansScreen> {
                       child: Text(
                         cat,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           color: isSelected ? AppColors.primary : AppColors.textPrimary,
@@ -148,7 +158,7 @@ class _LoansScreenState extends State<LoansScreen> {
               const SizedBox(height: AppSpacing.s20),
 
               // Product Catalog
-              const Text('Available Loan Products', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Available Loan Products', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s12),
               ..._filteredLoans.map((loan) => _buildLoanCard(loan)),
               const SizedBox(height: AppSpacing.s16),
@@ -163,7 +173,7 @@ class _LoansScreenState extends State<LoansScreen> {
                 ),
                 child: const Text(
                   'Disclaimer: Loan approvals, interest rates, and final sanctioned amounts are simulated for demo purposes based on applicant profile and KYC validation.',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
@@ -187,7 +197,7 @@ class _LoansScreenState extends State<LoansScreen> {
                 Expanded(
                   child: Text(
                     loan.title,
-                    style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
                 Container(
@@ -198,7 +208,7 @@ class _LoansScreenState extends State<LoansScreen> {
                   ),
                   child: Text(
                     loan.category,
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                 ),
               ],
@@ -222,7 +232,7 @@ class _LoansScreenState extends State<LoansScreen> {
                   children: [
                     const Icon(Icons.flash_on_rounded, color: Colors.orange, size: 16),
                     const SizedBox(width: 4),
-                    Text(loan.approvalTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    Text(loan.approvalTime, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 ),
                 PrimaryButton(
@@ -243,9 +253,9 @@ class _LoansScreenState extends State<LoansScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+        Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
   }
@@ -394,9 +404,9 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Loan Application', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Loan Application', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Verify your loan and repayment terms before final submission.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Verify your loan and repayment terms before final submission.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -443,12 +453,12 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 12)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 12)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
             ),
           ),
         ],
@@ -528,13 +538,13 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                           children: [
                             Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
                             SizedBox(width: 8),
-                            Text('KYC Verification Required', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
+                            Text('KYC Verification Required', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange)),
                           ],
                         ),
                         const SizedBox(height: 6),
                         const Text(
                           'You must complete your KYC verification before applying for credit.',
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 12),
                         PrimaryButton(
@@ -560,7 +570,7 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                       children: [
                         Icon(Icons.verified_rounded, color: AppColors.success, size: 16),
                         SizedBox(width: 6),
-                        Text('KYC Authenticated ✓', style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
+                        Text('KYC Authenticated ✓', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
                       ],
                     ),
                   ),
@@ -575,16 +585,16 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Estimated Monthly EMI', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
-                          Text('₹${_emiCalc.monthlyEmi.toStringAsFixed(0)} / mo', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                          const Text('Estimated Monthly EMI', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
+                          Text('₹${_emiCalc.monthlyEmi.toStringAsFixed(0)} / mo', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Interest: ₹${_emiCalc.totalInterest.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                          Text('Total: ₹${_emiCalc.totalRepayment.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          Text('Interest: ₹${_emiCalc.totalInterest.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
+                          Text('Total: ₹${_emiCalc.totalRepayment.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                         ],
                       ),
                     ],
@@ -593,7 +603,7 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                 const SizedBox(height: AppSpacing.s24),
 
                 // Amount Slider
-                Text('Loan Amount: ₹${_selectedAmount.toInt()}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('Loan Amount: ₹${_selectedAmount.toInt()}', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                 Slider(
                   value: _selectedAmount,
                   min: widget.loan.minAmount,
@@ -605,7 +615,7 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                 const SizedBox(height: AppSpacing.s12),
 
                 // Tenure Slider
-                Text('Repayment Tenure: $_selectedTenure Months', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('Repayment Tenure: $_selectedTenure Months', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                 Slider(
                   value: _selectedTenure.toDouble(),
                   min: widget.loan.minTenureMonths.toDouble(),
@@ -622,7 +632,7 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                 const SizedBox(height: AppSpacing.s20),
 
                 // Applicant Form
-                const Text('Applicant Details', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Applicant Details', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(
@@ -652,9 +662,9 @@ class _LoanApplicationFlowScreenState extends State<LoanApplicationFlowScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _employmentType,
                   items: const [
-                    DropdownMenuItem(value: 'Salaried', child: Text('Salaried Employee', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                    DropdownMenuItem(value: 'Self-Employed', child: Text('Self-Employed Professional', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                    DropdownMenuItem(value: 'Business', child: Text('Business Owner / MSME', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                    DropdownMenuItem(value: 'Salaried', child: Text('Salaried Employee', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                    DropdownMenuItem(value: 'Self-Employed', child: Text('Self-Employed Professional', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                    DropdownMenuItem(value: 'Business', child: Text('Business Owner / MSME', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                   ],
                   onChanged: (val) {
                     if (val != null) setState(() => _employmentType = val);

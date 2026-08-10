@@ -7,6 +7,7 @@ import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
 import 'package:payout/features/support/presentation/support_screen.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/user/presentation/about_screen.dart';
@@ -14,14 +15,16 @@ import 'package:payout/features/user/presentation/edit_profile_screen.dart';
 import 'package:payout/features/user/presentation/kyc_status_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final UserRepository? userRepository;
+
+  const SettingsScreen({super.key, this.userRepository});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final UserRepository _userRepository = MockUserRepository();
+  late final UserRepository _userRepository;
 
   PreferenceModel? _prefs;
   UserProfileModel? _profile;
@@ -30,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _userRepository = widget.userRepository ?? AppDependencies.instance.userRepository;
     _loadData();
   }
 
@@ -80,12 +84,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: AppSpacing.s24),
                 const Text(
                   'Confirm Logout',
-                  style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: AppSpacing.s12),
                 const Text(
                   'Are you sure you want to log out of your Payout account?',
-                  style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                  style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.s24),
@@ -145,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Account Settings
-            const Text('Account', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Account', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -185,7 +189,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: AppSpacing.s24),
 
             // 2. Security Settings
-            const Text('Security & Access', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Security & Access', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -220,8 +224,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1, color: AppColors.divider),
                   SwitchListTile(
                     secondary: const Icon(Icons.fingerprint_rounded, color: AppColors.primary),
-                    title: const Text('Biometric Authentication', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-                    subtitle: const Text('Use FaceID / Fingerprint to log in', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    title: const Text('Biometric Authentication', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Use FaceID / Fingerprint to log in', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.biometricEnabled,
                     activeColor: AppColors.primary,
                     onChanged: (val) {
@@ -231,8 +235,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1, color: AppColors.divider),
                   SwitchListTile(
                     secondary: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
-                    title: const Text('App Lock on Background', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-                    subtitle: const Text('Require MPIN when returning to app', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    title: const Text('App Lock on Background', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Require MPIN when returning to app', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.appLockEnabled,
                     activeColor: AppColors.primary,
                     onChanged: (val) {
@@ -245,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: AppSpacing.s24),
 
             // 3. Notification Preferences
-            const Text('Notifications & Alerts', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Notifications & Alerts', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -253,8 +257,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   SwitchListTile(
                     secondary: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
-                    title: const Text('Payment Alerts', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-                    subtitle: const Text('Instant alerts for sent & received money', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    title: const Text('Payment Alerts', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Instant alerts for sent & received money', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.paymentNotif,
                     activeColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(paymentNotif: val)),
@@ -262,8 +266,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1, color: AppColors.divider),
                   SwitchListTile(
                     secondary: const Icon(Icons.bolt_outlined, color: AppColors.primary),
-                    title: const Text('Recharge & Bill Reminders', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-                    subtitle: const Text('Due date alerts for bills & mobile packs', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    title: const Text('Recharge & Bill Reminders', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Due date alerts for bills & mobile packs', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.billsNotif,
                     activeColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(billsNotif: val)),
@@ -271,8 +275,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1, color: AppColors.divider),
                   SwitchListTile(
                     secondary: const Icon(Icons.local_offer_outlined, color: AppColors.primary),
-                    title: const Text('Promotions & Cashback', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-                    subtitle: const Text('Weekly deals, scratch cards and discounts', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                    title: const Text('Promotions & Cashback', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+                    subtitle: const Text('Weekly deals, scratch cards and discounts', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.offersNotif,
                     activeColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(offersNotif: val)),
@@ -283,7 +287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: AppSpacing.s24),
 
             // 4. Preferences (Language & Theme)
-            const Text('App Preferences', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('App Preferences', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -291,13 +295,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.language_rounded, color: AppColors.primary),
-                    title: const Text('App Language', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                    title: const Text('App Language', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                     trailing: DropdownButton<String>(
                       value: prefs.language,
                       underline: const SizedBox(),
                       items: const [
-                        DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
-                        DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                        DropdownMenuItem(value: 'English', child: Text('English', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12))),
+                        DropdownMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12))),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -315,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: AppSpacing.s24),
 
             // 5. Support & Legal
-            const Text('Support & Legal', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Support & Legal', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: AppSpacing.s12),
             AppCard(
               padding: EdgeInsets.zero,
@@ -348,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: ListTile(
                 leading: const Icon(Icons.logout_rounded, color: AppColors.error),
-                title: const Text('Logout', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
+                title: const Text('Logout', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
                 onTap: _showLogoutDialog,
               ),
@@ -368,8 +372,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return ListTile(
       leading: Icon(icon, color: AppColors.primary),
-      title: Text(title, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13)),
-      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+      title: Text(title, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
+      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
       trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.textSecondary),
       onTap: onTap,
     );

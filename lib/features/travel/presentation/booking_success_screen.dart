@@ -67,7 +67,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                               ? 'Booking Payment Pending'
                               : 'Booking Failed',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -82,7 +82,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                               ? 'Payment is being processed by the bank. Ref: ${booking.referenceCode}'
                               : 'Payment could not be completed. Please try again.',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 12.0,
                         color: AppColors.textSecondary,
                       ),
@@ -108,7 +108,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                               Text(
                                 booking.title,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textPrimary,
@@ -118,7 +118,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                               Text(
                                 booking.subtitle,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 12.0,
                                   color: AppColors.textSecondary,
                                 ),
@@ -135,7 +135,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                           child: Text(
                             booking.status,
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 11.0,
                               fontWeight: FontWeight.bold,
                               color: statusColor,
@@ -203,7 +203,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
                     side: const BorderSide(color: AppColors.primary),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                   ),
-                  child: const Text('Back to Home', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, color: AppColors.primary)),
+                  child: const Text('Back to Home', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, color: AppColors.primary)),
                 ),
               ),
             ],
@@ -222,7 +222,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               fontSize: isTotal ? 14.0 : 12.0,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
@@ -231,7 +231,7 @@ class TravelBookingSuccessScreen extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               fontSize: isTotal ? 16.0 : 12.0,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
               color: isTotal ? AppColors.primary : AppColors.textPrimary,

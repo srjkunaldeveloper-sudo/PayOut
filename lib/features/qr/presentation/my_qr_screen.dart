@@ -3,19 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/qr/models/qr_models.dart';
 import 'package:payout/features/qr/repositories/qr_repository.dart';
 import 'package:payout/features/qr/services/qr_logger.dart';
 
 class MyQRScreen extends StatefulWidget {
-  const MyQRScreen({super.key});
+  final QrRepository? qrRepository;
+
+  const MyQRScreen({super.key, this.qrRepository});
 
   @override
   State<MyQRScreen> createState() => _MyQRScreenState();
 }
 
 class _MyQRScreenState extends State<MyQRScreen> {
-  final QrRepository _qrRepository = MockQrRepository();
+  late final QrRepository _qrRepository;
   
   PersonalQRModel? _qrModel;
   bool _isLoading = true;
@@ -23,6 +26,7 @@ class _MyQRScreenState extends State<MyQRScreen> {
   @override
   void initState() {
     super.initState();
+    _qrRepository = widget.qrRepository ?? AppDependencies.instance.qrRepository;
     _loadQRData();
   }
 
@@ -109,7 +113,7 @@ class _MyQRScreenState extends State<MyQRScreen> {
                         Text(
                           model.userName,
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: AppColors.textPrimary,
@@ -136,7 +140,7 @@ class _MyQRScreenState extends State<MyQRScreen> {
                             Text(
                               model.upiId,
                               style: const TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
@@ -188,7 +192,7 @@ class _MyQRScreenState extends State<MyQRScreen> {
                       'Scan this code to pay securely using any UPI app.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),

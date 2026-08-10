@@ -155,3 +155,25 @@ The network layer provides `NetworkException.fromStatusCode` to map HTTP errors:
 1. **Zero Sensitive Logging:** Never log MPIN, OTP, CVV, passwords, full PAN, full Aadhaar, or Bearer tokens in console loggers.
 2. **Network Interceptor:** `LoggingInterceptor` automatically strips `Authorization`, `Cookie`, and credential headers.
 3. **Storage:** Store access tokens and session credentials strictly inside `TokenManager` / encrypted secure storage.
+
+---
+
+## 6. Repository Error → UI State Mapping
+
+The application uses `ErrorMessageMapper` to standardize presentation-safe messages for the UI. Below is the mapping flow:
+
+```
+[Backend REST Response]
+       │
+       ▼ (Dio Interceptor)
+[NetworkException] (Maps status code, e.g., 401 -> unauthorized)
+       │
+       ▼ (Repository / Service)
+[AppResult.failure(error)] (Wraps the exception)
+       │
+       ▼ (Presentation UI Screen)
+[ErrorMessageMapper.map(error)] -> "Your session has expired. Please sign in again."
+       │
+       ▼
+[AppErrorState] (Renders Try Again retry button to re-trigger repository reload)
+```

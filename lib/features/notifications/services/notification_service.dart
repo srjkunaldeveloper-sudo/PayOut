@@ -7,4 +7,8 @@ class NotificationService {
     }
     return list.where((n) => n.category.toLowerCase() == category.toLowerCase()).toList();
   }
+
+  static int getUnreadCount(List<NotificationModel> list) {
+    return list.where((n) => !n.isRead).length;
+  }
 }

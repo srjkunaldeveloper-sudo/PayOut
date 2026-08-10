@@ -30,7 +30,7 @@ class ReceiptScreen extends StatelessWidget {
                   const Text(
                     'Transaction Successful',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                       color: AppColors.textPrimary,
@@ -40,7 +40,7 @@ class ReceiptScreen extends StatelessWidget {
                   Text(
                     '₹${receipt.amount.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontWeight: FontWeight.bold,
                       fontSize: 32,
                       color: AppColors.textPrimary,
@@ -106,7 +106,7 @@ class ReceiptScreen extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 color: AppColors.textSecondary,
                 fontSize: 13,
               ),
@@ -118,7 +118,7 @@ class ReceiptScreen extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               style: const TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
                 fontSize: 13,

@@ -55,7 +55,7 @@ class _WalletCardState extends State<WalletCard> {
                   const Text(
                     'Available Balance',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontSize: 13.0,
                       fontWeight: FontWeight.w500,
                       color: AppColors.primaryContainer,
@@ -87,7 +87,7 @@ class _WalletCardState extends State<WalletCard> {
               Text(
                 _isHidden ? '••••••' : '₹${widget.balance.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 34.0,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -99,7 +99,7 @@ class _WalletCardState extends State<WalletCard> {
                 const Text(
                   '.75',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: Colors.white70,
@@ -129,7 +129,7 @@ class _WalletCardState extends State<WalletCard> {
                           child: Text(
                             widget.linkedBankName!,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 10.0,
                               color: Colors.white70,
                             ),
@@ -152,7 +152,7 @@ class _WalletCardState extends State<WalletCard> {
                       child: Text(
                         '₹${widget.cashbackEarned!.toStringAsFixed(0)} Cashback',
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 9.0,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -169,7 +169,7 @@ class _WalletCardState extends State<WalletCard> {
                     child: Text(
                       widget.lastUpdated!,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 10.0,
                         color: Colors.white60,
                       ),
@@ -192,7 +192,7 @@ class _WalletCardState extends State<WalletCard> {
                   label: const Text(
                     'Add Money',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontWeight: FontWeight.bold,
                       fontSize: 13.0,
                       color: AppColors.primary,
@@ -219,7 +219,7 @@ class _WalletCardState extends State<WalletCard> {
                   label: Text(
                     widget.onSendMoney != null ? 'Send Money' : 'Withdraw',
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontWeight: FontWeight.bold,
                       fontSize: 13.0,
                       color: Colors.white,

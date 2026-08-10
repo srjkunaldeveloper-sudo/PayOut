@@ -61,7 +61,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ? const Center(
                     child: Text(
                       'No matching contacts found.',
-                      style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary),
+                      style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary),
                     ),
                   )
                 : ListView.builder(
@@ -93,7 +93,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                           title: Text(
                             contact['name']!,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.bold,
                               fontSize: 14.0,
                             ),
@@ -101,7 +101,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                           subtitle: Text(
                             contact['sub']!,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 12.0,
                               color: AppColors.textSecondary,
                             ),

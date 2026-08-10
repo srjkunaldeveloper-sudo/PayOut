@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -37,11 +36,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
   }
 
   @override
@@ -112,44 +107,142 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final nights = TravelService.calculateStayNights(_checkIn, _checkOut);
+    final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Hotel Stays & Resorts'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Hotel Stays & Resorts',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 40)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppCard(
+                // Search Inputs Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
                       AppTextField(
                         controller: _cityController,
                         labelText: 'City / Destination / Area',
                         hintText: 'e.g. New Delhi, Mumbai, Goa',
-                        prefix: const Icon(Icons.location_city_rounded, size: 20),
+                        prefix: const Icon(Icons.location_city_rounded, color: Color(0xFF3F37C9), size: 20),
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'City name is required' : null,
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
+                      // Check-in and Check-out Row
                       Row(
                         children: [
                           Expanded(
                             child: InkWell(
                               onTap: () => _selectDate(context, true),
-                              child: InputDecorator(
-                                decoration: InputDecoration(
-                                  labelText: 'Check-in',
-                                  prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
                                 ),
-                                child: Text(
-                                  '${_checkIn.day}/${_checkIn.month}/${_checkIn.year}',
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Check-in',
+                                      style: TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${_checkIn.day}/${_checkIn.month}/${_checkIn.year}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Geist Sans',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F1F1F),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -158,30 +251,71 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                           Expanded(
                             child: InkWell(
                               onTap: () => _selectDate(context, false),
-                              child: InputDecorator(
-                                decoration: InputDecoration(
-                                  labelText: 'Check-out',
-                                  prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
                                 ),
-                                child: Text(
-                                  '${_checkOut.day}/${_checkOut.month}/${_checkOut.year}',
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Check-out',
+                                      style: TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${_checkOut.day}/${_checkOut.month}/${_checkOut.year}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Geist Sans',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F1F1F),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Center(
+                      const SizedBox(height: 12),
+
+                      // Nights Stay Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Text(
                           '$nights Night(s) Stay',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          style: const TextStyle(
+                            fontFamily: 'Geist Sans',
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF3F37C9),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.s12),
+                      const SizedBox(height: 14),
 
+                      // Guests & Rooms
                       Row(
                         children: [
                           Expanded(
@@ -189,12 +323,25 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                               initialValue: _guests,
                               items: List.generate(
                                 8,
-                                (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1} Guests', style: const TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1} Guests', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)),
+                                ),
                               ),
                               onChanged: (val) => setState(() => _guests = val ?? 2),
                               decoration: InputDecoration(
                                 labelText: 'Guests',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -204,12 +351,25 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                               initialValue: _rooms,
                               items: List.generate(
                                 4,
-                                (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1} Room(s)', style: const TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1} Room(s)', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)),
+                                ),
                               ),
                               onChanged: (val) => setState(() => _rooms = val ?? 1),
                               decoration: InputDecoration(
                                 labelText: 'Rooms',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -218,14 +378,14 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s24),
+                const SizedBox(height: 28),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                    text: 'Search Hotels',
-                    onPressed: _submitSearch,
-                  ),
+                // Search CTA
+                PrimaryButton(
+                  text: 'Search Hotels',
+                  height: 56,
+                  iconRight: Icons.arrow_forward_rounded,
+                  onPressed: _submitSearch,
                 ),
               ],
             ),
@@ -293,21 +453,21 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
               child: Row(
                 children: [
                   ChoiceChip(
-                    label: const Text('All Ratings', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                    label: const Text('All Ratings', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                     selected: _minRating == 0.0,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _minRating = 0.0),
                   ),
                   const SizedBox(width: 8),
                   ChoiceChip(
-                    label: const Text('4.5+ ★ Star Rating', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                    label: const Text('4.5+ ★ Star Rating', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                     selected: _minRating == 4.5,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _minRating = 4.5),
                   ),
                   const SizedBox(width: 8),
                   ChoiceChip(
-                    label: const Text('4.8+ ★ Luxury Choice', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                    label: const Text('4.8+ ★ Luxury Choice', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                     selected: _minRating == 4.8,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _minRating = 4.8),
@@ -321,7 +481,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : filtered.isEmpty
-                      ? const Center(child: Text('No hotels found matching criteria', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                      ? const Center(child: Text('No hotels found matching criteria', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                       : ListView.builder(
                           padding: const EdgeInsets.all(AppSpacing.s20),
                           itemCount: filtered.length,
@@ -339,7 +499,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                                         Expanded(
                                           child: Text(
                                             hotel.name,
-                                            style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                                            style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14),
                                           ),
                                         ),
                                         Container(
@@ -354,7 +514,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                                               const SizedBox(width: 2),
                                               Text(
                                                 hotel.rating.toString(),
-                                                style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                                                style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
                                               ),
                                             ],
                                           ),
@@ -362,7 +522,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                                       ],
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(hotel.location, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                    Text(hotel.location, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                     const SizedBox(height: 8),
 
                                     // Amenities chips
@@ -377,7 +537,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                                                   color: AppColors.primaryContainer.withValues(alpha: 0.3),
                                                   borderRadius: BorderRadius.circular(4),
                                                 ),
-                                                child: Text(a, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.primary)),
+                                                child: Text(a, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.primary)),
                                               ))
                                           .toList(),
                                     ),
@@ -393,9 +553,9 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                                           children: [
                                             Text(
                                               '₹${hotel.pricePerNight.toInt()} / night',
-                                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                                              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                                             ),
-                                            const Text('+ 18% GST', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+                                            const Text('+ 18% GST', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
                                           ],
                                         ),
                                         PrimaryButton(
@@ -507,9 +667,9 @@ class _HotelGuestAndReviewScreenState extends State<HotelGuestAndReviewScreen> {
                 child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Hotel Reservation', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Hotel Reservation', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Authorize hotel booking via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Authorize hotel booking via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -604,8 +764,8 @@ class _HotelGuestAndReviewScreenState extends State<HotelGuestAndReviewScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
-          Text(value, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(value, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
         ],
       ),
     );
@@ -638,21 +798,21 @@ class _HotelGuestAndReviewScreenState extends State<HotelGuestAndReviewScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.hotel.name, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(widget.hotel.name, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 2),
-                          Text('${widget.selectedRoom.roomType} • $nights Night(s)', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                          Text('${widget.selectedRoom.roomType} • $nights Night(s)', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                       Text(
                         '₹${(pricing['total'] ?? 0).toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s20),
 
-                const Text('Lead Guest Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Lead Guest Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(

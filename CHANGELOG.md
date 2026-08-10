@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.10.0] - Phase 13 Deep Architecture, Dependency & Backend-Handoff Audit - 2026-08-08
+
+### Added & Upgraded
+- **Presentation → Dummy Data Decoupling**:
+  - Removed all direct imports and reference dependencies to mock/dummy data (`DummyQrData`, `DummyHomeData`) from the presentation widgets.
+  - Sourced QR payload simulation dynamically using plain string formats in the repository resolution layer.
+  - Migrated promotional/destination maps directly into `HomeDashboardModel` model configurations.
+- **Constructor DI & Fallback Enforcements**:
+  - Audited and updated all 15 feature modules, ensuring zero direct instantiation of Mock repository classes inside presentation screen states.
+  - Wired constructor dependency injection to fallback to the centralized `AppDependencies.instance` container.
+- **Warning Cleanup**:
+  - Pruned unused repository imports across Travel flow screens and subsystems to guarantee warning-free compiling.
+- **Audit Verification**:
+  - Full automated validation with 70 passing test suites and zero static analyzer reports on modified features.
+
+## [1.9.0] - Phase 12 App-Wide Backend Contract, State & Error Handling Standardization - 2026-08-08
+
+### Added & Upgraded
+- **Shared Result Contract & Error Mapping**:
+  - `lib/core/result/app_result.dart`: Added `AppResult<T>` generic pattern for unified repository and service outcomes.
+  - `lib/core/error/error_message_mapper.dart`: Added presentation-safe error message mapper translating `NetworkException` categories into user-friendly UI copy.
+  - `lib/core/widgets/states.dart`: Added `AppLoadingState`, `AppErrorState`, `AppEmptyState`, and `AppSuccessState` aliases and integrated them with `ErrorMessageMapper`.
+- **Standardized UI States & Retry Handlers**:
+  - `HomeScreen`: Unified error state rendering with `ErrorState` retry callback.
+  - `WalletScreen`: Decoupled from direct mock fallback. Handles error, loading, empty transactions, and retry flows.
+  - `NotificationsScreen`: Integrated constructor DI, unified category filters, and error state mapping.
+  - `TransactionHistoryScreen`: Formatted transactions list with search query, category ChoiceChips, and empty state templates.
+  - `BankAccountsScreen`: Linked `BankAccountService` constructor injection, unlinking feedback, and list reload triggers.
+- **Documentation**:
+  - Updated `docs/API_INTEGRATION_GUIDE.md` (Repository Error → UI State Mapping section).
+  - Updated `docs/BACKEND_HANDOFF.md` (Success, Empty, Validation, Auth, and Retry contracts).
+- **Automated Verification Suites**:
+  - `test/unit/app_result_test.dart` (Passed)
+  - `test/unit/error_message_mapper_test.dart` (Passed)
+  - `test/widget/standardized_states_test.dart` (Passed)
+
 ## [1.8.0] - Phase 11 Backend-Ready Core Integration & API Adapter Foundation - 2026-08-08
 
 ### Added & Upgraded

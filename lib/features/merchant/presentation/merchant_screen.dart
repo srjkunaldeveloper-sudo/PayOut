@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/error/error_message_mapper.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 import 'package:payout/features/merchant/models/merchant_models.dart';
 import 'package:payout/features/merchant/repositories/merchant_repository.dart';
@@ -36,8 +38,8 @@ class _MerchantScreenState extends State<MerchantScreen> {
   @override
   void initState() {
     super.initState();
-    _merchantRepo = widget.merchantRepository ?? MockMerchantRepository();
-    _bankAccountRepo = widget.bankAccountRepository ?? MockBankAccountRepository();
+    _merchantRepo = widget.merchantRepository ?? AppDependencies.instance.merchantRepository;
+    _bankAccountRepo = widget.bankAccountRepository ?? AppDependencies.instance.bankAccountRepository;
     _loadMerchantData();
   }
 
@@ -65,7 +67,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to load merchant console data. Please try again.';
+          _errorMessage = ErrorMessageMapper.map(e, fallback: 'Failed to load merchant console data. Please try again.');
           _isLoading = false;
         });
       }
@@ -82,12 +84,12 @@ class _MerchantScreenState extends State<MerchantScreen> {
           children: [
             const Text(
               'Store Static QR Code',
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 4),
             Text(
               _profile?.storeName ?? 'Store QR Code',
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             Container(
@@ -102,13 +104,13 @@ class _MerchantScreenState extends State<MerchantScreen> {
             const SizedBox(height: 12),
             Text(
               'UPI ID: ${_profile?.upiId ?? "merchant@payout"}',
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
             ),
             const SizedBox(height: 4),
             const Text(
               'Accept payments from Google Pay, PhonePe, Paytm, BHIM & all UPI apps.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             PrimaryButton(
@@ -146,7 +148,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                 Text(
                   _errorMessage ?? 'Merchant details unavailable',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
                 PrimaryButton(
@@ -210,7 +212,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                             Text(
                               profile.storeName,
                               style: const TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -222,7 +224,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                             Text(
                               '${profile.businessCategory} • ${profile.city}',
                               style: const TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 11.0,
                                 color: AppColors.primaryLight,
                               ),
@@ -240,7 +242,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                         child: Text(
                           profile.kycStatus.toUpperCase(),
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -262,13 +264,13 @@ class _MerchantScreenState extends State<MerchantScreen> {
                         children: [
                           const Text(
                             "Today's Store Sales",
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.primaryLight),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '₹${summary.todaySales.toStringAsFixed(2)}',
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -281,13 +283,13 @@ class _MerchantScreenState extends State<MerchantScreen> {
                         children: [
                           const Text(
                             'Settlement Balance',
-                            style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.primaryLight),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '₹${summary.settlementPending.toStringAsFixed(2)}',
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.amberAccent,
@@ -318,7 +320,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                         }
                       },
                       icon: const Icon(Icons.flash_on_rounded, size: 16, color: AppColors.primary),
-                      label: const Text('Instant Sweep to Bank', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                      label: const Text('Instant Sweep to Bank', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -335,7 +337,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
             const Text(
               'Merchant Actions',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontSize: 15.0,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
@@ -415,11 +417,11 @@ class _MerchantScreenState extends State<MerchantScreen> {
               children: [
                 const Text(
                   'Active Store Offers',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 15.0, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontSize: 15.0, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 Text(
                   '${_activeOffers.length} Active',
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
               ],
             ),
@@ -445,14 +447,14 @@ class _MerchantScreenState extends State<MerchantScreen> {
                           children: [
                             Text(
                               offer.title,
-                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Code: ${offer.code} • Min spend ₹${offer.minSpend.toInt()}',
-                              style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -465,7 +467,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                         ),
                         child: Text(
                           '${offer.discountPercent.toInt()}% OFF',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success),
+                          style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success),
                         ),
                       ),
                     ],
@@ -482,7 +484,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                 const Text(
                   'Recent Store Payments',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 15.0,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -497,7 +499,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                       ),
                     );
                   },
-                  child: const Text('View All', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                  child: const Text('View All', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                 ),
               ],
             ),
@@ -516,7 +518,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                           Text(
                             txn.customerName,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -527,7 +529,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                           Text(
                             '${txn.paymentMethod} • ${txn.dateTime}',
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
@@ -539,7 +541,7 @@ class _MerchantScreenState extends State<MerchantScreen> {
                     Text(
                       '+₹${txn.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: AppColors.success,
@@ -576,14 +578,14 @@ class _MerchantScreenState extends State<MerchantScreen> {
             const SizedBox(height: 6),
             Text(
               title,
-              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 2),
             Text(
               subtitle,
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -36,11 +35,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
   }
 
   @override
@@ -96,90 +91,252 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Book Bus Tickets'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Book Bus Tickets',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 40)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppCard(
+                // Search Inputs Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
-                      AppTextField(
-                        controller: _fromController,
-                        labelText: 'From City / Boarding Point',
-                        hintText: 'e.g. Delhi (Kashmere Gate)',
-                        prefix: const Icon(Icons.directions_bus_rounded, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin city is required' : null,
+                      Stack(
+                        alignment: Alignment.centerRight,
+                        children: [
+                          Column(
+                            children: [
+                              AppTextField(
+                                controller: _fromController,
+                                labelText: 'From City / Boarding Point',
+                                hintText: 'e.g. Delhi (Kashmere Gate)',
+                                prefix: const Icon(Icons.directions_bus_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin city is required' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              AppTextField(
+                                controller: _toController,
+                                labelText: 'To City / Destination',
+                                hintText: 'e.g. Jaipur (Sindhi Camp)',
+                                prefix: const Icon(Icons.location_on_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination city is required' : null,
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            right: 12,
+                            top: 42,
+                            child: GestureDetector(
+                              onTap: () {
+                                final temp = _fromController.text;
+                                _fromController.text = _toController.text;
+                                _toController.text = temp;
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: const Icon(
+                                  Icons.swap_vert_rounded,
+                                  color: Color(0xFF3F37C9),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.s12),
-                      AppTextField(
-                        controller: _toController,
-                        labelText: 'To City / Destination',
-                        hintText: 'e.g. Jaipur (Sindhi Camp)',
-                        prefix: const Icon(Icons.location_on_outlined, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination city is required' : null,
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
+                      // Date of Travel
                       InkWell(
                         onTap: () => _selectDate(context),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: 'Date of Travel',
-                            prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: Text(
-                            '${_travelDate.day}/${_travelDate.month}/${_travelDate.year}',
-                            style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Date of Travel',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_travelDate.day}/${_travelDate.month}/${_travelDate.year}',
+                                    style: const TextStyle(
+                                      fontFamily: 'Geist Sans',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
+                      // Bus Type Segmented Control
                       Row(
                         children: [
-                          ChoiceChip(
-                            label: const Text('All Buses', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
-                            selected: _isAC == null,
-                            selectedColor: AppColors.primaryContainer,
-                            onSelected: (val) => setState(() => _isAC = null),
-                          ),
+                          _buildBusTypeChip('All Buses', _isAC == null, () => setState(() => _isAC = null)),
                           const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: const Text('AC Only', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
-                            selected: _isAC == true,
-                            selectedColor: AppColors.primaryContainer,
-                            onSelected: (val) => setState(() => _isAC = true),
-                          ),
+                          _buildBusTypeChip('AC Only', _isAC == true, () => setState(() => _isAC = true)),
                           const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: const Text('Non-AC', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
-                            selected: _isAC == false,
-                            selectedColor: AppColors.primaryContainer,
-                            onSelected: (val) => setState(() => _isAC = false),
-                          ),
+                          _buildBusTypeChip('Non-AC', _isAC == false, () => setState(() => _isAC = false)),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s24),
+                const SizedBox(height: 28),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                    text: 'Search Buses',
-                    onPressed: _submitSearch,
-                  ),
+                // Search CTA
+                PrimaryButton(
+                  text: 'Search Buses',
+                  height: 56,
+                  iconRight: Icons.arrow_forward_rounded,
+                  onPressed: _submitSearch,
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusTypeChip(String label, bool isSelected, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 38,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFF3F37C9), Color(0xFF2563EB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: !isSelected ? const Color(0xFFF8FAFC) : null,
+            borderRadius: BorderRadius.circular(10),
+            border: !isSelected ? Border.all(color: const Color(0xFFE2E8F0)) : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF3F37C9).withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Geist Sans',
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : const Color(0xFF1F1F1F),
             ),
           ),
         ),
@@ -240,7 +397,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : filtered.isEmpty
-                ? const Center(child: Text('No buses available on this route', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                ? const Center(child: Text('No buses available on this route', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                 : ListView.builder(
                     padding: const EdgeInsets.all(AppSpacing.s20),
                     itemCount: filtered.length,
@@ -258,7 +415,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
                                   Expanded(
                                     child: Text(
                                       bus.operatorName,
-                                      style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                                      style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14),
                                     ),
                                   ),
                                   Container(
@@ -273,7 +430,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
                                         const SizedBox(width: 2),
                                         Text(
                                           bus.rating.toString(),
-                                          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                                          style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
                                         ),
                                       ],
                                     ),
@@ -281,7 +438,7 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
                                 ],
                               ),
                               const SizedBox(height: 2),
-                              Text(bus.busType, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                              Text(bus.busType, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                               const SizedBox(height: 12),
 
                               Row(
@@ -290,16 +447,16 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(bus.departureTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
-                                      Text(bus.from, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                      Text(bus.departureTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text(bus.from, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                     ],
                                   ),
-                                  Text(bus.duration, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                  Text(bus.duration, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Text(bus.arrivalTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
-                                      Text(bus.to, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                      Text(bus.arrivalTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15)),
+                                      Text(bus.to, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                     ],
                                   ),
                                 ],
@@ -314,8 +471,8 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('₹${bus.price.toInt()}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
-                                      Text('${bus.availableSeats} seats left', style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+                                      Text('₹${bus.price.toInt()}', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                                      Text('${bus.availableSeats} seats left', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
                                     ],
                                   ),
                                   PrimaryButton(
@@ -488,11 +645,11 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
                     children: [
                       Text(
                         _selectedSeats.isEmpty ? 'Select Seats' : '${_selectedSeats.length} Seat(s) Selected',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       Text(
                         '₹${totalFare.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -558,7 +715,7 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
         child: Text(
           seat.seatNumber,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             fontSize: 10,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : (seat.isAvailable ? AppColors.textPrimary : Colors.grey.shade600),
@@ -577,7 +734,7 @@ class _BusSeatSelectionScreenState extends State<BusSeatSelectionScreen> {
           decoration: BoxDecoration(color: color, border: border, borderRadius: BorderRadius.circular(3)),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+        Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -647,9 +804,9 @@ class _BusPassengerScreenState extends State<BusPassengerScreen> {
                 child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Bus Ticket Booking', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Bus Ticket Booking', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Authorize ticket booking via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Authorize ticket booking via 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -740,13 +897,13 @@ class _BusPassengerScreenState extends State<BusPassengerScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary),
             ),
           ),
         ],
@@ -774,21 +931,21 @@ class _BusPassengerScreenState extends State<BusPassengerScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.bus.operatorName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(widget.bus.operatorName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 2),
-                          Text('Seat(s): ${widget.selectedSeats.map((s) => s.seatNumber).join(', ')}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                          Text('Seat(s): ${widget.selectedSeats.map((s) => s.seatNumber).join(', ')}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                       Text(
                         '₹${widget.totalFare.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s20),
 
-                const Text('Passenger Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Passenger Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(
@@ -823,9 +980,9 @@ class _BusPassengerScreenState extends State<BusPassengerScreen> {
                       child: DropdownButtonFormField<String>(
                         initialValue: _gender,
                         items: const [
-                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                         ],
                         onChanged: (val) => setState(() => _gender = val ?? 'Male'),
                         decoration: InputDecoration(

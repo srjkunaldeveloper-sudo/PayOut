@@ -62,7 +62,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
               const Text(
                 'Review Details',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -89,7 +89,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                               Text(
                                 widget.recipientName,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15.0,
                                 ),
@@ -97,7 +97,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                               Text(
                                 widget.recipientDetail,
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'Geist Sans',
                                   fontSize: 12.0,
                                   color: AppColors.textSecondary,
                                 ),
@@ -130,7 +130,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
               const Text(
                 'Payment Method',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -161,7 +161,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                           Text(
                             widget.methodLabel,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -169,7 +169,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
                           const Text(
                             'Instant transfer',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
@@ -204,7 +204,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             fontSize: 13.0,
             color: AppColors.textSecondary,
           ),
@@ -212,7 +212,7 @@ class _ReviewPaymentScreenState extends State<ReviewPaymentScreen> {
         Text(
           val,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist Sans',
             fontSize: isBold ? 15.0 : 13.0,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             color: isPrimary ? AppColors.primary : AppColors.textPrimary,

@@ -84,7 +84,7 @@ class _BillPendingScreenState extends State<BillPendingScreen> {
                     const Text(
                       'Bill Payment Pending',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -94,7 +94,7 @@ class _BillPendingScreenState extends State<BillPendingScreen> {
                     const Text(
                       'Your bill payment request is being verified by BBPS.',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -104,7 +104,7 @@ class _BillPendingScreenState extends State<BillPendingScreen> {
                     Text(
                       '₹${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -159,8 +159,8 @@ class _BillPendingScreenState extends State<BillPendingScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-          Text(val, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13)),
+          Text(val, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

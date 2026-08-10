@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_bar.dart';
-import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/widgets/mpin/mpin_widgets.dart';
 import 'package:payout/features/auth/constants/auth_constants.dart';
 import 'package:payout/features/auth/services/secure_storage_service.dart';
 import 'package:payout/features/payments/presentation/payment_processing_screen.dart';
@@ -103,131 +102,143 @@ class _PaymentMPINVerificationScreenState extends State<PaymentMPINVerificationS
     }
   }
 
-  Widget _buildKey(String val) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(AppSpacing.s8),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _onKeyPress(val),
-            borderRadius: BorderRadius.circular(32),
-            child: Container(
-              height: 64,
-              alignment: Alignment.center,
-              child: Text(
-                val,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Security MPIN'),
-      body: SafeArea(
-        child: _isLoadingMpin
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  const SizedBox(height: AppSpacing.s24),
-                  const Text(
-                    'Enter 6-Digit MPIN',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: MpinBackground(
+        child: SafeArea(
+          child: _isLoadingMpin
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    // Header with back button
+                    const PremiumMpinHeader(
+                      title: 'Security MPIN',
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.s8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s32),
-                    child: Text(
-                      'Confirm transfer of ₹${widget.amount.toStringAsFixed(2)} to ${widget.recipientName}.',
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13.0,
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s40),
-                  // PIN Dots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(AuthConstants.mpinLength, (index) {
-                      final isEntered = index < _pin.length;
-                      return Container(
-                        width: 16,
-                        height: 16,
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isEntered ? AppColors.primary : AppColors.divider,
-                        ),
-                      );
-                    }),
-                  ),
-                  const Spacer(),
-                  // Keyboard
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s16),
-                    decoration: const BoxDecoration(
-                      color: AppColors.background,
-                      border: Border(
-                        top: BorderSide(color: AppColors.divider, width: 1.0),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [_buildKey('1'), _buildKey('2'), _buildKey('3')],
-                        ),
-                        Row(
-                          children: [_buildKey('4'), _buildKey('5'), _buildKey('6')],
-                        ),
-                        Row(
-                          children: [_buildKey('7'), _buildKey('8'), _buildKey('9')],
-                        ),
-                        Row(
-                          children: [
-                            const Expanded(child: SizedBox()),
-                            _buildKey('0'),
-                            Expanded(
-                              child: InkWell(
-                                onTap: _onBackspace,
-                                borderRadius: BorderRadius.circular(32),
-                                child: Container(
-                                  height: 64,
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.backspace_outlined,
-                                    color: AppColors.textSecondary,
-                                    size: 22,
-                                  ),
-                                ),
+                    const SizedBox(height: 6),
+
+                    // Centered Security Lock Visual
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF00B9F1).withValues(alpha: 0.08),
+                                width: 1.0,
                               ),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
+                                width: 1.0,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF3F37C9),
+                                  Color(0xFF4895EF),
+                                  Color(0xFF4CC9F0),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.24),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.lock_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 10),
+
+                    // Title with gradient MPIN
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          Color(0xFF1F1F1F),
+                          Color(0xFF1F1F1F),
+                          Color(0xFF3F37C9),
+                          Color(0xFF4895EF),
+                        ],
+                        stops: [0.0, 0.68, 0.72, 1.0],
+                      ).createShader(Offset.zero & bounds.size),
+                      child: const Text(
+                        'Enter 6-Digit MPIN',
+                        style: TextStyle(
+                          fontFamily: 'Geist Sans',
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Dynamic payment description
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      child: Text(
+                        'Confirm transfer of ₹${widget.amount.toStringAsFixed(2)} to ${widget.recipientName}.',
+                        style: TextStyle(
+                          fontFamily: 'Geist Sans',
+                          fontSize: 13.0,
+                          color: const Color(0xFF1F1F1F).withValues(alpha: 0.6),
+                          height: 1.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // MPIN Dots
+                    PremiumMpinIndicator(
+                      pinLength: _pin.length,
+                      maxLength: AuthConstants.mpinLength,
+                    ),
+
+                    const Spacer(),
+
+                    // Keypad
+                    PremiumMpinKeypad(
+                      onKeyPress: _onKeyPress,
+                      onBackspace: _onBackspace,
+                    ),
+
+                    const Spacer(),
+
+                    // Footer
+                    const MpinSecurityFooter(),
+                  ],
+                ),
+        ),
       ),
     );
   }

@@ -3,21 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/receipt_screen.dart';
 import 'package:payout/features/payments/repositories/payments_repository.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   final String recipientName;
   final double amount;
   final String? transactionId;
+  final PaymentsRepository? paymentsRepository;
 
   const PaymentSuccessScreen({
     super.key,
     required this.recipientName,
     required this.amount,
     this.transactionId,
+    this.paymentsRepository,
   });
 
   String _generateTxnId() {
@@ -63,7 +64,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     const Text(
                       'Payment Successful!',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -73,7 +74,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     Text(
                       'Sent to $recipientName',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -83,7 +84,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     Text(
                       '₹${amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -104,7 +105,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       children: [
                         const Text(
                           'Payment Status',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                          style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -115,7 +116,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                           child: const Text(
                             'COMPLETED',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: AppColors.success,
@@ -130,12 +131,12 @@ class PaymentSuccessScreen extends StatelessWidget {
                       children: [
                         const Text(
                           'Transaction ID',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                          style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13),
                         ),
                         Text(
                           txnId,
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                             color: AppColors.textPrimary,
@@ -149,12 +150,12 @@ class PaymentSuccessScreen extends StatelessWidget {
                       children: [
                         const Text(
                           'Method',
-                          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13),
+                          style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13),
                         ),
                         const Text(
                           'Payout Wallet Balance',
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                             color: AppColors.textPrimary,
@@ -174,10 +175,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                       text: 'View Receipt',
                       iconLeft: Icons.receipt_long_rounded,
                       onPressed: () async {
-                        final repo = MockPaymentsRepository(
-                          MockTransactionRepository(),
-                          MockNotificationRepository(),
-                        );
+                        final repo = paymentsRepository ?? AppDependencies.instance.paymentsRepository;
                         final receipt = await repo.getReceipt(txnId);
                         if (context.mounted) {
                           Navigator.push(

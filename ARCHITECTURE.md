@@ -27,7 +27,7 @@ feature_name/
 All application-wide toggles are stored inside `lib/core/config/app_config.dart` ([app_config.dart](file:///Users/macbook/StudioProjects/payout/lib/core/config/app_config.dart)):
 - `isDemoMode`: Bypasses strict OTP validations for presentations and client reviews.
 - `enableLogs`: Master toggle for console logs and analytics telemetry.
-- `enableMockRepository`: Determines whether modules connect to mock data repositories or production services.
+- `repositoryMode`: Determines whether modules connect to mock data repositories or production services via `RepositoryMode.mock` and `RepositoryMode.api`.
 
 ---
 
@@ -98,9 +98,10 @@ Coordinates full in-app travel discovery, seat maps, multiplex ticketing, and re
 
 ---
 
-## 🔒 Security, Core Network & Dependency Injection Infrastructure (Phase 11)
+## 🔒 Security, Core Network & Dependency Injection Infrastructure (Phase 11 & 13)
 - **Central Composition Root (`AppDependencies`):** Manages singleton instances, constructor DI wiring, and service locator inversion across all 15 domain repositories without external heavy packages.
-- **Central Repository & Environment Config (`AppConfig`):** Single source of truth for `RepositoryMode` (`mock`, `api`), base API URLs, and timeout policies.
+- **Central Repository & Environment Config (`AppConfig`):** Central source of truth for `RepositoryMode` (`mock`, `api`), base API URLs, and timeout policies.
 - **Network Layer (`DioClient`, `ApiClient`):** Pre-configured Dio HTTP client with `AuthInterceptor`, sanitized `LoggingInterceptor`, full HTTP verbs (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`), and standard `ApiResponse<T>` / `NetworkException` error mapping.
 - **Security & PII Sanitization:** Token manager (`TokenManager`), session store (`SessionManager`), cryptographic helpers (`EncryptionHelper`), and zero-PII network interceptors that strip tokens, cookies, and sensitive payload data from logs.
+- **Decoupled Mock Strategy (Phase 13):** All presentation screens are completely decoupled from dummy/mock data files and never construct mock repository classes inline. Constructors support DI and resolve default fallbacks strictly via `AppDependencies.instance` container, guaranteeing full REST API replaceability without UI modifications.
 

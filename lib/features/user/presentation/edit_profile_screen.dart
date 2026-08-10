@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/user/models/user_models.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/user/validators/user_validator.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserProfileModel profile;
+  final UserRepository? userRepository;
 
   const EditProfileScreen({
     super.key,
     required this.profile,
+    this.userRepository,
   });
 
   @override
@@ -19,7 +22,7 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final UserRepository _userRepository = MockUserRepository();
+  late final UserRepository _userRepository;
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
@@ -33,6 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _userRepository = widget.userRepository ?? AppDependencies.instance.userRepository;
     _nameController = TextEditingController(text: widget.profile.name);
     _emailController = TextEditingController(text: widget.profile.email);
     _dobController = TextEditingController(text: widget.profile.dob ?? '15/08/1995');
@@ -101,7 +105,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const Text(
                 'Profile Updated',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -112,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 'Your profile changes have been saved successfully.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -176,14 +180,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: AppSpacing.s16),
                   Text(
                     otpSent ? 'Enter Verification Code' : 'Change Mobile Number',
-                    style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: AppSpacing.s8),
                   Text(
                     otpSent
                         ? 'Enter the 6-digit OTP sent to +91 ${phoneController.text}'
                         : 'A 6-digit OTP will be sent to verify your new mobile number.',
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: AppSpacing.s16),
                   if (!otpSent) ...[
@@ -365,14 +369,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Mobile Number (Verified)', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          const Text('Mobile Number (Verified)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                           const SizedBox(height: 2),
-                          Text('+91 $_currentPhone', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text('+91 $_currentPhone', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                         ],
                       ),
                       TextButton(
                         onPressed: _showChangeMobileSheet,
-                        child: const Text('Change', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        child: const Text('Change', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, color: AppColors.primary)),
                       ),
                     ],
                   ),

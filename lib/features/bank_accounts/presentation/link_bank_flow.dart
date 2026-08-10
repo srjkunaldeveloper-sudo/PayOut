@@ -7,14 +7,16 @@ import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
 import 'package:payout/features/bank_accounts/services/bank_account_service.dart';
 
 class LinkBankFlow extends StatefulWidget {
-  const LinkBankFlow({super.key});
+  final BankAccountService? bankAccountService;
+
+  const LinkBankFlow({super.key, this.bankAccountService});
 
   @override
   State<LinkBankFlow> createState() => _LinkBankFlowState();
 }
 
 class _LinkBankFlowState extends State<LinkBankFlow> {
-  final BankAccountService _bankAccountService = BankAccountService();
+  late final BankAccountService _bankAccountService;
 
   // Navigation step tracking
   int _currentStep = 0;
@@ -48,6 +50,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
   @override
   void initState() {
     super.initState();
+    _bankAccountService = widget.bankAccountService ?? BankAccountService();
     _loadBanks();
   }
 
@@ -103,7 +106,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
         children: [
           const Text(
             'Select your bank',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           const SizedBox(height: AppSpacing.s16),
           CustomSearchBar(
@@ -118,7 +121,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
           if (_searchQuery.isEmpty) ...[
             const Text(
               'Popular Banks',
-              style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.s12),
             GridView.builder(
@@ -161,7 +164,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
                       Expanded(
                         child: Text(
                           bank.name,
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -175,7 +178,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
           ],
           const Text(
             'All Banks',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.s12),
           ListView.separated(
@@ -199,7 +202,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
                 ),
                 title: Text(
                   bank.name,
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
                 onTap: () {
@@ -238,7 +241,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
               const SizedBox(width: AppSpacing.s12),
               Text(
                 _selectedBank?.name ?? 'Bank Details',
-                style: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -303,12 +306,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
       children: [
         const Text(
           'SIM Mobile Verification',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
         const SizedBox(height: AppSpacing.s8),
         const Text(
           'We need to verify the mobile number linked with your bank account.',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.s32),
         Center(
@@ -326,12 +329,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
               const SizedBox(height: AppSpacing.s20),
               const Text(
                 'Registered Mobile Number',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 4),
               const Text(
                 '+91 ******5821',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -362,12 +365,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
       children: [
         const Text(
           'Enter Verification OTP',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
         const SizedBox(height: AppSpacing.s8),
         const Text(
           'Enter the 6-digit OTP code sent to your linked mobile number.',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.s32),
         TextField(
@@ -388,7 +391,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
               _resendTimerSeconds > 0
                   ? 'Resend OTP in ${_resendTimerSeconds}s'
                   : 'Didn\'t receive the code?',
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
             ),
             if (_resendTimerSeconds == 0)
               TextButton(
@@ -435,12 +438,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
       children: [
         const Text(
           'Select account verification method',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
         const SizedBox(height: AppSpacing.s8),
         const Text(
           'Complete verification to link this bank account for transactions.',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.s24),
         ListTile(
@@ -487,12 +490,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
         children: [
           const Text(
             'Verify Debit Card Details',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           const SizedBox(height: AppSpacing.s8),
           const Text(
             'DEMO ONLY: Enter mock numbers. Do NOT enter sensitive live bank cards.',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.error, fontWeight: FontWeight.bold),
+            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.error, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppSpacing.s24),
           TextFormField(
@@ -581,12 +584,12 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
         const SizedBox(height: AppSpacing.s24),
         const Text(
           'Bank Account Linked!',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
         const SizedBox(height: AppSpacing.s8),
         const Text(
           'Your bank account is verified and ready for payments.',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textSecondary),
+          style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.s32),
@@ -625,8 +628,8 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-          Text(val, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13)),
+          Text(val, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

@@ -51,7 +51,7 @@ class TransactionTile extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontSize: 14.0,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -63,7 +63,7 @@ class TransactionTile extends StatelessWidget {
                   Text(
                     '$subtitle • $date',
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontSize: 12.0,
                       color: AppColors.textSecondary,
                     ),
@@ -80,7 +80,7 @@ class TransactionTile extends StatelessWidget {
                 Text(
                   '${isCredit ? '+' : '-'}₹${amount.toStringAsFixed(2)}',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 15.0,
                     fontWeight: FontWeight.bold,
                     color: isCredit ? AppColors.success : AppColors.textPrimary,
@@ -96,7 +96,7 @@ class TransactionTile extends StatelessWidget {
                   child: Text(
                     statusText,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontSize: 10.0,
                       fontWeight: FontWeight.bold,
                       color: statusColor,

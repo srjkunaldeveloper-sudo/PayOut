@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/merchant/models/merchant_models.dart';
 import 'package:payout/features/merchant/repositories/merchant_repository.dart';
 
@@ -28,7 +29,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _merchantRepo = widget.merchantRepository ?? MockMerchantRepository();
+    _merchantRepo = widget.merchantRepository ?? AppDependencies.instance.merchantRepository;
     if (widget.profile != null) {
       _profile = widget.profile;
       _isLoading = false;
@@ -71,7 +72,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
           Text(
             label,
             style: const TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               color: AppColors.textSecondary,
               fontSize: 13,
             ),
@@ -86,7 +87,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                     value,
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                       color: valueColor ?? AppColors.textPrimary,
@@ -132,7 +133,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                 Text(
                   _errorMessage ?? 'Business profile unavailable',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 16),
                 PrimaryButton(
@@ -174,7 +175,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                     child: Text(
                       profile.storeName.isNotEmpty ? profile.storeName[0] : 'S',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
                         color: AppColors.primary,
@@ -189,7 +190,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                         Text(
                           profile.storeName,
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -201,7 +202,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                         Text(
                           'Merchant ID: ${profile.id}',
                           style: const TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: 'Geist Sans',
                             fontSize: 11.0,
                             color: AppColors.primaryLight,
                           ),
@@ -216,7 +217,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           child: Text(
                             profile.businessType,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'Geist Sans',
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -235,7 +236,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
             const Text(
               'Store Information',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
                 color: AppColors.textPrimary,
@@ -266,7 +267,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
             const Text(
               'Tax & KYC Compliance',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
                 color: AppColors.textPrimary,

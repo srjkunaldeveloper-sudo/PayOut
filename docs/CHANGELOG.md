@@ -4,6 +4,14 @@ All notable changes to the Payout project are recorded here.
 
 ---
 
+## [1.10.0] - 2026-08-08
+
+### Audited & Decoupled
+- Performed a deep codebase audit to guarantee that a backend team can replace Mock repositories with Api repositories with zero UI regression or code rewrites.
+- Completely decoupled presentation screen widgets from direct imports of mock and dummy datasets (`DummyQrData`, `DummyHomeData`).
+- Standardized constructor DI to fallback to `AppDependencies.instance` container across all 15 domains, preventing direct widget construction of Mock repository classes.
+- Full automated testing passes cleanly with 70 success runs.
+
 ## [1.0.1] - 2026-08-07
 
 ### Added

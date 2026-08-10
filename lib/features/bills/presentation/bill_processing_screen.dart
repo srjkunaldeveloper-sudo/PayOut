@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bills/models/bill_models.dart';
 import 'package:payout/features/bills/repositories/bill_repository.dart';
 import 'package:payout/features/bills/presentation/bill_success_screen.dart';
 import 'package:payout/features/bills/presentation/bill_pending_screen.dart';
 import 'package:payout/features/bills/presentation/bill_failed_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 
 class BillProcessingScreen extends StatefulWidget {
   final BillModel bill;
   final String methodId;
+  final BillRepository? billRepository;
 
   const BillProcessingScreen({
     super.key,
     required this.bill,
     required this.methodId,
+    this.billRepository,
   });
 
   @override
@@ -28,7 +30,7 @@ class _BillProcessingScreenState extends State<BillProcessingScreen> {
   @override
   void initState() {
     super.initState();
-    _billRepository = MockBillRepository(MockTransactionRepository());
+    _billRepository = widget.billRepository ?? AppDependencies.instance.billRepository;
     _startBillPayment();
   }
 
@@ -130,7 +132,7 @@ class _BillProcessingScreenState extends State<BillProcessingScreen> {
                     const Text(
                       'Processing Bill Payment...',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -140,7 +142,7 @@ class _BillProcessingScreenState extends State<BillProcessingScreen> {
                     Text(
                       'Please do not close the app. Paying ${widget.bill.billerName}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -150,7 +152,7 @@ class _BillProcessingScreenState extends State<BillProcessingScreen> {
                     Text(
                       '₹${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -163,7 +165,7 @@ class _BillProcessingScreenState extends State<BillProcessingScreen> {
               const Text(
                 'Secured by Payout BBPS utility gateway',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 12.0,
                   color: AppColors.textSecondary,
                 ),

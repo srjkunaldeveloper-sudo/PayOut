@@ -51,7 +51,7 @@ class CustomChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontSize: 12.0,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? AppColors.primary : AppColors.textPrimary,

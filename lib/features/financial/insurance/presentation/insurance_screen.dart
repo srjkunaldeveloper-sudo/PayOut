@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/financial/shared/models/financial_models.dart';
 import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
 import 'package:payout/features/financial/shared/services/financial_service.dart';
@@ -9,14 +10,16 @@ import 'package:payout/features/financial/shared/validators/financial_validator.
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
 
 class InsuranceScreen extends StatefulWidget {
-  const InsuranceScreen({super.key});
+  final FinancialRepository? financialRepository;
+
+  const InsuranceScreen({super.key, this.financialRepository});
 
   @override
   State<InsuranceScreen> createState() => _InsuranceScreenState();
 }
 
 class _InsuranceScreenState extends State<InsuranceScreen> {
-  final FinancialRepository _financialRepository = MockFinancialRepository();
+  late final FinancialRepository _financialRepository;
 
   List<InsurancePolicyModel> _policies = [];
   bool _isLoading = true;
@@ -25,6 +28,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
   @override
   void initState() {
     super.initState();
+    _financialRepository = widget.financialRepository ?? AppDependencies.instance.financialRepository;
     _loadPolicies();
   }
 
@@ -75,14 +79,14 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Comprehensive Protection', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 12)),
+                        const Text('Comprehensive Protection', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 12)),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.white24,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('100% Paperless', style: TextStyle(fontFamily: 'Inter', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          child: const Text('100% Paperless', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -90,7 +94,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                     const Text(
                       'Protect What Matters',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -99,7 +103,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                     const SizedBox(height: 4),
                     const Text(
                       'Health, Life, Vehicle & Travel insurance from India\'s top insurers with instant digital policies.',
-                      style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 11),
+                      style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -129,7 +133,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                       child: Text(
                         cat,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           color: isSelected ? AppColors.primary : AppColors.textPrimary,
@@ -142,7 +146,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
               const SizedBox(height: AppSpacing.s20),
 
               // Policy Catalog List
-              const Text('Featured Policies', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Featured Policies', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s12),
               ..._filteredPolicies.map((policy) => _buildPolicyCard(policy)),
               const SizedBox(height: AppSpacing.s16),
@@ -157,7 +161,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                 ),
                 child: const Text(
                   'Disclaimer: Insurance policies are underwritten by IRDAI registered insurance partners. Premium and terms are simulated for demo and testing purposes.',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                  style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                 ),
               ),
               const SizedBox(height: AppSpacing.s24),
@@ -182,8 +186,8 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(policy.name, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15)),
-                      Text(policy.providerName, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      Text(policy.name, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(policy.providerName, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -195,7 +199,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
                   ),
                   child: Text(
                     policy.type,
-                    style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                 ),
               ],
@@ -215,7 +219,7 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Duration: ${policy.duration}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                Text('Duration: ${policy.duration}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                 PrimaryButton(
                   text: 'Get Covered',
                   width: 130,
@@ -234,9 +238,9 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+        Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
   }
@@ -338,9 +342,9 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Policy Checkout', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Policy Checkout', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Authorize policy issuance via secure 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Authorize policy issuance via secure 6-digit MPIN payment.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -426,7 +430,7 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Geist Sans',
               color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
               fontSize: isTotal ? 13 : 12,
@@ -437,7 +441,7 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Geist Sans',
                 fontWeight: FontWeight.bold,
                 fontSize: isTotal ? 14 : 12,
                 color: isTotal ? AppColors.primary : AppColors.textPrimary,
@@ -471,10 +475,10 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Estimated Annual Premium', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                          const Text('Estimated Annual Premium', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                           const SizedBox(height: 2),
-                          Text('₹${_quote.finalPremium.toStringAsFixed(2)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.primary)),
-                          const Text('Includes 18% GST', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+                          Text('₹${_quote.finalPremium.toStringAsFixed(2)}', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.primary)),
+                          const Text('Includes 18% GST', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
                         ],
                       ),
                       Container(
@@ -483,7 +487,7 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                           color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('Instant Cover', style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
+                        child: const Text('Instant Cover', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
                       ),
                     ],
                   ),
@@ -491,7 +495,7 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                 const SizedBox(height: AppSpacing.s20),
 
                 // Policy Benefits
-                const Text('Key Benefits', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Key Benefits', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s8),
                 ...widget.policy.benefits.map((b) => Padding(
                       padding: const EdgeInsets.only(bottom: 6.0),
@@ -499,14 +503,14 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                         children: [
                           const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(b, style: const TextStyle(fontFamily: 'Inter', fontSize: 12))),
+                          Expanded(child: Text(b, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12))),
                         ],
                       ),
                     )),
                 const SizedBox(height: AppSpacing.s20),
 
                 // Applicant Details Form
-                const Text('Applicant Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Applicant Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(
@@ -539,10 +543,10 @@ class _InsuranceQuoteFlowScreenState extends State<InsuranceQuoteFlowScreen> {
                   DropdownButtonFormField<int>(
                     initialValue: _memberCount,
                     items: const [
-                      DropdownMenuItem(value: 1, child: Text('Individual (1 Member)', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 2, child: Text('Couple (2 Members)', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 3, child: Text('Family (2 Adults + 1 Child)', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 4, child: Text('Family (2 Adults + 2 Children)', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                      DropdownMenuItem(value: 1, child: Text('Individual (1 Member)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 2, child: Text('Couple (2 Members)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 3, child: Text('Family (2 Adults + 1 Child)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 4, child: Text('Family (2 Adults + 2 Children)', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                     ],
                     onChanged: (val) {
                       if (val != null) {

@@ -1,8 +1,12 @@
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
 import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 
 class BankAccountService {
-  final BankAccountRepository _repository = MockBankAccountRepository();
+  final BankAccountRepository _repository;
+
+  BankAccountService({BankAccountRepository? repository})
+      : _repository = repository ?? AppDependencies.instance.bankAccountRepository;
 
   Future<List<LinkedBankAccountModel>> getLinkedAccounts() => _repository.getLinkedAccounts();
   Future<List<BankModel>> getSupportedBanks() => _repository.getSupportedBanks();

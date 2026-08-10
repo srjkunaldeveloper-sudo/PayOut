@@ -2,20 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/financial/shared/models/financial_models.dart';
 import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
 import 'package:payout/features/financial/shared/validators/financial_validator.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
 
 class InvestmentsScreen extends StatefulWidget {
-  const InvestmentsScreen({super.key});
+  final FinancialRepository? financialRepository;
+
+  const InvestmentsScreen({super.key, this.financialRepository});
 
   @override
   State<InvestmentsScreen> createState() => _InvestmentsScreenState();
 }
 
 class _InvestmentsScreenState extends State<InvestmentsScreen> {
-  final FinancialRepository _financialRepository = MockFinancialRepository();
+  late final FinancialRepository _financialRepository;
 
   PortfolioModel? _portfolio;
   List<InvestmentModel> _investments = [];
@@ -25,6 +28,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
   @override
   void initState() {
     super.initState();
+    _financialRepository = widget.financialRepository ?? AppDependencies.instance.financialRepository;
     _loadData();
   }
 
@@ -78,15 +82,15 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Portfolio Value', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 12)),
-                        Text('Live Holdings', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 10)),
+                        Text('Total Portfolio Value', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 12)),
+                        Text('Live Holdings', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 10)),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Text(
                       '₹${port.currentValue.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -99,25 +103,25 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Invested', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 10)),
+                            const Text('Invested', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 10)),
                             const SizedBox(height: 2),
-                            Text('₹${port.totalInvested.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('₹${port.totalInvested.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Geist Sans', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Total Returns', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 10)),
+                            const Text('Total Returns', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 10)),
                             const SizedBox(height: 2),
-                            Text('+₹${port.returnsValue.toStringAsFixed(0)} (${port.returnPercentage.toStringAsFixed(1)}%)', style: const TextStyle(fontFamily: 'Inter', color: Color(0xFF69F0AE), fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('+₹${port.returnsValue.toStringAsFixed(0)} (${port.returnPercentage.toStringAsFixed(1)}%)', style: const TextStyle(fontFamily: 'Geist Sans', color: Color(0xFF69F0AE), fontWeight: FontWeight.bold, fontSize: 13)),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Holdings', style: TextStyle(fontFamily: 'Inter', color: Colors.white70, fontSize: 10)),
+                            const Text('Holdings', style: TextStyle(fontFamily: 'Geist Sans', color: Colors.white70, fontSize: 10)),
                             const SizedBox(height: 2),
-                            Text('${port.holdings.length} Funds', style: const TextStyle(fontFamily: 'Inter', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('${port.holdings.length} Funds', style: const TextStyle(fontFamily: 'Geist Sans', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                           ],
                         ),
                       ],
@@ -129,7 +133,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
 
               // 2. Active Holdings List
               if (port.holdings.isNotEmpty) ...[
-                const Text('My Active Holdings', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('My Active Holdings', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
                 ...port.holdings.map((h) => Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -142,17 +146,17 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(h.fundName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+                                  Text(h.fundName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
                                   const SizedBox(height: 2),
-                                  Text('${h.category} • Invested: ₹${h.investedAmount.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                  Text('${h.category} • Invested: ₹${h.investedAmount.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                 ],
                               ),
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('₹${h.currentValue.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
-                                Text('+${h.returnPercentage.toStringAsFixed(1)}%', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
+                                Text('₹${h.currentValue.toStringAsFixed(0)}', style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
+                                Text('+${h.returnPercentage.toStringAsFixed(1)}%', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success)),
                               ],
                             ),
                           ],
@@ -163,7 +167,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
               ],
 
               // 3. Category Filter
-              const Text('Explore Funds & Assets', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text('Explore Funds & Assets', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: AppSpacing.s12),
               Wrap(
                 spacing: 8,
@@ -187,7 +191,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                       child: Text(
                         cat,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           color: isSelected ? AppColors.primary : AppColors.textPrimary,
@@ -219,7 +223,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                     Expanded(
                       child: Text(
                         'Important: Mutual fund investments are subject to market risks. 3Y returns shown are indicative and historical. Read all scheme related documents carefully before investing.',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                       ),
                     ),
                   ],
@@ -254,8 +258,8 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(fund.fundName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text('${fund.type} • ${fund.category}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      Text(fund.fundName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text('${fund.type} • ${fund.category}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -267,7 +271,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
                   ),
                   child: Text(
                     '${fund.riskLevel} Risk',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: riskColor),
+                    style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: riskColor),
                   ),
                 ),
               ],
@@ -287,7 +291,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('SIP Min: ₹${fund.minSip.toInt()} / mo', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                Text('SIP Min: ₹${fund.minSip.toInt()} / mo', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                 PrimaryButton(
                   text: 'Invest Now',
                   width: 120,
@@ -306,9 +310,9 @@ class _InvestmentsScreenState extends State<InvestmentsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+        Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
   }
@@ -395,13 +399,13 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                     children: [
                       Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 22),
                       SizedBox(width: 8),
-                      Text('Market Risk Disclosure', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('Market Risk Disclosure', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Investments are subject to market volatility. Mutual fund schemes and digital assets do not offer guaranteed returns.',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                    style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: AppSpacing.s16),
                   AppCard(
@@ -424,7 +428,7 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                       value: _riskAcknowledged,
                       title: const Text(
                         'I understand that investments are subject to market risks and returns shown are illustrative and not guaranteed.',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textPrimary),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textPrimary),
                       ),
                       onChanged: (val) {
                         setModalState(() {
@@ -500,12 +504,12 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', color: isTotal ? AppColors.textPrimary : AppColors.textSecondary, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 13 : 12)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', color: isTotal ? AppColors.textPrimary : AppColors.textSecondary, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 13 : 12)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: isTotal ? 14 : 12, color: isTotal ? AppColors.primary : AppColors.textPrimary),
+              style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: isTotal ? 14 : 12, color: isTotal ? AppColors.primary : AppColors.textPrimary),
             ),
           ),
         ],
@@ -533,9 +537,9 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.fund.fundName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(widget.fund.fundName, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
                       const SizedBox(height: 4),
-                      Text('${widget.fund.type} • ${widget.fund.category}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      Text('${widget.fund.type} • ${widget.fund.category}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -548,15 +552,15 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                       const SizedBox(height: 12),
                       const Divider(color: AppColors.divider),
                       const SizedBox(height: 4),
-                      Text('Exit Load: ${widget.fund.exitLoad}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                      Text('Lock-in Period: ${widget.fund.lockInPeriod}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                      Text('Exit Load: ${widget.fund.exitLoad}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
+                      Text('Lock-in Period: ${widget.fund.lockInPeriod}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s20),
 
                 // Order Type Selector
-                const Text('Investment Mode', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Investment Mode', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s8),
                 Row(
                   children: [
@@ -575,7 +579,7 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                             child: Text(
                               'One-Time (Lumpsum)',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 12,
                                 fontWeight: _orderType == 'One-Time' ? FontWeight.bold : FontWeight.normal,
                                 color: _orderType == 'One-Time' ? AppColors.primary : AppColors.textPrimary,
@@ -601,7 +605,7 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                             child: Text(
                               'Monthly SIP',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
                                 fontSize: 12,
                                 fontWeight: _orderType == 'Monthly SIP' ? FontWeight.bold : FontWeight.normal,
                                 color: _orderType == 'Monthly SIP' ? AppColors.primary : AppColors.textPrimary,
@@ -620,11 +624,11 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
                   DropdownButtonFormField<int>(
                     initialValue: _sipDate,
                     items: const [
-                      DropdownMenuItem(value: 1, child: Text('1st of every month', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 5, child: Text('5th of every month', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 10, child: Text('10th of every month', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 15, child: Text('15th of every month', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                      DropdownMenuItem(value: 20, child: Text('20th of every month', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                      DropdownMenuItem(value: 1, child: Text('1st of every month', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 5, child: Text('5th of every month', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 10, child: Text('10th of every month', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 15, child: Text('15th of every month', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                      DropdownMenuItem(value: 20, child: Text('20th of every month', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _sipDate = val);
@@ -673,9 +677,9 @@ class _InvestmentOrderFlowScreenState extends State<InvestmentOrderFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+        Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(value, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
   }

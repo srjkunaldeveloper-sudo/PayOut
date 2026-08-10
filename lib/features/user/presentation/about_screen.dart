@@ -34,7 +34,7 @@ class AboutScreen extends StatelessWidget {
                     const Text(
                       'Payout Super App',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -43,7 +43,7 @@ class AboutScreen extends StatelessWidget {
                     const Text(
                       'Version ${UserConstants.appVersion} (Build ${UserConstants.buildNumber})',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -58,7 +58,7 @@ class AboutScreen extends StatelessWidget {
                       child: const Text(
                         'Demo Environment (Mock APIs)',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -75,7 +75,7 @@ class AboutScreen extends StatelessWidget {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.description_outlined, color: AppColors.primary),
-                      title: const Text('Terms of Service', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                      title: const Text('Terms of Service', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +86,7 @@ class AboutScreen extends StatelessWidget {
                     const Divider(height: 1, color: AppColors.divider),
                     ListTile(
                       leading: const Icon(Icons.privacy_tip_outlined, color: AppColors.primary),
-                      title: const Text('Privacy Policy', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                      title: const Text('Privacy Policy', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +97,7 @@ class AboutScreen extends StatelessWidget {
                     const Divider(height: 1, color: AppColors.divider),
                     ListTile(
                       leading: const Icon(Icons.article_outlined, color: AppColors.primary),
-                      title: const Text('Third-Party Licenses', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                      title: const Text('Third-Party Licenses', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () {
                         showLicensePage(
@@ -114,7 +114,7 @@ class AboutScreen extends StatelessWidget {
               const Text(
                 '© 2026 srjkunaldeveloper-sudo/PayOut. All rights reserved.',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 11,
                   color: AppColors.textSecondary,
                 ),

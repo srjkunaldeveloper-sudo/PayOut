@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
 import 'package:payout/features/bank_accounts/services/bank_account_service.dart';
 import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
@@ -49,10 +47,12 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
 
   Future<void> _loadBanks() async {
     final banks = await _bankAccountService.getLinkedAccounts();
-    setState(() {
-      _linkedBanks = banks;
-      _isLoadingBanks = false;
-    });
+    if (mounted) {
+      setState(() {
+        _linkedBanks = banks;
+        _isLoadingBanks = false;
+      });
+    }
   }
 
   void _onKeyPress(String val) {
@@ -90,75 +90,165 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
-      ),
-      builder: (context) {
-        return Padding(
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            top: AppSpacing.s24,
-            left: AppSpacing.s24,
-            right: AppSpacing.s24,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+            top: 20,
+            left: 20,
+            right: 20,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
               const Text(
                 'Choose Payment Method',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontFamily: 'Geist Sans',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F1F1F),
+                ),
               ),
-              const SizedBox(height: AppSpacing.s8),
+              const SizedBox(height: 6),
               const Text(
                 'Select the source account for this transaction.',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: Color(0xFF64748B)),
               ),
-              const SizedBox(height: AppSpacing.s20),
+              const SizedBox(height: 18),
               // Payout Wallet option
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary),
-                ),
-                title: const Text('Payout Wallet', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                subtitle: const Text('Instant, direct balance transfer', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                trailing: _methodId == 'wallet' ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
-                onTap: () {
-                  setState(() {
-                    _methodId = 'wallet';
-                    _methodLabel = 'Payout Wallet';
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              const Divider(color: AppColors.divider),
-              // Linked Bank options
-              ..._linkedBanks.map((bank) {
-                final isSelected = _methodId == bank.id;
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppColors.primaryContainer, borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.account_balance_rounded, color: AppColors.primary),
-                  ),
-                  title: Text(bank.bankName, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: Text('Savings ${bank.maskedAccountNumber}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
-                  trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
                   onTap: () {
                     setState(() {
-                      _methodId = bank.id;
-                      _methodLabel = '${bank.bankName} ${bank.maskedAccountNumber}';
+                      _methodId = 'wallet';
+                      _methodLabel = 'Payout Wallet';
                     });
-                    Navigator.pop(context);
+                    Navigator.pop(sheetContext);
                   },
-                );
-              }).toList(),
-              const SizedBox(height: AppSpacing.s24),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF3F37C9), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Payout Wallet',
+                                style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1F1F1F)),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Available Balance: ₹5,000.00',
+                                style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11.5, color: Color(0xFF64748B)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_methodId == 'wallet')
+                          const Icon(Icons.check_circle_rounded, color: Color(0xFF3F37C9), size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Linked Bank options
+              if (_isLoadingBanks)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3F37C9))),
+                  ),
+                )
+              else
+                ..._linkedBanks.map((bank) {
+                  final isSelected = _methodId == bank.id;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _methodId = bank.id;
+                            _methodLabel = '${bank.bankName} ${bank.maskedAccountNumber}';
+                          });
+                          Navigator.pop(sheetContext);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.account_balance_rounded, color: Color(0xFF3F37C9), size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      bank.bankName,
+                                      style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1F1F1F)),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Savings ${bank.maskedAccountNumber}',
+                                      style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11.5, color: Color(0xFF64748B)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_circle_rounded, color: Color(0xFF3F37C9), size: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              const SizedBox(height: 12),
             ],
           ),
         );
@@ -169,22 +259,34 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
   Widget _buildKey(String value) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.all(AppSpacing.s4),
+        margin: const EdgeInsets.all(4),
         child: Material(
-          color: Colors.transparent,
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.0),
+          clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () => _onKeyPress(value),
-            borderRadius: BorderRadius.circular(16.0),
             child: Container(
-              height: 54,
+              height: 52,
               alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18.0),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Text(
                 value,
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 22.0,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: Color(0xFF1F1F1F),
                 ),
               ),
             ),
@@ -194,139 +296,335 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
     );
   }
 
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'U';
+  }
+
   @override
   Widget build(BuildContext context) {
     final double parsedAmount = double.tryParse(_amountStr) ?? 0.0;
     final displayAmount = _amountStr.isEmpty ? '0.00' : _amountStr;
+    final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Enter Amount'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 38),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Enter Amount',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 38),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 child: Column(
                   children: [
-                    const SizedBox(height: AppSpacing.s12),
-                    // Recipient details header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CustomAvatar(
-                          name: widget.recipientName,
-                          size: 40,
-                          backgroundColor: AppColors.primaryLight,
-                          textColor: AppColors.primary,
-                        ),
-                        const SizedBox(width: AppSpacing.s12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.recipientName,
+                    // 1. Premium Recipient Card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF002E6E).withValues(alpha: 0.025),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF3F37C9),
+                                  Color(0xFF4895EF),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _getInitials(widget.recipientName),
                               style: const TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Geist Sans',
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14.0,
+                                color: Colors.white,
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.recipientName,
+                                  style: const TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15.0,
+                                    color: Color(0xFF1F1F1F),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  widget.recipientDetail,
+                                  style: const TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontSize: 12.0,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF059669).withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.check, size: 11, color: Color(0xFF059669)),
+                                SizedBox(width: 3),
+                                Text(
+                                  'Verified',
+                                  style: TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF059669),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 2. Big Amount text with gradient accent
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6.0),
+                              child: Text(
+                                '₹',
+                                style: TextStyle(
+                                  fontFamily: 'Geist Sans',
+                                  fontSize: 28.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F1F1F),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
                             Text(
-                              widget.recipientDetail,
+                              displayAmount,
                               style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 11.0,
-                                color: AppColors.textSecondary,
+                                fontFamily: 'Geist Sans',
+                                fontSize: 46.0,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1F1F1F),
+                                letterSpacing: -1.0,
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.s32),
-                    // Big Amount text
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            '₹',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 28.0,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 48,
+                          height: 3.5,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF3F37C9),
+                                Color(0xFF2563EB),
+                                Color(0xFF00B9F1),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          displayAmount,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 48.0,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -1.0,
-                          ),
-                        ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.s24),
-                    // Note Input field
-                    SizedBox(
-                      width: 260,
-                      child: TextField(
-                        controller: _noteController,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Add a payment note',
-                          filled: true,
-                          fillColor: AppColors.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
+                    const SizedBox(height: 22),
+
+                    // 3. Note Input field Card
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit_note_rounded, color: Color(0xFF3F37C9), size: 22),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: _noteController,
+                              style: const TextStyle(
+                                fontFamily: 'Geist Sans',
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF1F1F1F),
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: 'Add a payment note (optional)',
+                                hintStyle: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: Color(0xFF64748B)),
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.s20),
-                    // Payment Method selector pill
+                    const SizedBox(height: 12),
+
+                    // 4. Payment Method selector Card
                     GestureDetector(
                       onTap: _showPaymentMethodSelector,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.account_balance_wallet_rounded, size: 14, color: AppColors.primary),
-                            const SizedBox(width: 8),
-                            Text(
-                              _methodLabel,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.account_balance_wallet_rounded, size: 18, color: Color(0xFF3F37C9)),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _methodLabel,
+                                    style: const TextStyle(
+                                      fontFamily: 'Geist Sans',
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Available Balance ₹5,000.00',
+                                    style: TextStyle(
+                                      fontFamily: 'Geist Sans',
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.primary),
+                            const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF64748B)),
                           ],
                         ),
                       ),
@@ -335,13 +633,14 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                 ),
               ),
             ),
-            // Custom Numeric Keypad & Proceed Button
+
+            // 5. Custom Numeric Keypad & Proceed Button
             Container(
-              padding: const EdgeInsets.all(AppSpacing.s16),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: const BoxDecoration(
-                color: AppColors.background,
+                color: Color(0xFFF8FAFC),
                 border: Border(
-                  top: BorderSide(color: AppColors.divider, width: 1.0),
+                  top: BorderSide(color: Color(0xFFE2E8F0), width: 1.0),
                 ),
               ),
               child: Column(
@@ -361,17 +660,32 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                       _buildKey('0'),
                       Expanded(
                         child: Container(
-                          margin: const EdgeInsets.all(AppSpacing.s4),
-                          child: InkWell(
-                            onTap: _onBackspace,
-                            borderRadius: BorderRadius.circular(16.0),
-                            child: Container(
-                              height: 54,
-                              alignment: Alignment.center,
-                              child: const Icon(
-                                Icons.backspace_outlined,
-                                color: AppColors.textSecondary,
-                                size: 20,
+                          margin: const EdgeInsets.all(4),
+                          child: Material(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18.0),
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              onTap: _onBackspace,
+                              child: Container(
+                                height: 52,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18.0),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.backspace_outlined,
+                                  color: Color(0xFF3F37C9),
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
@@ -379,40 +693,38 @@ class _AmountEntryScreenState extends State<AmountEntryScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.s12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: PrimaryButton(
-                      text: 'Continue',
-                      onPressed: parsedAmount > 0.0
-                          ? () {
-                              final validation = PaymentsValidator.validateAmount(parsedAmount);
-                              if (!validation.isValid) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(validation.errorMessage ?? 'Invalid amount.'),
-                                    backgroundColor: AppColors.error,
-                                  ),
-                                );
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ReviewPaymentScreen(
-                                    recipientName: widget.recipientName,
-                                    recipientDetail: widget.recipientDetail,
-                                    recipientType: widget.recipientType,
-                                    amount: parsedAmount,
-                                    note: _noteController.text,
-                                    methodId: _methodId,
-                                    methodLabel: _methodLabel,
-                                  ),
+                  const SizedBox(height: 12),
+                  PrimaryButton(
+                    text: 'Continue',
+                    height: 52,
+                    onPressed: parsedAmount > 0.0
+                        ? () {
+                            final validation = PaymentsValidator.validateAmount(parsedAmount);
+                            if (!validation.isValid) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(validation.errorMessage ?? 'Invalid amount.'),
+                                  backgroundColor: const Color(0xFFEF4444),
                                 ),
                               );
+                              return;
                             }
-                          : null,
-                    ),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ReviewPaymentScreen(
+                                  recipientName: widget.recipientName,
+                                  recipientDetail: widget.recipientDetail,
+                                  recipientType: widget.recipientType,
+                                  amount: parsedAmount,
+                                  note: _noteController.text,
+                                  methodId: _methodId,
+                                  methodLabel: _methodLabel,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
                   ),
                 ],
               ),

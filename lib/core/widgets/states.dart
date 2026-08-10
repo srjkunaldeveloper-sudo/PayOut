@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:payout/core/error/error_message_mapper.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/widgets.dart';
 
@@ -27,7 +28,6 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Premium illustration / icon placeholder frame
             Container(
               padding: const EdgeInsets.all(AppSpacing.s32),
               decoration: BoxDecoration(
@@ -79,19 +79,23 @@ class ErrorState extends StatelessWidget {
   final String title;
   final String description;
   final VoidCallback? onRetry;
+  final Object? error;
 
   const ErrorState({
     super.key,
     this.title = 'Something went wrong',
     this.description = 'We encountered an error processing your request. Please try again.',
     this.onRetry,
+    this.error,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveDesc = error != null ? ErrorMessageMapper.map(error, fallback: description) : description;
+
     return EmptyState(
       title: title,
-      description: description,
+      description: effectiveDesc,
       icon: Icons.error_outline_rounded,
       buttonText: onRetry != null ? 'Try Again' : null,
       onButtonPressed: onRetry,
@@ -167,13 +171,27 @@ class SuccessState extends StatelessWidget {
 }
 
 class LoadingState extends StatelessWidget {
-  const LoadingState({super.key});
+  final String? message;
+
+  const LoadingState({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+          if (message != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              message!,
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -203,3 +221,9 @@ class SkeletonLoader extends StatelessWidget {
     );
   }
 }
+
+// Standardized naming aliases for unified architecture
+typedef AppLoadingState = LoadingState;
+typedef AppErrorState = ErrorState;
+typedef AppEmptyState = EmptyState;
+typedef AppSuccessState = SuccessState;

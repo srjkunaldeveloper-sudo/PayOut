@@ -113,7 +113,58 @@ class AppConfig {
 
 ---
 
-## I. Testing & Verification Checklist
+## I. API Response & State Contracts
+
+Backend developers must structure API response payloads to correspond to the following UI states:
+
+### 1. Success Contract
+Successful responses should return status `200` or `201` with data wrapped in the `data` envelope:
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "data": { ... }
+}
+```
+
+### 2. Empty State Contract
+When a list query has no results, return `200` with an empty array. Do **not** throw 404 or return error statuses:
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "data": []
+}
+```
+This maps directly to `AppEmptyState` inside the presentation layer.
+
+### 3. Validation Failure Contract
+Input validation failures must return `400` or `422` with a clear validation message:
+```json
+{
+  "success": false,
+  "statusCode": 422,
+  "message": "Enter a valid 10-digit mobile number."
+}
+```
+The UI displays this message in input validation fields or snackbars.
+
+### 4. Authentication Failure Contract
+Session timeout or invalid credentials must return `401 Unauthorized`. The interceptor redirects to login:
+```json
+{
+  "success": false,
+  "statusCode": 401,
+  "message": "Session expired."
+}
+```
+
+### 5. Retry & Server Failure Contract
+Server crashes or connection timeouts must be represented by `500` or network timeouts. The UI automatically displays `AppErrorState` with a **Try Again** retry button, which triggers the repository reload callback.
+
+---
+
+## J. Testing & Verification Checklist
 
 - [ ] Run `flutter analyze` — verify 0 errors and 0 warnings.
 - [ ] Run `flutter test` — verify all unit, service, and widget test suites pass.

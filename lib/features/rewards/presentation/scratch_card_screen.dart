@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/rewards/models/reward_models.dart';
 import 'package:payout/features/rewards/repositories/reward_repository.dart';
 
@@ -30,7 +31,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _rewardRepo = widget.rewardRepository ?? MockRewardRepository();
+    _rewardRepo = widget.rewardRepository ?? AppDependencies.instance.rewardRepository;
     _isScratched = widget.card.status.toUpperCase() == 'SCRATCHED';
     _isClaimed = _isScratched;
 
@@ -93,13 +94,13 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
             children: [
               Text(
                 widget.card.title,
-                style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 18),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
               Text(
                 widget.card.description,
-                style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary),
+                style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.s32),
@@ -147,7 +148,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                                 const Text(
                                   'YOU WON CASHBACK',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: 'Geist Sans',
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                     color: Color(0xFF8A6D00),
@@ -158,7 +159,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                                 Text(
                                   '₹${widget.card.rewardValue.toStringAsFixed(0)}',
                                   style: const TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: 'Geist Sans',
                                     fontWeight: FontWeight.bold,
                                     fontSize: 42,
                                     color: Color(0xFF5A4400),
@@ -173,7 +174,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                                   ),
                                   child: const Text(
                                     'CREDITED TO WALLET',
-                                    style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success),
+                                    style: TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success),
                                   ),
                                 ),
                               ],
@@ -186,7 +187,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                                 const Text(
                                   'TAP TO SCRATCH',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: 'Geist Sans',
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                     color: Colors.white,
@@ -196,7 +197,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                                 const SizedBox(height: 8),
                                 Text(
                                   'Expires ${widget.card.expiresAt}',
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: Colors.white70),
+                                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: Colors.white70),
                                 ),
                               ],
                             ),
@@ -228,7 +229,7 @@ class _ScratchCardScreenState extends State<ScratchCardScreen> with SingleTicker
                     Expanded(
                       child: Text(
                         'Cashback is credited instantly to your Rewards wallet balance.',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                        style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:payout/features/home/models/home_models.dart';
+import 'package:payout/features/home/dummy/dummy_home_data.dart';
 import 'package:payout/features/user/repositories/user_repository.dart';
 import 'package:payout/features/wallet/repositories/wallet_repository.dart';
 import 'package:payout/features/transactions/repositories/transaction_repository.dart';
@@ -52,6 +53,8 @@ class MockHomeRepository implements HomeRepository {
       recentTransactions: results[2] as List<TransactionModel>,
       unreadNotificationCount: results[3] as int,
       offers: results[4] as List<CouponModel>,
+      popularDestinations: List.from(DummyHomeData.popularDestinations),
+      financialPromotions: List.from(DummyHomeData.financialPromotions),
     );
   }
 

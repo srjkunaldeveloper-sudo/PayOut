@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/rewards/models/reward_models.dart';
 import 'package:payout/features/rewards/repositories/reward_repository.dart';
 import 'package:payout/features/rewards/services/reward_service.dart';
@@ -30,7 +31,7 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _rewardRepo = widget.rewardRepository ?? MockRewardRepository();
+    _rewardRepo = widget.rewardRepository ?? AppDependencies.instance.rewardRepository;
     _loadCashbacks();
   }
 
@@ -86,7 +87,7 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(st, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                          label: Text(st, style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                           selected: isSelected,
                           selectedColor: AppColors.primary,
                           labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary),
@@ -113,9 +114,9 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
                             children: const [
                               Icon(Icons.stars_rounded, size: 48, color: AppColors.textSecondary),
                               SizedBox(height: 12),
-                              Text('No cashbacks found', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text('No cashbacks found', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                               SizedBox(height: 4),
-                              Text('Cashbacks earned from payments will appear here', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                              Text('Cashbacks earned from payments will appear here', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                             ],
                           ),
                         )
@@ -150,20 +151,20 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
                                               children: [
                                                 Text(
                                                   rew.source,
-                                                  style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13),
+                                                  style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
                                                   'Earned on ${rew.earnedAt}',
-                                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                                                  style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                                                 ),
                                                 if (rew.transactionId != null) ...[
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     'Ref: ${rew.transactionId}',
-                                                    style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary),
+                                                    style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary),
                                                   ),
                                                 ],
                                               ],
@@ -178,7 +179,7 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
                                       children: [
                                         Text(
                                           '+₹${rew.amount.toStringAsFixed(2)}',
-                                          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15, color: statusColor),
+                                          style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15, color: statusColor),
                                         ),
                                         const SizedBox(height: 4),
                                         Container(
@@ -189,7 +190,7 @@ class _CashbackHistoryScreenState extends State<CashbackHistoryScreen> {
                                           ),
                                           child: Text(
                                             rew.status,
-                                            style: TextStyle(fontFamily: 'Inter', fontSize: 9, fontWeight: FontWeight.bold, color: statusColor),
+                                            style: TextStyle(fontFamily: 'Geist Sans', fontSize: 9, fontWeight: FontWeight.bold, color: statusColor),
                                           ),
                                         ),
                                       ],

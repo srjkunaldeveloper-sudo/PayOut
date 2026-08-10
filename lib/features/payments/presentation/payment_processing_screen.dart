@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/models/payments_models.dart';
 import 'package:payout/features/payments/repositories/payments_repository.dart';
 import 'package:payout/features/payments/presentation/payment_success_screen.dart';
 import 'package:payout/features/payments/presentation/payment_pending_screen.dart';
 import 'package:payout/features/payments/presentation/payment_failed_screen.dart';
-
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
   final String recipientName;
@@ -16,6 +14,7 @@ class PaymentProcessingScreen extends StatefulWidget {
   final double amount;
   final String note;
   final String methodId;
+  final PaymentsRepository? paymentsRepository;
 
   const PaymentProcessingScreen({
     super.key,
@@ -25,6 +24,7 @@ class PaymentProcessingScreen extends StatefulWidget {
     required this.amount,
     required this.note,
     required this.methodId,
+    this.paymentsRepository,
   });
 
   @override
@@ -32,14 +32,12 @@ class PaymentProcessingScreen extends StatefulWidget {
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
-  final PaymentsRepository _paymentsRepository = MockPaymentsRepository(
-    MockTransactionRepository(),
-    MockNotificationRepository(),
-  );
+  late final PaymentsRepository _paymentsRepository;
 
   @override
   void initState() {
     super.initState();
+    _paymentsRepository = widget.paymentsRepository ?? AppDependencies.instance.paymentsRepository;
     _executePayment();
   }
 
@@ -163,7 +161,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                 const Text(
                   'Processing Payment',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -173,7 +171,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                 Text(
                   'Paying ₹${widget.amount.toStringAsFixed(2)} to ${widget.recipientName}...',
                   style: const TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 13.0,
                     color: AppColors.textSecondary,
                   ),
@@ -183,7 +181,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                 const Text(
                   'Please do not close the app or navigate away.',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Geist Sans',
                     fontSize: 11.0,
                     color: AppColors.textSecondary,
                   ),

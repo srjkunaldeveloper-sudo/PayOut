@@ -88,7 +88,7 @@ class _PaymentPendingScreenState extends State<PaymentPendingScreen> {
                     const Text(
                       'Payment Pending',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -98,7 +98,7 @@ class _PaymentPendingScreenState extends State<PaymentPendingScreen> {
                     const Text(
                       'Your payment is being processed by the bank.',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -108,7 +108,7 @@ class _PaymentPendingScreenState extends State<PaymentPendingScreen> {
                     Text(
                       '₹${widget.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -163,8 +163,8 @@ class _PaymentPendingScreenState extends State<PaymentPendingScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary, fontSize: 13)),
-          Text(val, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13)),
+          Text(val, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

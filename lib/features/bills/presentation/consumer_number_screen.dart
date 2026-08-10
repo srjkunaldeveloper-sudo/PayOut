@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:payout/core/theme/app_theme.dart';
-import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/bills/models/bill_models.dart';
 import 'package:payout/features/bills/repositories/bill_repository.dart';
 import 'package:payout/features/bills/presentation/bill_details_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 
 class ConsumerNumberScreen extends StatefulWidget {
   final String categoryName;
+  final BillRepository? billRepository;
 
   const ConsumerNumberScreen({
     super.key,
     required this.categoryName,
+    this.billRepository,
   });
 
   @override
@@ -32,7 +32,7 @@ class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
   @override
   void initState() {
     super.initState();
-    _billRepository = MockBillRepository(MockTransactionRepository());
+    _billRepository = widget.billRepository ?? AppDependencies.instance.billRepository;
     _loadBillers();
   }
 
@@ -57,7 +57,6 @@ class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
 
   void _validateInput(String val) {
     setState(() {
-      // Validate input - must be at least 6 digits/characters
       _isValidInput = val.length >= 6 && _selectedBiller != null;
     });
   }
@@ -130,87 +129,168 @@ class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
   Widget build(BuildContext context) {
     final label = _getInputLabel();
     final hint = _getInputHint();
+    final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CustomAppBar(title: widget.categoryName),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      widget.categoryName,
+                      style: const TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 38)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: _isLoadingBillers
-            ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)))
+            ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3F37C9))))
             : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s24),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: AppSpacing.s12),
-                    const Text(
-                      'Select Biller / Provider',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                    // Form Card
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF002E6E).withValues(alpha: 0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.s12),
-                    AppCard(
-                      padding: EdgeInsets.zero,
-                      child: DropdownButtonFormField<BillerModel>(
-                        value: _selectedBiller,
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          border: InputBorder.none,
-                        ),
-                        items: _billers.map((biller) {
-                          return DropdownMenuItem<BillerModel>(
-                            value: biller,
-                            child: Text(
-                              biller.name,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Select Biller / Provider',
+                            style: TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F1F1F),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          DropdownButtonFormField<BillerModel>(
+                            value: _selectedBiller,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF8FAFC),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                               ),
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedBiller = val;
-                          });
-                          _validateInput(_consumerController.text);
-                        },
+                            items: _billers.map((biller) {
+                              return DropdownMenuItem<BillerModel>(
+                                value: biller,
+                                child: Text(
+                                  biller.name,
+                                  style: const TextStyle(
+                                    fontFamily: 'Geist Sans',
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF1F1F1F),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedBiller = val;
+                              });
+                              _validateInput(_consumerController.text);
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F1F1F),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          AppTextField(
+                            controller: _consumerController,
+                            keyboardType: TextInputType.text,
+                            onChanged: _validateInput,
+                            labelText: label,
+                            hintText: hint,
+                            prefix: const Icon(Icons.receipt_long_rounded, color: Color(0xFF3F37C9)),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.s24),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
+                    const SizedBox(height: 28),
+
+                    PrimaryButton(
+                      text: 'Fetch Bill',
+                      height: 52,
+                      isLoading: _isFetchingBill,
+                      onPressed: _isValidInput ? _fetchBill : null,
                     ),
-                    const SizedBox(height: AppSpacing.s12),
-                    AppTextField(
-                      controller: _consumerController,
-                      keyboardType: TextInputType.text,
-                      onChanged: _validateInput,
-                      labelText: label,
-                      hintText: hint,
-                      prefix: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: AppSpacing.s40),
-                    SizedBox(
-                      width: double.infinity,
-                      child: PrimaryButton(
-                        text: 'Fetch Bill',
-                        isLoading: _isFetchingBill,
-                        onPressed: _isValidInput ? _fetchBill : null,
-                      ),
-                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

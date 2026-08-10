@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/rewards/models/reward_models.dart';
 import 'package:payout/features/rewards/repositories/reward_repository.dart';
 
@@ -27,7 +28,7 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _rewardRepo = widget.rewardRepository ?? MockRewardRepository();
+    _rewardRepo = widget.rewardRepository ?? AppDependencies.instance.rewardRepository;
   }
 
   void _copyPromoCode() {
@@ -99,12 +100,12 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
                           ),
                           child: Text(
                             coupon.category.toUpperCase(),
-                            style: const TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ),
                         Text(
                           'Valid till ${coupon.validUntil}',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.primaryLight),
+                          style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.primaryLight),
                         ),
                       ],
                     ),
@@ -112,7 +113,7 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
                     Text(
                       discountStr,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -122,7 +123,7 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
                     const SizedBox(height: 6),
                     Text(
                       coupon.title,
-                      style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.primaryLight, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 14, color: AppColors.primaryLight, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 16),
                     const Divider(color: Colors.white24),
@@ -140,15 +141,15 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('PROMO CODE', style: TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
+                              const Text('PROMO CODE', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 9, color: AppColors.textSecondary, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 2),
-                              Text(coupon.code, style: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1.5)),
+                              Text(coupon.code, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 1.5)),
                             ],
                           ),
                           TextButton.icon(
                             onPressed: _copyPromoCode,
                             icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.primary),
-                            label: const Text('COPY', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                            label: const Text('COPY', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
                           ),
                         ],
                       ),
@@ -161,7 +162,7 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
               // Offer Description & Terms
               const Text(
                 'Offer Breakdown',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: AppSpacing.s12),
               AppCard(
@@ -185,7 +186,7 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
               // How to Redeem
               const Text(
                 'How to Redeem',
-                style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 15),
+                style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: AppSpacing.s12),
               AppCard(
@@ -193,11 +194,11 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('1. Copy the promo code using the COPY button above.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, height: 1.4)),
+                    Text('1. Copy the promo code using the COPY button above.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, height: 1.4)),
                     SizedBox(height: 8),
-                    Text('2. Make a payment or booking matching the minimum spend criteria.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, height: 1.4)),
+                    Text('2. Make a payment or booking matching the minimum spend criteria.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, height: 1.4)),
                     SizedBox(height: 8),
-                    Text('3. Paste the code in the "Apply Coupon" field on the payment checkout screen.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, height: 1.4)),
+                    Text('3. Paste the code in the "Apply Coupon" field on the payment checkout screen.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, height: 1.4)),
                   ],
                 ),
               ),
@@ -224,13 +225,13 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+          Text(label, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, fontWeight: FontWeight.w600),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

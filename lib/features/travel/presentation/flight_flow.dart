@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/features/notifications/repositories/notification_repository.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/payments/presentation/mpin_verification_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/travel/presentation/booking_success_screen.dart';
 import 'package:payout/features/travel/shared/models/travel_models.dart';
 import 'package:payout/features/travel/shared/repositories/travel_repository.dart';
@@ -39,11 +38,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _travelRepository = widget.travelRepository ??
-        MockTravelRepository(
-          transactionRepository: MockTransactionRepository(),
-          notificationRepository: MockNotificationRepository(),
-        );
+    _travelRepository = widget.travelRepository ?? AppDependencies.instance.travelRepository;
   }
 
   @override
@@ -119,57 +114,231 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Book Flights'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (canPop)
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF3F37C9),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Book Flights',
+                      style: TextStyle(
+                        fontFamily: 'Geist Sans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F1F1F),
+                      ),
+                    ),
+                  ),
+                ),
+                if (canPop)
+                  const SizedBox(width: 40)
+                else
+                  const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.s24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Trip Type Selector
+                // Trip Type Selector (Segmented control style)
                 Row(
                   children: [
-                    ChoiceChip(
-                      label: const Text('One Way', style: TextStyle(fontFamily: 'Inter', fontSize: 12)),
-                      selected: !_isRoundTrip,
-                      selectedColor: AppColors.primaryContainer,
-                      onSelected: (val) => setState(() => _isRoundTrip = false),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isRoundTrip = false),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: !_isRoundTrip
+                                ? const LinearGradient(
+                                    colors: [Color(0xFF3F37C9), Color(0xFF2563EB)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: _isRoundTrip ? Colors.white : null,
+                            borderRadius: BorderRadius.circular(12),
+                            border: _isRoundTrip
+                                ? Border.all(color: const Color(0xFFE2E8F0))
+                                : null,
+                            boxShadow: !_isRoundTrip
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF3F37C9).withValues(alpha: 0.12),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Text(
+                            'One Way',
+                            style: TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: !_isRoundTrip ? Colors.white : const Color(0xFF1F1F1F),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Round Trip', style: TextStyle(fontFamily: 'Inter', fontSize: 12)),
-                      selected: _isRoundTrip,
-                      selectedColor: AppColors.primaryContainer,
-                      onSelected: (val) => setState(() => _isRoundTrip = true),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isRoundTrip = true),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: _isRoundTrip
+                                ? const LinearGradient(
+                                    colors: [Color(0xFF3F37C9), Color(0xFF2563EB)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: !_isRoundTrip ? Colors.white : null,
+                            borderRadius: BorderRadius.circular(12),
+                            border: !_isRoundTrip
+                                ? Border.all(color: const Color(0xFFE2E8F0))
+                                : null,
+                            boxShadow: _isRoundTrip
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF3F37C9).withValues(alpha: 0.12),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Text(
+                            'Round Trip',
+                            style: TextStyle(
+                              fontFamily: 'Geist Sans',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: _isRoundTrip ? Colors.white : const Color(0xFF1F1F1F),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.s16),
+                const SizedBox(height: 20),
 
                 // Search Inputs Card
-                AppCard(
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF002E6E).withValues(alpha: 0.015),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
-                      AppTextField(
-                        controller: _fromController,
-                        labelText: 'From City / Airport',
-                        hintText: 'e.g. Delhi (DEL)',
-                        prefix: const Icon(Icons.flight_takeoff_rounded, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin airport is required' : null,
+                      Stack(
+                        alignment: Alignment.centerRight,
+                        children: [
+                          Column(
+                            children: [
+                              AppTextField(
+                                controller: _fromController,
+                                labelText: 'From City / Airport',
+                                hintText: 'e.g. Delhi (DEL)',
+                                prefix: const Icon(Icons.flight_takeoff_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Origin airport is required' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              AppTextField(
+                                controller: _toController,
+                                labelText: 'To City / Airport',
+                                hintText: 'e.g. Mumbai (BOM)',
+                                prefix: const Icon(Icons.flight_land_rounded, color: Color(0xFF3F37C9), size: 20),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination airport is required' : null,
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            right: 12,
+                            top: 42,
+                            child: GestureDetector(
+                              onTap: () {
+                                final temp = _fromController.text;
+                                _fromController.text = _toController.text;
+                                _toController.text = temp;
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF3F37C9).withValues(alpha: 0.08),
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: const Icon(
+                                  Icons.swap_vert_rounded,
+                                  color: Color(0xFF3F37C9),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.s12),
-                      AppTextField(
-                        controller: _toController,
-                        labelText: 'To City / Airport',
-                        hintText: 'e.g. Mumbai (BOM)',
-                        prefix: const Icon(Icons.flight_land_rounded, size: 20),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Destination airport is required' : null,
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
                       // Departure & Return Dates
                       Row(
@@ -177,15 +346,43 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                           Expanded(
                             child: InkWell(
                               onTap: () => _selectDate(context, true),
-                              child: InputDecorator(
-                                decoration: InputDecoration(
-                                  labelText: 'Departure Date',
-                                  prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
                                 ),
-                                child: Text(
-                                  '${_departureDate.day}/${_departureDate.month}/${_departureDate.year}',
-                                  style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Departure Date',
+                                      style: TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${_departureDate.day}/${_departureDate.month}/${_departureDate.year}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Geist Sans',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F1F1F),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -195,15 +392,45 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                             Expanded(
                               child: InkWell(
                                 onTap: () => _selectDate(context, false),
-                                child: InputDecorator(
-                                  decoration: InputDecoration(
-                                    labelText: 'Return Date',
-                                    prefixIcon: const Icon(Icons.calendar_today_rounded, size: 18),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
                                   ),
-                                  child: Text(
-                                    _returnDate != null ? '${_returnDate!.day}/${_returnDate!.month}/${_returnDate!.year}' : 'Select Date',
-                                    style: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Return Date',
+                                        style: TextStyle(
+                                          fontFamily: 'Geist Sans',
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF3F37C9)),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            _returnDate != null
+                                                ? '${_returnDate!.day}/${_returnDate!.month}/${_returnDate!.year}'
+                                                : 'Select Date',
+                                            style: const TextStyle(
+                                              fontFamily: 'Geist Sans',
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF1F1F1F),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -211,7 +438,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                           ],
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.s16),
+                      const SizedBox(height: 16),
 
                       // Passengers & Class
                       Row(
@@ -221,12 +448,25 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                               initialValue: _passengers,
                               items: List.generate(
                                 6,
-                                (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1} Pax', style: const TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1} Pax', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)),
+                                ),
                               ),
                               onChanged: (val) => setState(() => _passengers = val ?? 1),
                               decoration: InputDecoration(
                                 labelText: 'Passengers',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -235,14 +475,24 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                             child: DropdownButtonFormField<String>(
                               initialValue: _cabinClass,
                               items: const [
-                                DropdownMenuItem(value: 'Economy', child: Text('Economy', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                                DropdownMenuItem(value: 'Premium', child: Text('Premium', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                                DropdownMenuItem(value: 'Business', child: Text('Business', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                                DropdownMenuItem(value: 'Economy', child: Text('Economy', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                                DropdownMenuItem(value: 'Premium', child: Text('Premium', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                                DropdownMenuItem(value: 'Business', child: Text('Business', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                               ],
                               onChanged: (val) => setState(() => _cabinClass = val ?? 'Economy'),
                               decoration: InputDecoration(
                                 labelText: 'Cabin Class',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
                               ),
                             ),
                           ),
@@ -251,15 +501,14 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.s24),
+                const SizedBox(height: 28),
 
                 // Submit CTA
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                    text: 'Search Flights',
-                    onPressed: _submitSearch,
-                  ),
+                PrimaryButton(
+                  text: 'Search Flights',
+                  height: 56,
+                  iconRight: Icons.arrow_forward_rounded,
+                  onPressed: _submitSearch,
                 ),
               ],
             ),
@@ -338,7 +587,7 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: const Text('Non-Stop Only', style: TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                    label: const Text('Non-Stop Only', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                     selected: _nonStopOnly,
                     selectedColor: AppColors.primaryContainer,
                     onSelected: (val) => setState(() => _nonStopOnly = val),
@@ -347,7 +596,7 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
                   ..._airlines.map((a) => Padding(
                         padding: const EdgeInsets.only(right: 6.0),
                         child: ChoiceChip(
-                          label: Text(a, style: const TextStyle(fontFamily: 'Inter', fontSize: 11)),
+                          label: Text(a, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11)),
                           selected: _selectedAirline == a,
                           selectedColor: AppColors.primaryContainer,
                           onSelected: (val) => setState(() => _selectedAirline = a),
@@ -362,7 +611,7 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : filtered.isEmpty
-                      ? const Center(child: Text('No flights matching criteria', style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary)))
+                      ? const Center(child: Text('No flights matching criteria', style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary)))
                       : ListView.builder(
                           padding: const EdgeInsets.all(AppSpacing.s20),
                           itemCount: filtered.length,
@@ -388,13 +637,13 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
                                             const SizedBox(width: 8),
                                             Text(
                                               flight.airline,
-                                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14),
+                                              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14),
                                             ),
                                           ],
                                         ),
                                         Text(
                                           flight.flightNumber,
-                                          style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary),
+                                          style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary),
                                         ),
                                       ],
                                     ),
@@ -405,13 +654,13 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(flight.departureTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
-                                            Text(flight.from, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                            Text(flight.departureTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
+                                            Text(flight.from, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                           ],
                                         ),
                                         Column(
                                           children: [
-                                            Text(flight.duration, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                            Text(flight.duration, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                             const SizedBox(height: 2),
                                             Container(
                                               width: 60,
@@ -419,14 +668,14 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
                                               color: AppColors.divider,
                                             ),
                                             const SizedBox(height: 2),
-                                            Text(flight.stops == 0 ? 'Non-stop' : '${flight.stops} Stop', style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.success)),
+                                            Text(flight.stops == 0 ? 'Non-stop' : '${flight.stops} Stop', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.success)),
                                           ],
                                         ),
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
-                                            Text(flight.arrivalTime, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
-                                            Text(flight.to, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+                                            Text(flight.arrivalTime, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
+                                            Text(flight.to, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                                           ],
                                         ),
                                       ],
@@ -442,9 +691,9 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
                                           children: [
                                             Text(
                                               '₹${fare.totalFare.toStringAsFixed(2)}',
-                                              style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                                              style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                                             ),
-                                            Text('${widget.request.passengers} Pax • Inc. Taxes', style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary)),
+                                            Text('${widget.request.passengers} Pax • Inc. Taxes', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 10, color: AppColors.textSecondary)),
                                           ],
                                         ),
                                         PrimaryButton(
@@ -547,9 +796,9 @@ class _FlightPassengerAndReviewScreenState extends State<FlightPassengerAndRevie
                 ),
               ),
               const SizedBox(height: AppSpacing.s16),
-              const Text('Review Flight Booking', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text('Review Flight Booking', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 4),
-              const Text('Verify flight route, passenger details, and fare breakdown.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+              const Text('Verify flight route, passenger details, and fare breakdown.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.s16),
               AppCard(
                 child: Column(
@@ -647,8 +896,8 @@ class _FlightPassengerAndReviewScreenState extends State<FlightPassengerAndRevie
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
-          Text(value, style: TextStyle(fontFamily: 'Inter', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
+          Text(label, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 13.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, color: isTotal ? AppColors.textPrimary : AppColors.textSecondary)),
+          Text(value, style: TextStyle(fontFamily: 'Geist Sans', fontSize: isTotal ? 14.0 : 12.0, fontWeight: isTotal ? FontWeight.bold : FontWeight.w600, color: isTotal ? AppColors.primary : AppColors.textPrimary)),
         ],
       ),
     );
@@ -675,14 +924,14 @@ class _FlightPassengerAndReviewScreenState extends State<FlightPassengerAndRevie
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.flight.airline, style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(widget.flight.airline, style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 2),
-                          Text('${widget.request.from} → ${widget.request.to}', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+                          Text('${widget.request.from} → ${widget.request.to}', style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                       Text(
                         '₹${widget.fare.totalFare.toStringAsFixed(2)}',
-                        style: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                        style: const TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -690,7 +939,7 @@ class _FlightPassengerAndReviewScreenState extends State<FlightPassengerAndRevie
                 const SizedBox(height: AppSpacing.s20),
 
                 // Passenger Form
-                const Text('Passenger Information', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text('Passenger Information', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: AppSpacing.s12),
 
                 AppTextField(
@@ -721,9 +970,9 @@ class _FlightPassengerAndReviewScreenState extends State<FlightPassengerAndRevie
                       child: DropdownButtonFormField<String>(
                         initialValue: _gender,
                         items: const [
-                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
-                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Inter', fontSize: 13))),
+                          DropdownMenuItem(value: 'Male', child: Text('Male', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Female', child: Text('Female', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
+                          DropdownMenuItem(value: 'Other', child: Text('Other', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13))),
                         ],
                         onChanged: (val) => setState(() => _gender = val ?? 'Male'),
                         decoration: InputDecoration(

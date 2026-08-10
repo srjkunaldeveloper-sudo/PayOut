@@ -97,7 +97,7 @@ class AppButton extends StatelessWidget {
                       Text(
                         text,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Geist Sans',
                           fontSize: 14.0,
                           fontWeight: FontWeight.w600,
                           color: getTextColor(),

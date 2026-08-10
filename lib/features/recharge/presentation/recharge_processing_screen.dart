@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
+import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/recharge/repositories/recharge_repository.dart';
 import 'package:payout/features/recharge/presentation/recharge_success_screen.dart';
 import 'package:payout/features/recharge/presentation/recharge_pending_screen.dart';
 import 'package:payout/features/recharge/presentation/recharge_failed_screen.dart';
-import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 
 class RechargeProcessingScreen extends StatefulWidget {
   final String mobileNumber;
@@ -15,6 +15,7 @@ class RechargeProcessingScreen extends StatefulWidget {
   final String planData;
   final String planValidity;
   final String methodId;
+  final RechargeRepository? rechargeRepository;
 
   const RechargeProcessingScreen({
     super.key,
@@ -25,6 +26,7 @@ class RechargeProcessingScreen extends StatefulWidget {
     required this.planData,
     required this.planValidity,
     required this.methodId,
+    this.rechargeRepository,
   });
 
   @override
@@ -37,7 +39,7 @@ class _RechargeProcessingScreenState extends State<RechargeProcessingScreen> {
   @override
   void initState() {
     super.initState();
-    _rechargeRepository = MockRechargeRepository(MockTransactionRepository());
+    _rechargeRepository = widget.rechargeRepository ?? AppDependencies.instance.rechargeRepository;
     _startRecharge();
   }
 
@@ -158,7 +160,7 @@ class _RechargeProcessingScreenState extends State<RechargeProcessingScreen> {
                     const Text(
                       'Processing Recharge...',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -168,7 +170,7 @@ class _RechargeProcessingScreenState extends State<RechargeProcessingScreen> {
                     Text(
                       'Please do not close the app. Recharging $maskedMobile',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -178,7 +180,7 @@ class _RechargeProcessingScreenState extends State<RechargeProcessingScreen> {
                     Text(
                       '₹${widget.amount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -191,7 +193,7 @@ class _RechargeProcessingScreenState extends State<RechargeProcessingScreen> {
               const Text(
                 'Secured by Payout telecom service gateway',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: 12.0,
                   color: AppColors.textSecondary,
                 ),

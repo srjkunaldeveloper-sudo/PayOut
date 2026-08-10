@@ -50,7 +50,7 @@ class CustomAvatar extends StatelessWidget {
                   child: Text(
                     initials,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Geist Sans',
                       fontSize: size * 0.35,
                       fontWeight: FontWeight.w600,
                       color: textColor ?? AppColors.textPrimary,
@@ -63,7 +63,7 @@ class CustomAvatar extends StatelessWidget {
               child: Text(
                 initials,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Geist Sans',
                   fontSize: size * 0.35,
                   fontWeight: FontWeight.w600,
                   color: textColor ?? AppColors.textPrimary,

@@ -48,7 +48,7 @@ class BillFailedScreen extends StatelessWidget {
                     const Text(
                       'Payment Failed',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -58,7 +58,7 @@ class BillFailedScreen extends StatelessWidget {
                     Text(
                       errorMessage,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 14.0,
                         color: AppColors.textSecondary,
                       ),
@@ -68,7 +68,7 @@ class BillFailedScreen extends StatelessWidget {
                     Text(
                       'To: ${bill.billerName} (${bill.consumerName})',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 12.0,
                         color: AppColors.textSecondary,
                       ),
@@ -77,7 +77,7 @@ class BillFailedScreen extends StatelessWidget {
                     Text(
                       '₹${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Geist Sans',
                         fontSize: 38.0,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
@@ -110,7 +110,7 @@ class BillFailedScreen extends StatelessWidget {
                   },
                   child: const Text(
                     'Change Payment Method',
-                    style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                 ),
               ),

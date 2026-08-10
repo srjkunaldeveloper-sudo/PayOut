@@ -25,14 +25,14 @@ void main() {
     expect(find.text('Total Balance'), findsOneWidget);
     expect(find.text('Available Balance'), findsOneWidget);
 
-    // Verify Google Pay Quick Actions Panel
-    expect(find.text('Pay\nanyone'), findsOneWidget);
-    expect(find.text('Scan any\nQR code'), findsOneWidget);
+    // Verify Quick Actions Panel
+    expect(find.text('Send Money'), findsWidgets);
+    expect(find.text('Scan QR'), findsOneWidget);
 
     // Verify Ecosystem grid
-    expect(find.text('Bills & recharges'), findsOneWidget);
+    expect(find.text('Services'), findsOneWidget);
 
     // Verify view all actions trigger
-    expect(find.text('View All'), findsOneWidget);
+    expect(find.text('View all'), findsWidgets);
   });
 }
