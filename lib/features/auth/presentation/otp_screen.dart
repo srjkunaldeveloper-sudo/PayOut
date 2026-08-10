@@ -8,7 +8,7 @@ import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/states/auth_state.dart';
 import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
-import 'package:payout/features/auth/presentation/mpin_screen.dart';
+import 'package:payout/features/auth/presentation/create_password_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -134,7 +134,7 @@ class _OTPScreenState extends State<OTPScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const MPINScreen(),
+          builder: (context) => CreatePasswordScreen(authRepository: _authRepository),
         ),
       );
     } else {

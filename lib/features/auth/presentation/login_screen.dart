@@ -21,27 +21,37 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode();
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
   late final AuthRepository _authRepository;
 
   AuthState _state = const AuthState(status: AuthStatus.idle);
   bool _isValid = false;
-  bool _isFocused = false;
+  bool _isEmailFocused = false;
+  bool _isPhoneFocused = false;
 
   @override
   void initState() {
     super.initState();
     _authRepository = widget.authRepository ?? AppDependencies.instance.authRepository;
+    _emailFocusNode.addListener(() {
+      setState(() {
+        _isEmailFocused = _emailFocusNode.hasFocus;
+      });
+    });
     _phoneFocusNode.addListener(() {
       setState(() {
-        _isFocused = _phoneFocusNode.hasFocus;
+        _isPhoneFocused = _phoneFocusNode.hasFocus;
       });
     });
   }
 
   @override
   void dispose() {
+    _emailController.dispose();
+    _emailFocusNode.dispose();
     _phoneController.dispose();
     _phoneFocusNode.dispose();
     super.dispose();
@@ -65,10 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _checkValidation(String value) {
-    final result = AuthValidator.validateMobile(value);
+  void _checkValidation([String? _]) {
+    final emailResult = AuthValidator.validateEmail(_emailController.text);
+    final phoneResult = AuthValidator.validateMobile(_phoneController.text);
     setState(() {
-      _isValid = result.isValid;
+      _isValid = emailResult.isValid && phoneResult.isValid;
       _state = const AuthState(status: AuthStatus.typing);
     });
   }
@@ -206,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 150),
                           child: Text(
-                            'Enter your phone number to receive a secure OTP code.',
+                            'Enter your email and phone number to create your account.',
                             style: TextStyle(
                               fontFamily: 'Geist Sans',
                               fontSize: 14,
@@ -215,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
 
                         // Auth Error Panel if failed
                         if (_state.status == AuthStatus.failure && _state.errorMessage != null) ...[
@@ -234,7 +245,74 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 20),
                         ],
 
-                        // Separated Phone Inputs
+                        // 1. Email Input
+                        FadeUpEntrance(
+                          delay: const Duration(milliseconds: 180),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _isEmailFocused ? const Color(0xFF00B9F1) : const Color(0xFFE2E8F0),
+                                width: _isEmailFocused ? 1.5 : 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _isEmailFocused
+                                      ? const Color(0xFF00B9F1).withOpacity(0.06)
+                                      : const Color(0xFF002E6E).withOpacity(0.01),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 12),
+                                Icon(
+                                  Icons.mail_outline_rounded,
+                                  color: const Color(0xFF1F1F1F).withOpacity(0.35),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextField(
+                                    focusNode: _emailFocusNode,
+                                    controller: _emailController,
+                                    onChanged: _checkValidation,
+                                    keyboardType: TextInputType.emailAddress,
+                                    enabled: !showLoading,
+                                    style: const TextStyle(
+                                      fontFamily: 'Geist Sans',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Color(0xFF1F1F1F),
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your email',
+                                      hintStyle: TextStyle(
+                                        fontFamily: 'Geist Sans',
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 14,
+                                        color: const Color(0xFF1F1F1F).withOpacity(0.35),
+                                      ),
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // 2. Separated Phone Inputs
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 200),
                           child: Row(
@@ -273,12 +351,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: _isFocused ? const Color(0xFF00B9F1) : const Color(0xFFE2E8F0),
-                                      width: _isFocused ? 1.5 : 1.0,
+                                      color: _isPhoneFocused ? const Color(0xFF00B9F1) : const Color(0xFFE2E8F0),
+                                      width: _isPhoneFocused ? 1.5 : 1.0,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: _isFocused
+                                        color: _isPhoneFocused
                                             ? const Color(0xFF00B9F1).withOpacity(0.06)
                                             : const Color(0xFF002E6E).withOpacity(0.01),
                                         blurRadius: 8,
