@@ -40,5 +40,20 @@ void main() {
 
     // Still on Settings
     expect(find.text('Settings & Security'), findsOneWidget);
+
+    // Verify Delete Account modal
+    final deleteTile = find.text('Delete Account');
+    await tester.ensureVisible(deleteTile);
+    await tester.tap(deleteTile);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete Account Permanently'), findsOneWidget);
+    expect(find.text('This action is irreversible. All your profile data, transaction history, KYC records, and linked credentials will be permanently erased.'), findsOneWidget);
+
+    // Cancel deletion
+    await tester.tap(find.widgetWithText(OutlinedButtonV2, 'Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Settings & Security'), findsOneWidget);
   });
 }

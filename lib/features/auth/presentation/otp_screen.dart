@@ -13,12 +13,14 @@ import 'package:payout/features/auth/presentation/create_password_screen.dart';
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
   final String sessionId;
+  final String? email;
   final AuthRepository? authRepository;
 
   const OTPScreen({
     super.key,
     required this.phoneNumber,
     required this.sessionId,
+    this.email,
     this.authRepository,
   });
 
@@ -134,7 +136,10 @@ class _OTPScreenState extends State<OTPScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => CreatePasswordScreen(authRepository: _authRepository),
+          builder: (context) => CreatePasswordScreen(
+            email: widget.email,
+            authRepository: _authRepository,
+          ),
         ),
       );
     } else {

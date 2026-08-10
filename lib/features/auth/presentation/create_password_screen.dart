@@ -6,9 +6,10 @@ import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
+  final String? email;
   final AuthRepository? authRepository;
 
-  const CreatePasswordScreen({super.key, this.authRepository});
+  const CreatePasswordScreen({super.key, this.email, this.authRepository});
 
   @override
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
@@ -73,8 +74,13 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       _isLoading = true;
     });
 
-    // Simulate secure credential setup via auth architecture
-    await Future.delayed(const Duration(milliseconds: 400));
+    final email = widget.email ?? _authRepository.currentUser?.email ?? 'user@payout.com';
+    final password = _passwordController.text;
+
+    final result = await _authRepository.linkEmailPasswordCredential(
+      email: email,
+      password: password,
+    );
 
     if (!mounted) return;
 
@@ -82,11 +88,20 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       _isLoading = false;
     });
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => MPINScreen(authRepository: _authRepository),
-      ),
-    );
+    if (result.isSuccess) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => MPINScreen(authRepository: _authRepository),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? 'Failed to link password credential. Please try again.'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
 
   Widget _buildRequirementItem(String text, bool isSatisfied) {

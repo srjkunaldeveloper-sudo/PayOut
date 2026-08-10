@@ -6,6 +6,7 @@ import 'package:payout/features/auth/presentation/mpin_screen.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/dashboard/presentation/dashboard_shell.dart';
 import 'package:payout/features/user/dummy/dummy_user_data.dart';
 
 class ExistingUserLoginScreen extends StatefulWidget {
@@ -78,30 +79,12 @@ class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
       _isLoading = true;
     });
 
-    // Simulate secure authentication verification
-    await Future.delayed(const Duration(milliseconds: 600));
-
     final email = _emailController.text.trim();
-    final displayName = _formatNameFromEmail(email);
+    final password = _passwordController.text;
 
-    // Initialize session with authenticating user's data
-    final user = UserModel(
-      id: 'USR-${email.hashCode.abs() % 100000}',
-      name: displayName,
-      phone: DummyUserData.currentUser.phone,
+    final result = await _authRepository.signInWithEmailPassword(
       email: email,
-    );
-
-    await SessionManager.instance.initSession(
-      'TOKEN-ACCESS-${email.hashCode}',
-      'TOKEN-REFRESH-${email.hashCode}',
-      user,
-    );
-
-    // Update active profile data dynamically
-    DummyUserData.currentUser = DummyUserData.currentUser.copyWith(
-      name: displayName,
-      email: email,
+      password: password,
     );
 
     if (!mounted) return;
@@ -110,15 +93,36 @@ class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
       _isLoading = false;
     });
 
-    // Navigate directly to MPIN verification mode
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MPINScreen(
-          authRepository: _authRepository,
-          isVerificationMode: true,
+    if (result.isSuccess && result.data != null) {
+      final user = result.data!;
+      await SessionManager.instance.initSession(
+        'FIREBASE-TOKEN-${user.id}',
+        'FIREBASE-REFRESH-${user.id}',
+        user,
+      );
+
+      // Update active profile data dynamically
+      DummyUserData.currentUser = DummyUserData.currentUser.copyWith(
+        name: user.name,
+        email: user.email ?? email,
+        phone: user.phone,
+      );
+
+      // Navigate directly to Home (DashboardShell)
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const DashboardShell(),
         ),
-      ),
-    );
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? 'Invalid email or password. Please try again.'),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
   }
 
   void _handleForgotPassword() {

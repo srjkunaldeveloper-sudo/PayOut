@@ -1,4 +1,6 @@
+import 'package:payout/core/config/app_config.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/repositories/firebase_auth_repository.dart';
 import 'package:payout/features/bank_accounts/repositories/bank_account_repository.dart';
 import 'package:payout/features/bills/repositories/bill_repository.dart';
 import 'package:payout/features/financial/shared/repositories/financial_repository.dart';
@@ -55,7 +57,10 @@ class AppDependencies {
         notificationRepository = notificationRepository ?? MockNotificationRepository(),
         userRepository = userRepository ?? MockUserRepository(),
         walletRepository = walletRepository ?? MockWalletRepository(),
-        authRepository = authRepository ?? MockAuthRepository(),
+        authRepository = authRepository ??
+            (AppConfig.repositoryMode == RepositoryMode.api
+                ? FirebaseAuthRepository()
+                : MockAuthRepository()),
         bankAccountRepository = bankAccountRepository ?? MockBankAccountRepository(),
         paymentsRepository = paymentsRepository ??
             MockPaymentsRepository(

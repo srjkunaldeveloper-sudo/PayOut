@@ -184,7 +184,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     if (!mounted) return;
 
-    final bool isLoggedIn = SessionManager.instance.isLoggedIn && AppConfig.isDemoMode;
+    final bool isLoggedIn = SessionManager.instance.isLoggedIn;
     final Widget targetScreen = isLoggedIn ? const DashboardShell() : const LoginScreen();
 
     Navigator.of(context).pushReplacement(

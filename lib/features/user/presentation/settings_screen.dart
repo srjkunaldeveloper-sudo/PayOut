@@ -126,6 +126,154 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _showDeleteAccountDialog() {
+    final passwordController = TextEditingController();
+    bool isDeleting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.s24,
+                  right: AppSpacing.s24,
+                  top: AppSpacing.s24,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.s24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.divider,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s20),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.delete_forever_rounded, color: AppColors.error, size: 28),
+                    ),
+                    const SizedBox(height: AppSpacing.s16),
+                    const Text(
+                      'Delete Account Permanently',
+                      style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    const SizedBox(height: AppSpacing.s12),
+                    const Text(
+                      'This action is irreversible. All your profile data, transaction history, KYC records, and linked credentials will be permanently erased.',
+                      style: TextStyle(fontFamily: 'Geist Sans', color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.s20),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: 'Enter password to confirm (optional)',
+                        hintStyle: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13, color: AppColors.textSecondary),
+                        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.textSecondary),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButtonV2(
+                            text: 'Cancel',
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.s16),
+                        Expanded(
+                          child: DangerButton(
+                            text: isDeleting ? 'Deleting...' : 'Delete Account',
+                            onPressed: isDeleting
+                                ? () {}
+                                : () async {
+                                    setModalState(() {
+                                      isDeleting = true;
+                                    });
+
+                                    final navigator = Navigator.of(context);
+                                    final messenger = ScaffoldMessenger.of(context);
+
+                                    final authRepo = AppDependencies.instance.authRepository;
+                                    final pwd = passwordController.text.trim();
+                                    final result = await authRepo.deleteAccount(
+                                      currentPassword: pwd.isNotEmpty ? pwd : null,
+                                    );
+
+                                    if (result.isSuccess) {
+                                      await SessionManager.instance.logout();
+                                      if (mounted) {
+                                        navigator.pop(); // Close bottom sheet
+                                        navigator.pushAndRemoveUntil(
+                                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                          (route) => false,
+                                        );
+                                        messenger.showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Account permanently deleted.'),
+                                            backgroundColor: AppColors.error,
+                                          ),
+                                        );
+                                      }
+                                    } else {
+                                      if (mounted) {
+                                        setModalState(() {
+                                          isDeleting = false;
+                                        });
+                                        messenger.showSnackBar(
+                                          SnackBar(
+                                            content: Text(result.message ?? 'Failed to delete account. Please try again.'),
+                                            backgroundColor: AppColors.error,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _prefs == null) {
@@ -347,14 +495,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.s24),
 
-            // 6. Logout Tile
+            // 6. Danger Zone: Delete Account & Logout
             AppCard(
               padding: EdgeInsets.zero,
-              child: ListTile(
-                leading: const Icon(Icons.logout_rounded, color: AppColors.error),
-                title: const Text('Logout', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
-                onTap: _showLogoutDialog,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                    title: const Text('Delete Account', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
+                    subtitle: const Text('Permanently erase account and all data', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
+                    onTap: _showDeleteAccountDialog,
+                  ),
+                  const Divider(height: 1, color: AppColors.divider),
+                  ListTile(
+                    leading: const Icon(Icons.logout_rounded, color: AppColors.error),
+                    title: const Text('Logout', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.error)),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.error),
+                    onTap: _showLogoutDialog,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.s32),

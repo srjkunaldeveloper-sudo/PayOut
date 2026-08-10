@@ -26,8 +26,9 @@ void main() {
     });
 
     test('AppConfig provides centralized RepositoryMode and environment constants', () {
-      expect(AppConfig.repositoryMode, equals(RepositoryMode.mock));
-      expect(AppConfig.isDemoMode, isTrue);
+      expect(AppConfig.repositoryMode, equals(RepositoryMode.api));
+      expect(AppConfig.isDemoMode, isFalse);
+      expect(AppConfig.enableMockRepository, isFalse);
       expect(AppConfig.apiBaseUrl, isNotEmpty);
       expect(AppConfig.connectTimeout.inSeconds, equals(15));
     });

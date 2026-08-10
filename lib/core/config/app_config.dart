@@ -1,5 +1,4 @@
-// Global Application Configuration
-// Environment-specific configs (mock vs api) and feature flags.
+import 'package:payout/core/config/app_env.dart';
 
 enum RepositoryMode {
   mock,
@@ -7,17 +6,17 @@ enum RepositoryMode {
 }
 
 class AppConfig {
-  // Central Repository & Environment Mode
-  static const RepositoryMode repositoryMode = RepositoryMode.mock;
+  // Central Repository & Environment Mode (switched to real Firebase Authentication in api mode)
+  static const RepositoryMode repositoryMode = RepositoryMode.api;
 
-  // Environment configurations
-  static const bool isDemoMode = true;
-  static const bool enableMockRepository = true;
+  // Environment configurations (production runtime: no demo/mock auth bypass)
+  static const bool isDemoMode = false;
+  static const bool enableMockRepository = false;
   static const bool enableLogs = true;
   static const bool enableAnimations = true;
 
-  // Base API configuration (for future backend integration)
-  static const String apiBaseUrl = 'https://api.payout.app/v1';
+  // Base API configuration referencing central AppEnv
+  static const String apiBaseUrl = AppEnv.apiBaseUrl;
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);
 

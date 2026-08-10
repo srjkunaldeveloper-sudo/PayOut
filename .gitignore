@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment configuration (Never commit real .env files)
+.env
+.env.*
+!.env.example
+
+# Release signing keys & properties (Never commit to Git)
+**/key.properties
+**/*.keystore
+**/*.jks
+

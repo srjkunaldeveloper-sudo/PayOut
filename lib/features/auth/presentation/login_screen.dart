@@ -110,6 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context) => OTPScreen(
             phoneNumber: '${AuthConstants.countryCode} $phone',
             sessionId: response.sessionId!,
+            email: _emailController.text.trim(),
+            authRepository: _authRepository,
           ),
         ),
       );
@@ -234,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           FadeUpEntrance(
                             delay: Duration.zero,
                             child: AuthErrorWidget(
-                              title: 'Blocked Account',
+                              title: 'Authentication Error',
                               description: _state.errorMessage!,
                               onDismiss: () {
                                 setState(() {
