@@ -26,13 +26,13 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusText = status ?? (isCredit ? 'Received' : 'Cleared');
     final statusColor = isCredit ? AppColors.success : AppColors.textSecondary;
-    final statusBg = isCredit ? AppColors.success.withOpacity(0.08) : AppColors.surface;
+    final statusBg = isCredit ? AppColors.success.withValues(alpha: 0.08) : AppColors.surface;
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.xl),
-      highlightColor: AppColors.primary.withOpacity(0.04),
-      splashColor: AppColors.primary.withOpacity(0.08),
+      highlightColor: AppColors.primary.withValues(alpha: 0.04),
+      splashColor: AppColors.primary.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12, horizontal: AppSpacing.s12),
         child: Row(
@@ -40,7 +40,7 @@ class TransactionTile extends StatelessWidget {
             CustomAvatar(
               name: title,
               size: 46,
-              backgroundColor: isCredit ? AppColors.success.withOpacity(0.08) : AppColors.primaryContainer.withOpacity(0.4),
+              backgroundColor: isCredit ? AppColors.success.withValues(alpha: 0.08) : AppColors.primaryContainer.withValues(alpha: 0.4),
               textColor: isCredit ? AppColors.success : AppColors.primary,
             ),
             const SizedBox(width: AppSpacing.s16),

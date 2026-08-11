@@ -375,7 +375,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Biometric Authentication', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
                     subtitle: const Text('Use FaceID / Fingerprint to log in', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.biometricEnabled,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) {
                       _updatePrefs(prefs.copyWith(biometricEnabled: val));
                     },
@@ -386,7 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('App Lock on Background', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
                     subtitle: const Text('Require MPIN when returning to app', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.appLockEnabled,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) {
                       _updatePrefs(prefs.copyWith(appLockEnabled: val));
                     },
@@ -408,7 +408,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Payment Alerts', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
                     subtitle: const Text('Instant alerts for sent & received money', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.paymentNotif,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(paymentNotif: val)),
                   ),
                   const Divider(height: 1, color: AppColors.divider),
@@ -417,7 +417,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Recharge & Bill Reminders', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
                     subtitle: const Text('Due date alerts for bills & mobile packs', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.billsNotif,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(billsNotif: val)),
                   ),
                   const Divider(height: 1, color: AppColors.divider),
@@ -426,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Promotions & Cashback', style: TextStyle(fontFamily: 'Geist Sans', fontWeight: FontWeight.w600, fontSize: 13)),
                     subtitle: const Text('Weekly deals, scratch cards and discounts', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 11, color: AppColors.textSecondary)),
                     value: prefs.offersNotif,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (val) => _updatePrefs(prefs.copyWith(offersNotif: val)),
                   ),
                 ],

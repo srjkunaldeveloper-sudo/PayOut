@@ -5,7 +5,7 @@ class FinancialLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[FINANCIAL_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[FINANCIAL_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

@@ -18,11 +18,11 @@ class CustomBadge extends StatelessWidget {
     Color getBgColor() {
       switch (type) {
         case BadgeType.success:
-          return AppColors.success.withOpacity(0.1);
+          return AppColors.success.withValues(alpha: 0.1);
         case BadgeType.warning:
-          return AppColors.warning.withOpacity(0.1);
+          return AppColors.warning.withValues(alpha: 0.1);
         case BadgeType.error:
-          return AppColors.error.withOpacity(0.1);
+          return AppColors.error.withValues(alpha: 0.1);
         case BadgeType.primary:
           return AppColors.primaryLight;
       }

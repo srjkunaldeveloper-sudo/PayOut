@@ -99,7 +99,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: (isVerified ? AppColors.success : (isPending ? Colors.orange : AppColors.error)).withOpacity(0.08),
+                            color: (isVerified ? AppColors.success : (isPending ? Colors.orange : AppColors.error)).withValues(alpha: 0.08),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -143,7 +143,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.06),
+                          color: AppColors.error.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Row(
@@ -276,7 +276,7 @@ class _KYCStatusScreenState extends State<KYCStatusScreen> {
       leading: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: isCompleted ? AppColors.success.withOpacity(0.1) : AppColors.divider.withOpacity(0.5),
+          color: isCompleted ? AppColors.success.withValues(alpha: 0.1) : AppColors.divider.withValues(alpha: 0.5),
           shape: BoxShape.circle,
         ),
         child: Icon(

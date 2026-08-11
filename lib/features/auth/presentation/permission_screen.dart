@@ -18,7 +18,7 @@ class PermissionScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF002E6E).withOpacity(0.04),
+              color: const Color(0xFF002E6E).withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -30,7 +30,7 @@ class PermissionScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B9F1).withOpacity(0.08),
+                color: const Color(0xFF00B9F1).withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -58,7 +58,7 @@ class PermissionScreen extends StatelessWidget {
                     description,
                     style: TextStyle(
                       fontFamily: 'Geist Sans',
-                      color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                      color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                       fontSize: 13,
                       height: 1.3,
                     ),
@@ -170,7 +170,7 @@ class PermissionScreen extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Geist Sans',
                       fontSize: 14,
-                      color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                      color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                       height: 1.4,
                     ),
                   ),
@@ -226,7 +226,7 @@ class PermissionScreen extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF3F37C9).withOpacity(0.24),
+                            color: const Color(0xFF3F37C9).withValues(alpha: 0.24),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -298,7 +298,7 @@ class PermissionBackgroundPainter extends CustomPainter {
     final Paint glowPaint = Paint()..style = PaintingStyle.fill;
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF00B9F1).withOpacity(0.04),
+        const Color(0xFF00B9F1).withValues(alpha: 0.04),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.9, size.height * 0.1), radius: 250));
@@ -306,7 +306,7 @@ class PermissionBackgroundPainter extends CustomPainter {
 
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF1B1464).withOpacity(0.03),
+        const Color(0xFF1B1464).withValues(alpha: 0.03),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.1, size.height * 0.5), radius: 300));
@@ -316,20 +316,20 @@ class PermissionBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    accentPaint.color = const Color(0xFF00B9F1).withOpacity(0.06);
+    accentPaint.color = const Color(0xFF00B9F1).withValues(alpha: 0.06);
     canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.25), 30, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.15, size.height * 0.25), 
       3, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
-    accentPaint.color = const Color(0xFF1B1464).withOpacity(0.04);
+    accentPaint.color = const Color(0xFF1B1464).withValues(alpha: 0.04);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.75), 50, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.82, size.height * 0.68), 
       5.5, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
     final double h = size.height;

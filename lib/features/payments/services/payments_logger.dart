@@ -5,7 +5,7 @@ class PaymentsLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[PAYMENTS_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[PAYMENTS_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

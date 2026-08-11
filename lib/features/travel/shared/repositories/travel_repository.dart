@@ -50,10 +50,9 @@ class MockTravelRepository implements TravelRepository {
   final List<TravelBookingModel> _bookings = List.from(DummyTravelData.dummyBookings);
 
   MockTravelRepository({
-    required TransactionRepository transactionRepository,
-    required NotificationRepository notificationRepository,
-  })  : _transactionRepository = transactionRepository,
-        _notificationRepository = notificationRepository;
+    required this._transactionRepository,
+    required this._notificationRepository,
+  });
 
   @override
   Future<List<FlightModel>> searchFlights(FlightSearchRequest request) async {

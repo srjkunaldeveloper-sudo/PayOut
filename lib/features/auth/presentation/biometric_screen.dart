@@ -65,7 +65,7 @@ class BiometricScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFF00B9F1).withOpacity(0.08),
+                              color: const Color(0xFF00B9F1).withValues(alpha: 0.08),
                               width: 1.0,
                             ),
                           ),
@@ -77,7 +77,7 @@ class BiometricScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFF3F37C9).withOpacity(0.06),
+                              color: const Color(0xFF3F37C9).withValues(alpha: 0.06),
                               width: 1.0,
                             ),
                           ),
@@ -124,7 +124,7 @@ class BiometricScreen extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF3F37C9).withOpacity(0.24),
+                                color: const Color(0xFF3F37C9).withValues(alpha: 0.24),
                                 blurRadius: 16,
                                 offset: const Offset(0, 6),
                               ),
@@ -186,7 +186,7 @@ class BiometricScreen extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'Geist Sans',
                         fontSize: 14,
-                        color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                        color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                         height: 1.4,
                       ),
                     ),
@@ -217,7 +217,7 @@ class BiometricScreen extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF3F37C9).withOpacity(0.24),
+                            color: const Color(0xFF3F37C9).withValues(alpha: 0.24),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -285,7 +285,7 @@ class BiometricBackgroundPainter extends CustomPainter {
     final Paint glowPaint = Paint()..style = PaintingStyle.fill;
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF00B9F1).withOpacity(0.04),
+        const Color(0xFF00B9F1).withValues(alpha: 0.04),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.9, size.height * 0.1), radius: 250));
@@ -293,7 +293,7 @@ class BiometricBackgroundPainter extends CustomPainter {
 
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF1B1464).withOpacity(0.03),
+        const Color(0xFF1B1464).withValues(alpha: 0.03),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.1, size.height * 0.5), radius: 300));
@@ -303,20 +303,20 @@ class BiometricBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    accentPaint.color = const Color(0xFF00B9F1).withOpacity(0.06);
+    accentPaint.color = const Color(0xFF00B9F1).withValues(alpha: 0.06);
     canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.25), 30, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.15, size.height * 0.25), 
       3, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
-    accentPaint.color = const Color(0xFF1B1464).withOpacity(0.04);
+    accentPaint.color = const Color(0xFF1B1464).withValues(alpha: 0.04);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.75), 50, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.82, size.height * 0.68), 
       5.5, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
     final double h = size.height;

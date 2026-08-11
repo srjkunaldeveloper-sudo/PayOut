@@ -5,7 +5,7 @@ class NotificationLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[NOTIFICATION_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[NOTIFICATION_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

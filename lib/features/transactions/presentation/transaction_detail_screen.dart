@@ -44,7 +44,7 @@ class TransactionDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.s16),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.08),
+                        color: statusColor.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

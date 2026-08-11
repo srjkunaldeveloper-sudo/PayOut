@@ -5,7 +5,7 @@ class UserLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[USER_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[USER_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

@@ -3,9 +3,28 @@ import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/app_card.dart';
 import 'package:payout/features/user/constants/user_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
+
+  Future<void> _launchURL(BuildContext context, String urlString) async {
+    final uri = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open link: $urlString')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open link: $urlString')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,22 +96,14 @@ class AboutScreen extends StatelessWidget {
                       leading: const Icon(Icons.description_outlined, color: AppColors.primary),
                       title: const Text('Terms of Service', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                       trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Opening Terms of Service...')),
-                        );
-                      },
+                      onTap: () => _launchURL(context, 'https://www.srjupipaymentsnbfcbank.com/terms-conditions.html'),
                     ),
                     const Divider(height: 1, color: AppColors.divider),
                     ListTile(
                       leading: const Icon(Icons.privacy_tip_outlined, color: AppColors.primary),
                       title: const Text('Privacy Policy', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 13, fontWeight: FontWeight.w600)),
                       trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Opening Privacy Policy...')),
-                        );
-                      },
+                      onTap: () => _launchURL(context, 'https://www.srjupipaymentsnbfcbank.com/privacy-policy.html'),
                     ),
                     const Divider(height: 1, color: AppColors.divider),
                     ListTile(

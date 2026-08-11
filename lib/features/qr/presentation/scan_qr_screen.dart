@@ -90,7 +90,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.08),
+                    color: AppColors.error.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -337,7 +337,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                               color: AppColors.primary,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.5),
+                                  color: AppColors.primary.withValues(alpha: 0.5),
                                   blurRadius: 8.0,
                                   spreadRadius: 2.0,
                                 ),
@@ -446,7 +446,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> with SingleTickerProviderSt
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.success.withOpacity(0.08),
+                              color: AppColors.success.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(AppRadius.xs),
                             ),
                             child: const Text(

@@ -5,7 +5,7 @@ class BillLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[BILL_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[BILL_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

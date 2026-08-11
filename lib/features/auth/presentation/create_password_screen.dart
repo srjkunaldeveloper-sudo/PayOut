@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
-import 'package:payout/features/auth/presentation/mpin_screen.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
+import 'package:payout/features/dashboard/presentation/dashboard_shell.dart';
+import 'package:payout/features/user/dummy/dummy_user_data.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
   final String? email;
@@ -77,7 +79,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     final email = widget.email ?? _authRepository.currentUser?.email ?? 'user@payout.com';
     final password = _passwordController.text;
 
-    final result = await _authRepository.linkEmailPasswordCredential(
+    final result = await _authRepository.registerWithEmailPassword(
       email: email,
       password: password,
     );
@@ -88,16 +90,34 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       _isLoading = false;
     });
 
-    if (result.isSuccess) {
-      Navigator.of(context).pushReplacement(
+    if (result.isSuccess && result.data != null) {
+      final user = result.data!;
+      await SessionManager.instance.initSession(
+        'FIREBASE-TOKEN-${user.id}',
+        'FIREBASE-REFRESH-${user.id}',
+        user,
+      );
+
+      // Update active profile data dynamically
+      DummyUserData.currentUser = DummyUserData.currentUser.copyWith(
+        name: user.name,
+        email: user.email ?? email,
+        phone: user.phone,
+      );
+
+      if (!mounted) return;
+
+      // Navigate directly to Home (DashboardShell)
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => MPINScreen(authRepository: _authRepository),
+          builder: (context) => const DashboardShell(),
         ),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result.message ?? 'Failed to link password credential. Please try again.'),
+          content: Text(result.message ?? 'Registration failed. Please try again.'),
           backgroundColor: const Color(0xFFEF4444),
         ),
       );

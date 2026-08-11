@@ -3,7 +3,6 @@ import 'package:payout/core/error/error_message_mapper.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/core/widgets/states.dart';
 import 'package:payout/features/bank_accounts/models/bank_account_models.dart';
 import 'package:payout/features/bank_accounts/services/bank_account_service.dart';
 import 'package:payout/features/bank_accounts/presentation/link_bank_flow.dart';
@@ -225,7 +224,7 @@ class _BankAccountsScreenState extends State<BankAccountsScreen> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             const SizedBox(height: AppSpacing.s24),
             OutlinedButtonV2(
               text: 'Add New Bank Account',

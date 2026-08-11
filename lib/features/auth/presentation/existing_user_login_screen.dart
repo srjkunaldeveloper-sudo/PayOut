@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/di/app_dependencies.dart';
-import 'package:payout/features/auth/models/auth_models.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
-import 'package:payout/features/auth/presentation/mpin_screen.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
@@ -62,6 +60,7 @@ class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
   bool get _isPasswordValid => _passwordController.text.trim().isNotEmpty;
   bool get _canSubmit => _isEmailValid && _isPasswordValid && !_isLoading;
 
+  /*
   String _formatNameFromEmail(String email) {
     final namePart = email.split('@').first;
     final parts = namePart.replaceAll(RegExp(r'[\._\-]'), ' ').split(' ');
@@ -71,6 +70,7 @@ class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
         .join(' ');
     return formatted.isNotEmpty ? formatted : 'Payout User';
   }
+  */
 
   Future<void> _handleLogin() async {
     if (!_canSubmit) return;
@@ -107,6 +107,8 @@ class _ExistingUserLoginScreenState extends State<ExistingUserLoginScreen> {
         email: user.email ?? email,
         phone: user.phone,
       );
+
+      if (!mounted) return;
 
       // Navigate directly to Home (DashboardShell)
       Navigator.of(context).pushAndRemoveUntil(

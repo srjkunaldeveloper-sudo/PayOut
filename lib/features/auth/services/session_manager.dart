@@ -8,9 +8,8 @@ class SessionManager {
   SessionManager._internal();
 
   String? _accessToken;
-  String? _refreshToken;
   UserModel? _currentUser;
-  bool _rememberLogin = true;
+  final bool _rememberLogin = true;
 
   String? get accessToken => _accessToken;
   UserModel? get currentUser => _currentUser ?? AppDependencies.instance.authRepository.currentUser;
@@ -18,7 +17,6 @@ class SessionManager {
 
   Future<void> initSession(String access, String refresh, UserModel user) async {
     _accessToken = access;
-    _refreshToken = refresh;
     _currentUser = user;
 
     if (_rememberLogin) {
@@ -58,7 +56,6 @@ class SessionManager {
 
   Future<void> logout() async {
     _accessToken = null;
-    _refreshToken = null;
     _currentUser = null;
     await AppDependencies.instance.authRepository.signOut();
     await SecureStorageService.clear();

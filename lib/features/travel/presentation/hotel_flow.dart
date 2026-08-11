@@ -744,14 +744,14 @@ class _HotelGuestAndReviewScreenState extends State<HotelGuestAndReviewScreen> {
 
             final confirmed = await widget.travelRepository.createBooking(booking);
 
-            if (mounted) {
-              Navigator.pushReplacement(
+            if (!context.mounted) return;
+
+            Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TravelBookingSuccessScreen(booking: confirmed),
                 ),
               );
-            }
           },
         ),
       ),

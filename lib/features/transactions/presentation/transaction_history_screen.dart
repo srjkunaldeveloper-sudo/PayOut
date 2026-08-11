@@ -4,7 +4,6 @@ import 'package:payout/core/error/error_message_mapper.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/app_bar.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/core/widgets/states.dart';
 import 'package:payout/features/transactions/models/transaction_models.dart';
 import 'package:payout/features/transactions/repositories/transaction_repository.dart';
 import 'package:payout/features/transactions/services/transaction_service.dart';

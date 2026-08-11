@@ -247,7 +247,8 @@ class _WalletScreenState extends State<WalletScreen> {
 
                     if (validation.isValid) {
                       final success = await _walletRepository.withdrawMoney(withdrawAmount!);
-                      if (mounted && success) {
+                      if (!context.mounted) return;
+                      if (success) {
                         Navigator.pop(context);
                         _loadWalletData();
                         messenger.showSnackBar(

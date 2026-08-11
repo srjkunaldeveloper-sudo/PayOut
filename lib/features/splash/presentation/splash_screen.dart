@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:payout/core/config/app_config.dart';
 import 'package:payout/features/auth/services/session_manager.dart';
 import 'package:payout/features/auth/presentation/login_screen.dart';
 import 'package:payout/features/dashboard/presentation/dashboard_shell.dart';
@@ -301,7 +300,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: p.color.withOpacity(0.4),
+                                        color: p.color.withValues(alpha: 0.4),
                                         blurRadius: 4,
                                         spreadRadius: 1,
                                       ),
@@ -325,12 +324,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF002E6E).withOpacity(0.08),
+                                      color: const Color(0xFF002E6E).withValues(alpha: 0.08),
                                       blurRadius: 20,
                                       spreadRadius: 4,
                                     ),
                                     BoxShadow(
-                                      color: const Color(0xFF00B9F1).withOpacity(0.04),
+                                      color: const Color(0xFF00B9F1).withValues(alpha: 0.04),
                                       blurRadius: 10,
                                       spreadRadius: 1,
                                     ),
@@ -403,7 +402,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 fontFamily: 'Geist Sans',
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xFF1F1F1F).withOpacity(0.7),
+                                color: const Color(0xFF1F1F1F).withValues(alpha: 0.7),
                                 letterSpacing: 4.5,
                               ),
                             ),
@@ -658,7 +657,7 @@ class AccentLinePainter extends CustomPainter {
       ..shader = LinearGradient(
         colors: [
           Colors.transparent,
-          Colors.white.withOpacity(0.9),
+          Colors.white.withValues(alpha: 0.9),
           Colors.transparent,
         ],
         stops: const [0.0, 0.5, 1.0],

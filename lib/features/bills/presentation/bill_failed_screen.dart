@@ -35,7 +35,7 @@ class BillFailedScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.s24),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.08),
+                        color: AppColors.error.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

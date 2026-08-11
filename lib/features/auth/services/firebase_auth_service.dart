@@ -14,7 +14,7 @@ class FirebaseAuthService {
   FirebaseAuthService({FirebaseAuth? firebaseAuth}) : _customAuth = firebaseAuth;
 
   FirebaseAuth get _firebaseAuth {
-    if (_customAuth != null) return _customAuth!;
+    if (_customAuth != null) return _customAuth;
     return FirebaseAuth.instance;
   }
 
@@ -41,8 +41,8 @@ class FirebaseAuthService {
     }
   }
 
-  /// Registers a new user or links Email+Password to the already phone-authenticated user.
-  /// Guarantees that Phone OTP verification + Password creation yields ONE single Firebase UID.
+  /// Registers a new user with Firebase Authentication using Email and Password.
+  /// Yields ONE stable Firebase UID as the user ID.
   Future<AppResult<UserModel>> registerWithEmailAndPassword({
     required String email,
     required String password,
@@ -50,31 +50,7 @@ class FirebaseAuthService {
     String? phone,
   }) async {
     try {
-      final activeUser = _firebaseAuth.currentUser;
-
-      // If user is already authenticated via Phone OTP during registration, link Email+Password credential
-      if (activeUser != null) {
-        AuthLogger.log('Linking email/password credential to active Firebase user: ${activeUser.uid}');
-        final credential = EmailAuthProvider.credential(
-          email: email.trim(),
-          password: password,
-        );
-
-        final userCredential = await activeUser.linkWithCredential(credential);
-        final linkedUser = userCredential.user ?? activeUser;
-
-        // Ensure email and display name are updated on the linked user
-        if (name != null && name.trim().isNotEmpty) {
-          await linkedUser.updateDisplayName(name.trim());
-        }
-
-        final domainUser = _mapFirebaseUserToDomain(linkedUser, fallbackName: name, fallbackPhone: phone);
-        AuthLogger.log('Email/password linked successfully to single UID: ${domainUser.id}');
-        return AppResult.success(domainUser);
-      }
-
-      // Standalone new account creation
-      AuthLogger.log('Firebase registration requested for: $email');
+      AuthLogger.log('Firebase email/password registration requested for: $email');
       final credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -97,44 +73,7 @@ class FirebaseAuthService {
       return AppResult.success(domainUser);
     } catch (e) {
       final userMessage = ErrorMessageMapper.map(e);
-      AuthLogger.log('Firebase registration/linking failed: $userMessage');
-      return AppResult.failure(e, message: userMessage);
-    }
-  }
-
-  /// Explicit method to link Email + Password credential to the currently authenticated user.
-  Future<AppResult<UserModel>> linkEmailPasswordCredential({
-    required String email,
-    required String password,
-    String? name,
-  }) async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user == null) {
-        return AppResult.failure(
-          Exception('no-active-user'),
-          message: 'No active session found to link credentials. Please sign in.',
-        );
-      }
-
-      final credential = EmailAuthProvider.credential(
-        email: email.trim(),
-        password: password,
-      );
-
-      final userCredential = await user.linkWithCredential(credential);
-      final linkedUser = userCredential.user ?? user;
-
-      if (name != null && name.trim().isNotEmpty) {
-        await linkedUser.updateDisplayName(name.trim());
-      }
-
-      final domainUser = _mapFirebaseUserToDomain(linkedUser, fallbackName: name);
-      AuthLogger.log('Firebase credentials linked successfully for UID: ${domainUser.id}');
-      return AppResult.success(domainUser);
-    } catch (e) {
-      final userMessage = ErrorMessageMapper.map(e);
-      AuthLogger.log('Firebase credential linking failed: $userMessage');
+      AuthLogger.log('Firebase registration failed: $userMessage');
       return AppResult.failure(e, message: userMessage);
     }
   }
@@ -171,95 +110,6 @@ class FirebaseAuthService {
       }
       final userMessage = ErrorMessageMapper.map(e);
       AuthLogger.log('Firebase sign in failed: $userMessage');
-      return AppResult.failure(e, message: userMessage);
-    }
-  }
-
-  /// Start Phone Number OTP Verification.
-  Future<void> verifyPhoneNumber({
-    required String phoneNumber,
-    required void Function(String verificationId, int? resendToken) onCodeSent,
-    required void Function(String errorMessage) onVerificationFailed,
-    required void Function(String verificationId) onCodeAutoRetrievalTimeout,
-    void Function(PhoneAuthCredential credential)? onVerificationCompleted,
-    Duration timeout = const Duration(seconds: 60),
-    int? resendToken,
-  }) async {
-    try {
-      AuthLogger.log('Firebase Phone verification initiated');
-      await _firebaseAuth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: timeout,
-        forceResendingToken: resendToken,
-        verificationCompleted: (PhoneAuthCredential credential) {
-          if (kDebugMode) {
-            debugPrint('[FIREBASE_AUTH_DIAGNOSTIC] event=verification_completed');
-          }
-          AuthLogger.log('Firebase Phone auto-verification completed');
-          if (onVerificationCompleted != null) {
-            onVerificationCompleted(credential);
-          }
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          if (kDebugMode) {
-            debugPrint('[FIREBASE_AUTH_DIAGNOSTIC] event=verification_failed code=${e.code} message=${e.message}');
-          }
-          final mappedError = ErrorMessageMapper.map(e);
-          AuthLogger.log('Firebase Phone verification failed (code: ${e.code})');
-          onVerificationFailed(mappedError);
-        },
-        codeSent: (String verificationId, int? token) {
-          if (kDebugMode) {
-            debugPrint('[FIREBASE_AUTH_DIAGNOSTIC] event=code_sent hasVerificationId=${verificationId.isNotEmpty}');
-          }
-          AuthLogger.log('Firebase SMS code sent successfully');
-          onCodeSent(verificationId, token);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          if (kDebugMode) {
-            debugPrint('[FIREBASE_AUTH_DIAGNOSTIC] event=code_auto_retrieval_timeout hasVerificationId=${verificationId.isNotEmpty}');
-          }
-          AuthLogger.log('Firebase SMS code auto-retrieval timeout');
-          onCodeAutoRetrievalTimeout(verificationId);
-        },
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('[FIREBASE_AUTH_DIAGNOSTIC] event=general_exception error=$e');
-      }
-      final mappedError = ErrorMessageMapper.map(e);
-      onVerificationFailed(mappedError);
-    }
-  }
-
-  /// Submit SMS code and sign in using the Phone verification ID.
-  Future<AppResult<UserModel>> signInWithPhoneOTP({
-    required String verificationId,
-    required String smsCode,
-  }) async {
-    try {
-      AuthLogger.log('Firebase phone OTP verification submitted');
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode.trim(),
-      );
-
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
-      final user = userCredential.user;
-
-      if (user == null) {
-        return AppResult.failure(
-          Exception('Phone authentication failed'),
-          message: 'Failed to verify phone OTP. Please try again.',
-        );
-      }
-
-      final domainUser = _mapFirebaseUserToDomain(user);
-      AuthLogger.log('Firebase Phone OTP authentication verified successfully for UID: ${domainUser.id}');
-      return AppResult.success(domainUser);
-    } catch (e) {
-      final userMessage = ErrorMessageMapper.map(e);
-      AuthLogger.log('Firebase phone OTP sign in failed: $userMessage');
       return AppResult.failure(e, message: userMessage);
     }
   }

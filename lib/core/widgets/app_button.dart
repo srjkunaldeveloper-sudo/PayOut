@@ -70,11 +70,11 @@ class AppButton extends StatelessWidget {
           onTap: isEnabled ? onPressed : null,
           borderRadius: BorderRadius.circular(AppRadii.button),
           highlightColor: type == AppButtonType.primary
-              ? Colors.white.withOpacity(0.06)
-              : AppColors.primary.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.06)
+              : AppColors.primary.withValues(alpha: 0.04),
           splashColor: type == AppButtonType.primary
-              ? Colors.white.withOpacity(0.12)
-              : AppColors.primary.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : AppColors.primary.withValues(alpha: 0.08),
           child: Center(
             child: isLoading
                 ? SizedBox(

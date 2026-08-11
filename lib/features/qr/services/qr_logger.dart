@@ -5,7 +5,7 @@ class QrLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[QR_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[QR_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

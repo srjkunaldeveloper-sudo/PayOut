@@ -66,7 +66,7 @@ class _WalletCardState extends State<WalletCard> {
               IconButton(
                 icon: Icon(
                   _isHidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                  color: AppColors.primaryContainer.withOpacity(0.8),
+                  color: AppColors.primaryContainer.withValues(alpha: 0.8),
                   size: 20,
                 ),
                 onPressed: () {
@@ -226,7 +226,7 @@ class _WalletCardState extends State<WalletCard> {
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.15),
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.circle),

@@ -174,7 +174,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.08),
+                  color: AppColors.success.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.verified_rounded, color: AppColors.success, size: 48),
@@ -369,7 +369,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
         ),
         const SizedBox(height: AppSpacing.s16),
         AppCard(
-          color: AppColors.primaryContainer.withOpacity(0.4),
+          color: AppColors.primaryContainer.withValues(alpha: 0.4),
           child: const Row(
             children: [
               Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
@@ -399,7 +399,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
         const Text('Choose one valid government issued identity proof.', style: TextStyle(fontFamily: 'Geist Sans', fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.s16),
         DropdownButtonFormField<String>(
-          value: _selectedDocType,
+          initialValue: _selectedDocType,
           items: docs.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontFamily: 'Geist Sans', fontSize: 13)))).toList(),
           onChanged: (val) {
             if (val != null) {
@@ -449,7 +449,7 @@ class _KYCFlowScreenState extends State<KYCFlowScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.s16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.success.withOpacity(0.06) : AppColors.surface,
+          color: isSelected ? AppColors.success.withValues(alpha: 0.06) : AppColors.surface,
           border: Border.all(color: isSelected ? AppColors.success : AppColors.divider),
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),

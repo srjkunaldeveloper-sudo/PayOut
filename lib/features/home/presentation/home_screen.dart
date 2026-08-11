@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:payout/core/theme/app_theme.dart';
 import 'package:payout/core/widgets/widgets.dart';
-import 'package:payout/core/widgets/states.dart';
 import 'package:payout/core/error/error_message_mapper.dart';
 
 // Aggregation & Domain Imports
-import 'package:payout/features/home/models/home_models.dart';
 import 'package:payout/features/home/services/home_service.dart';
 import 'package:payout/features/home/states/home_state.dart';
 
@@ -20,14 +18,10 @@ import 'package:payout/features/financial/loans/presentation/loans_screen.dart';
 import 'package:payout/features/financial/investments/presentation/investments_screen.dart';
 import 'package:payout/features/rewards/presentation/rewards_screen.dart';
 import 'package:payout/features/rewards/models/reward_models.dart';
-import 'package:payout/features/user/presentation/settings_screen.dart';
-import 'package:payout/features/support/presentation/support_screen.dart';
 import 'package:payout/features/notifications/presentation/notifications_screen.dart';
 import 'package:payout/features/transactions/presentation/transaction_history_screen.dart';
 import 'package:payout/features/transactions/models/transaction_models.dart';
 import 'package:payout/features/qr/presentation/scan_qr_screen.dart';
-import 'package:payout/features/qr/presentation/my_qr_screen.dart';
-import 'package:payout/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:payout/features/global_search/presentation/global_search_screen.dart';
 import 'package:payout/features/user/presentation/profile_screen.dart';
 import 'package:payout/features/payments/presentation/payments_screen.dart';
@@ -37,7 +31,6 @@ import 'package:payout/features/travel/presentation/flight_flow.dart';
 import 'package:payout/features/travel/presentation/train_flow.dart';
 import 'package:payout/features/travel/presentation/bus_flow.dart';
 import 'package:payout/features/travel/presentation/hotel_flow.dart';
-import 'package:payout/features/travel/presentation/movie_flow.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -199,12 +192,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: const Color(0xFF00B9F1).withOpacity(0.08),
+                              color: const Color(0xFF00B9F1).withValues(alpha: 0.08),
                             ),
                             child: CustomAvatar(
                               name: user.name,
                               size: 48,
-                              backgroundColor: const Color(0xFF00B9F1).withOpacity(0.08),
+                              backgroundColor: const Color(0xFF00B9F1).withValues(alpha: 0.08),
                               textColor: const Color(0xFF3F37C9),
                             ),
                           ),
@@ -218,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontFamily: 'Geist Sans',
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                                  color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                                 ),
                               ),
                               Text(
@@ -250,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF002E6E).withOpacity(0.02),
+                                color: const Color(0xFF002E6E).withValues(alpha: 0.02),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -311,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF002E6E).withOpacity(0.02),
+                          color: const Color(0xFF002E6E).withValues(alpha: 0.02),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -332,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontFamily: 'Geist Sans',
                               fontSize: 14,
-                              color: const Color(0xFF1F1F1F).withOpacity(0.4),
+                              color: const Color(0xFF1F1F1F).withValues(alpha: 0.4),
                             ),
                           ),
                         ),
@@ -360,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3F37C9).withOpacity(0.18),
+                        color: const Color(0xFF3F37C9).withValues(alpha: 0.18),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -417,14 +410,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                             style: TextStyle(
                                               fontFamily: 'Geist Sans',
                                               fontSize: 13,
-                                              color: Colors.white.withOpacity(0.7),
+                                              color: Colors.white.withValues(alpha: 0.7),
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                           const SizedBox(width: 8),
                                           Icon(
                                             Icons.visibility_outlined,
-                                            color: Colors.white.withOpacity(0.6),
+                                            color: Colors.white.withValues(alpha: 0.6),
                                             size: 16,
                                           ),
                                         ],
@@ -444,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.12),
+                                      color: Colors.white.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -471,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: TextStyle(
                                           fontFamily: 'Geist Sans',
                                           fontSize: 11,
-                                          color: Colors.white.withOpacity(0.6),
+                                          color: Colors.white.withValues(alpha: 0.6),
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -494,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: TextStyle(
                                           fontFamily: 'Geist Sans',
                                           fontSize: 11,
-                                          color: Colors.white.withOpacity(0.6),
+                                          color: Colors.white.withValues(alpha: 0.6),
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -688,7 +681,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             act['label'] as String,
                             style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold),
                           ),
-                          backgroundColor: AppColors.primaryLight.withOpacity(0.4),
+                          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.4),
                           shape: const StadiumBorder(),
                           onPressed: () {
                             Navigator.push(
@@ -1049,7 +1042,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 220,
                             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant.withOpacity(0.4),
+                              color: AppColors.surfaceVariant.withValues(alpha: 0.4),
                               borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
                               border: Border.all(color: AppColors.divider),
                             ),

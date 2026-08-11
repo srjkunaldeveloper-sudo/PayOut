@@ -5,7 +5,7 @@ class RechargeLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[RECHARGE_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[RECHARGE_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

@@ -85,6 +85,8 @@ class ErrorMessageMapper {
         return 'Please enter a valid 10-digit mobile number.';
       case 'missing-phone-number':
         return 'Mobile number is required.';
+      case 'requires-recent-login':
+        return 'Please re-enter your password to perform this sensitive action.';
       default:
         if (message != null && message.trim().isNotEmpty && !message.contains('Exception:')) {
           return message.trim();

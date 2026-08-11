@@ -71,7 +71,7 @@ class _BillPendingScreenState extends State<BillPendingScreen> {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.s24),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.08),
+                        color: AppColors.warning.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

@@ -58,7 +58,7 @@ class RechargeSuccessScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.s24),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.08),
+                        color: AppColors.success.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

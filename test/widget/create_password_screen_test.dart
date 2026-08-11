@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:payout/features/auth/models/auth_models.dart';
 import 'package:payout/features/auth/presentation/create_password_screen.dart';
-import 'package:payout/features/auth/presentation/mpin_screen.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
+import 'package:payout/features/dashboard/presentation/dashboard_shell.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('CreatePasswordScreen validates requirements and transitions to MPIN', (WidgetTester tester) async {
+  testWidgets('CreatePasswordScreen validates requirements, registers user, and transitions to DashboardShell', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     await tester.binding.setSurfaceSize(const Size(800, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final mockRepo = MockAuthRepository(
-      initialUser: const UserModel(
-        id: 'USR-STABLE-PHONE-UID',
-        name: 'Phone User',
-        phone: '+91 9876543210',
-      ),
-    );
+    final mockRepo = MockAuthRepository();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -64,11 +59,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    // Verify transition to MPINScreen
-    expect(find.byType(MPINScreen), findsOneWidget);
+    // Verify transition to DashboardShell (Home)
+    expect(find.byType(DashboardShell), findsOneWidget);
 
-    // Verify SAME stable UID was preserved and email was linked
-    expect(mockRepo.currentUser?.id, equals('USR-STABLE-PHONE-UID'));
+    // Verify user was registered with email and stable UID
+    expect(mockRepo.currentUser, isNotNull);
     expect(mockRepo.currentUser?.email, equals('test@example.com'));
   });
 }

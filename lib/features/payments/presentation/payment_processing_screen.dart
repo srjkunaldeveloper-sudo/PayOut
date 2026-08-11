@@ -139,8 +139,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Disable back button during processing
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Center(

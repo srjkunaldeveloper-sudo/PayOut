@@ -156,6 +156,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
                                 if (!mounted) return;
                                 if (isVerified) {
+                                  if (!context.mounted) return;
                                   Navigator.pop(sheetContext);
                                   Navigator.push(
                                     sheetContext,
@@ -168,6 +169,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                     ),
                                   );
                                 } else {
+                                  if (!context.mounted) return;
                                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                                     const SnackBar(
                                       content: Text('UPI ID resolution failed. Please try a different VPA.'),
@@ -326,6 +328,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                   });
 
                                   if (!mounted) return;
+                                  if (!context.mounted) return;
                                   Navigator.pop(sheetContext);
                                   Navigator.push(
                                     sheetContext,
@@ -466,6 +469,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                   });
 
                                   if (!mounted) return;
+                                  if (!context.mounted) return;
                                   if (saved) {
                                     Navigator.pop(sheetContext);
                                     _loadData();

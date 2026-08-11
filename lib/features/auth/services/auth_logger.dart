@@ -5,7 +5,7 @@ class AuthLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[AUTH_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[AUTH_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

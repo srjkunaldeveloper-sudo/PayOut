@@ -4,11 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:payout/core/di/app_dependencies.dart';
 import 'package:payout/features/auth/constants/auth_constants.dart';
 import 'package:payout/features/auth/validators/auth_validator.dart';
-import 'package:payout/features/auth/models/auth_models.dart';
 import 'package:payout/features/auth/repositories/auth_repository.dart';
 import 'package:payout/features/auth/states/auth_state.dart';
 import 'package:payout/features/auth/presentation/widgets/auth_error_widget.dart';
-import 'package:payout/features/auth/presentation/otp_screen.dart';
+import 'package:payout/features/auth/presentation/create_password_screen.dart';
 import 'package:payout/features/auth/presentation/existing_user_login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -78,51 +77,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _checkValidation([String? _]) {
     final emailResult = AuthValidator.validateEmail(_emailController.text);
-    final phoneResult = AuthValidator.validateMobile(_phoneController.text);
     setState(() {
-      _isValid = emailResult.isValid && phoneResult.isValid;
+      _isValid = emailResult.isValid;
       _state = const AuthState(status: AuthStatus.typing);
     });
   }
 
-  Future<void> _requestOTP() async {
-    setState(() {
-      _state = const AuthState(status: AuthStatus.loading);
-    });
-
-    final phone = _phoneController.text;
-    final request = LoginRequest(
-      mobile: phone,
-      countryCode: AuthConstants.countryCode,
-    );
-
-    final response = await _authRepository.login(request);
-
-    if (!mounted) return;
-
-    if (response.success && response.sessionId != null) {
-      setState(() {
-        _state = const AuthState(status: AuthStatus.success);
-      });
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => OTPScreen(
-            phoneNumber: '${AuthConstants.countryCode} $phone',
-            sessionId: response.sessionId!,
-            email: _emailController.text.trim(),
-            authRepository: _authRepository,
-          ),
+  void _handleContinue() {
+    final email = _emailController.text.trim();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CreatePasswordScreen(
+          email: email,
+          authRepository: _authRepository,
         ),
-      );
-    } else {
-      setState(() {
-        _state = AuthState(
-          status: AuthStatus.failure,
-          errorMessage: response.message ?? 'Authentication failed.',
-        );
-      });
-    }
+      ),
+    );
   }
 
   @override
@@ -163,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF002E6E).withOpacity(0.06),
+                                    color: const Color(0xFF002E6E).withValues(alpha: 0.06),
                                     blurRadius: 16,
                                     offset: const Offset(0, 4),
                                   ),
@@ -224,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontFamily: 'Geist Sans',
                               fontSize: 14,
-                              color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                              color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                               height: 1.4,
                             ),
                           ),
@@ -476,7 +446,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontFamily: 'Geist Sans',
                                     fontSize: 12.0,
-                                    color: const Color(0xFF1F1F1F).withOpacity(0.5),
+                                    color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                                   ),
                                   children: [
                                     TextSpan(
@@ -508,13 +478,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         
-                        // Send Verification Code Button
+                        // Continue Button
                         FadeUpEntrance(
                           delay: const Duration(milliseconds: 300),
                           child: PremiumCTAButton(
-                            text: 'Send Verification Code',
+                            text: 'Continue',
                             isLoading: showLoading,
-                            onPressed: _isValid && !showLoading ? _requestOTP : null,
+                            onPressed: _isValid && !showLoading ? _handleContinue : null,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -657,7 +627,7 @@ class _PremiumCTAButtonState extends State<PremiumCTAButton> {
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF2563EB).withOpacity(0.18),
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.18),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -727,7 +697,7 @@ class LoginBackgroundPainter extends CustomPainter {
     // Cyan glow (top right)
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF00B9F1).withOpacity(0.04),
+        const Color(0xFF00B9F1).withValues(alpha: 0.04),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.9, size.height * 0.1), radius: 250));
@@ -736,7 +706,7 @@ class LoginBackgroundPainter extends CustomPainter {
     // Purple glow (middle left)
     glowPaint.shader = RadialGradient(
       colors: [
-        const Color(0xFF1B1464).withOpacity(0.03),
+        const Color(0xFF1B1464).withValues(alpha: 0.03),
         Colors.transparent,
       ],
     ).createShader(Rect.fromCircle(center: Offset(size.width * 0.1, size.height * 0.5), radius: 300));
@@ -748,21 +718,21 @@ class LoginBackgroundPainter extends CustomPainter {
       ..strokeWidth = 1.0;
 
     // Accent Circle 1: top left
-    accentPaint.color = const Color(0xFF00B9F1).withOpacity(0.06);
+    accentPaint.color = const Color(0xFF00B9F1).withValues(alpha: 0.06);
     canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.25), 30, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.15, size.height * 0.25), 
       3, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
     // Accent Circle 2: bottom right
-    accentPaint.color = const Color(0xFF1B1464).withOpacity(0.04);
+    accentPaint.color = const Color(0xFF1B1464).withValues(alpha: 0.04);
     canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.75), 50, accentPaint);
     canvas.drawCircle(
       Offset(size.width * 0.82, size.height * 0.68), 
       5.5, 
-      Paint()..color = const Color(0xFF00B9F1).withOpacity(0.06),
+      Paint()..color = const Color(0xFF00B9F1).withValues(alpha: 0.06),
     );
 
     // 4. Soft decorative waves near bottom rising on the right

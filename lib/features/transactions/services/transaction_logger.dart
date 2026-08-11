@@ -5,7 +5,7 @@ class TransactionLogger {
   static void log(String message) {
     if (kDebugMode && AppConfig.enableLogs) {
       final prefix = AppConfig.isDemoMode ? '[DEMO MODE] ' : '';
-      print('[TRANSACTION_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
+      debugPrint('[TRANSACTION_LOG] ${DateTime.now().toIso8601String()}: $prefix$message');
     }
   }
 

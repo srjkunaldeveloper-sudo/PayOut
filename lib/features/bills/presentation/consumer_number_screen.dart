@@ -225,7 +225,7 @@ class _ConsumerNumberScreenState extends State<ConsumerNumberScreen> {
                           ),
                           const SizedBox(height: 10),
                           DropdownButtonFormField<BillerModel>(
-                            value: _selectedBiller,
+                            initialValue: _selectedBiller,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: const Color(0xFFF8FAFC),

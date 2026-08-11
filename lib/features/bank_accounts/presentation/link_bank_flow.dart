@@ -411,6 +411,7 @@ class _LinkBankFlowState extends State<LinkBankFlow> {
             onPressed: () async {
               final code = _otpController.text.trim();
               final isOk = await _bankAccountService.verifyOTP(code);
+              if (!mounted) return;
               if (isOk) {
                 setState(() {
                   _currentStep = 4; // Verification Method Selection

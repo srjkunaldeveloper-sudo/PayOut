@@ -76,54 +76,36 @@ void main() {
     });
   });
 
-  group('2. Account Linking & Single Firebase UID Audit Tests', () {
+  group('2. Email/Password Registration & Single Firebase UID Audit Tests', () {
     late MockAuthRepository mockAuthRepository;
 
     setUp(() {
       mockAuthRepository = MockAuthRepository();
     });
 
-    test('New user phone OTP verification + email/password linking produces ONE single stable UID', () async {
-      // Step 1: User verifies phone OTP
-      final phoneResult = await mockAuthRepository.verifyPhoneOTP(
-        verificationId: 'MOCK-VERIFICATION-ID-123456',
-        smsCode: '123456',
-      );
-      expect(phoneResult.isSuccess, isTrue);
-      final phoneUserUid = phoneResult.data!.id;
-      expect(phoneUserUid, isNotEmpty);
-
-      // Step 2: User completes "Create Password" by linking email + password
-      final linkResult = await mockAuthRepository.registerWithEmailPassword(
+    test('New user email/password registration produces ONE single stable UID', () async {
+      final registerResult = await mockAuthRepository.registerWithEmailPassword(
         email: 'john.doe@example.com',
         password: 'Password@123',
         name: 'John Doe',
       );
 
-      expect(linkResult.isSuccess, isTrue);
-      expect(linkResult.data, isNotNull);
-      // UID MUST REMAIN THE EXACT SAME (Single Firebase user account)
-      expect(linkResult.data!.id, equals(phoneUserUid));
-      expect(linkResult.data!.email, equals('john.doe@example.com'));
-      expect(linkResult.data!.phone, equals('+91 9876543210'));
+      expect(registerResult.isSuccess, isTrue);
+      expect(registerResult.data, isNotNull);
+      expect(registerResult.data!.id, isNotEmpty);
+      expect(registerResult.data!.email, equals('john.doe@example.com'));
+      expect(registerResult.data!.name, equals('John Doe'));
+      expect(mockAuthRepository.currentUser?.id, equals(registerResult.data!.id));
     });
 
-    test('Explicit linkEmailPasswordCredential links credentials to existing user session', () async {
-      await mockAuthRepository.verifyPhoneOTP(
-        verificationId: 'MOCK-VERIFICATION-ID-123456',
-        smsCode: '123456',
-      );
-      final initialUid = mockAuthRepository.currentUser!.id;
-
-      final linkResult = await mockAuthRepository.linkEmailPasswordCredential(
-        email: 'linked.account@example.com',
+    test('Duplicate email registration returns email-already-in-use error', () async {
+      final failResult = await mockAuthRepository.registerWithEmailPassword(
+        email: 'existing@payout.com',
         password: 'Password@123',
-        name: 'Linked User',
       );
 
-      expect(linkResult.isSuccess, isTrue);
-      expect(linkResult.data!.id, equals(initialUid));
-      expect(linkResult.data!.email, equals('linked.account@example.com'));
+      expect(failResult.isSuccess, isFalse);
+      expect(failResult.message, contains('An account already exists with this email'));
     });
   });
 
